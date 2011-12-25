@@ -1,0 +1,31 @@
+.liveExample
+  %h2 Lines
+  #linesList
+    %table.linesEditor
+      %tr
+        %th Source
+        %th Last name
+        %th Phone numbers
+      %tbody{"data-bind" => "foreach: lines"}
+        %tr
+          %td
+            %textarea.entry_area{:cols => "93", :rows => "3", "data-bind" => "value: source"}
+            %div
+              %a{"data-bind" => "click: $root.removeContact", :href => "#"} Delete
+          %td
+            %input{"data-bind" => "value: lastName"}/
+          %td
+            %table
+              %tbody{"data-bind" => "foreach: phones"}
+                %tr
+                  %td
+                    %input{"data-bind" => "value: type"}/
+                  %td
+                    %input{"data-bind" => "value: number"}/
+                  %td
+                    %a{"data-bind" => "click: $root.removePhone", :href => "#"} Delete
+            %a{"data-bind" => "click: $root.addPhone", :href => "#"} Add number
+  %p
+    %button{"data-bind" => "click: addContact"} Add a contact
+    %button{"data-bind" => "click: save, enable: lines().length > 0"} Save to JSON
+  %textarea{:cols => "60", "data-bind" => "value: lastSavedJson", :disabled => "disabled", :rows => "5"} 
