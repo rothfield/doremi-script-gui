@@ -4,28 +4,18 @@
     %table.linesEditor
       %tr
         %th Source
-        %th Last name
-        %th Phone numbers
+        %th Rendered in html
+        %th Actions
       %tbody{"data-bind" => "foreach: lines"}
         %tr
           %td
-            %textarea.entry_area{:cols => "93", :rows => "3", "data-bind" => "value: source"}
+            %textarea.entry_area{:cols => "33", :rows => "3", "data-bind" => "value: source, event: { keypress: handle_key_press}, valueUpdate: 'afterkeydown'"}
+          %td
+            %div.rendered_doremi_script{"data-bind" => "html: rendered_in_html"}
+          %td
             %div
-              %a{"data-bind" => "click: $root.removeContact", :href => "#"} Delete
-          %td
-            %input{"data-bind" => "value: lastName"}/
-          %td
-            %table
-              %tbody{"data-bind" => "foreach: phones"}
-                %tr
-                  %td
-                    %input{"data-bind" => "value: type"}/
-                  %td
-                    %input{"data-bind" => "value: number"}/
-                  %td
-                    %a{"data-bind" => "click: $root.removePhone", :href => "#"} Delete
-            %a{"data-bind" => "click: $root.addPhone", :href => "#"} Add number
+              %a{"data-bind" => "click: $root.removeLine", :href => "#"} Delete
   %p
-    %button{"data-bind" => "click: addContact"} Add a contact
+    %button{"data-bind" => "click: addLine"} New Line
     %button{"data-bind" => "click: save, enable: lines().length > 0"} Save to JSON
   %textarea{:cols => "60", "data-bind" => "value: lastSavedJson", :disabled => "disabled", :rows => "5"} 
