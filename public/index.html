@@ -8,6 +8,34 @@
   </head>
   <body>
     <div class='liveExample'>
+      <p>
+        Raga:
+        <input data-bind='value: raga' />
+      </p>
+      <p>
+        Key:
+        <select data-bind='options: keys, value: key'></select>
+      </p>
+      <p>
+        Mode:
+        <select data-bind='options: modes, value: mode'></select>
+      </p>
+      <p>
+        Title:
+        <input data-bind='value: title' />
+      </p>
+      <p>
+        Author:
+        <input data-bind='value: author' />
+      </p>
+      <p>
+        Source:
+        <input data-bind='value: source' />
+      </p>
+      <p>
+        Time:
+        <input data-bind='value: time' />
+      </p>
       <h2>Lines</h2>
       <div id='linesList'>
         <table class='linesEditor'>
@@ -54,6 +82,7 @@
     <script src='/js/doremi_script/to_lilypond.js' type='text/javascript'></script>
     <script src='/js/doremi_script/to_musicxml.js' type='text/javascript'></script>
     <script src='/js/doremi_script/doremi_script_parser.js' type='text/javascript'></script>
+    <script src='/js/doremi_script/doremi_script_line_parser.js' type='text/javascript'></script>
     <script src='/js/doremi_script/dom_fixer.js' type='text/javascript'></script>
     <script src='/js/doremi_script/html_renderer.js' type='text/javascript'></script>
     <!-- stash css and javascript here when necessary to generate a standalone page. -->

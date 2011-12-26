@@ -1,4 +1,25 @@
 .liveExample
+  %p
+    Raga: 
+    %input{"data-bind" => "value: raga"}
+  %p
+    Key: 
+    %select{"data-bind" => "options: keys, value: key"}
+  %p
+    Mode: 
+    %select{"data-bind" => "options: modes, value: mode"}
+  %p
+    Title:
+    %input{"data-bind" => "value: title"}
+  %p
+    Author:
+    %input{"data-bind" => "value: author"}
+  %p
+    Source:
+    %input{"data-bind" => "value: source"}
+  %p
+    Time:
+    %input{"data-bind" => "value: time"}
   %h2 Lines
   #linesList
     %table.linesEditor

@@ -1,5 +1,5 @@
 (function() {
-  var class_for_octave, draw_attributes, draw_beat, draw_item, draw_line, draw_lower_octave_symbol, draw_measure, draw_ornament, draw_ornament_item, draw_pitch, draw_pitch_sign, draw_syllable, draw_upper_octave_symbol, last_slur_id, lookup_html_entity, lookup_simple, root, to_html, to_html_doc;
+  var class_for_octave, draw_attributes, draw_beat, draw_item, draw_line, draw_lower_octave_symbol, draw_measure, draw_ornament, draw_ornament_item, draw_pitch, draw_pitch_sign, draw_syllable, draw_upper_octave_symbol, last_slur_id, line_to_html, lookup_html_entity, lookup_simple, root, to_html, to_html_doc;
   var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; };
   root = typeof exports !== "undefined" && exports !== null ? exports : this;
   this.id_ctr = new Date().getTime();
@@ -355,6 +355,10 @@
     })()).join('\n');
     return "<div class='attribute_section'>" + attrs + "</div>";
   };
+  line_to_html = function(line) {
+    line = draw_line(line);
+    return "<div class='composition'>" + line + "</div>";
+  };
   to_html = function(composition) {
     var attrs, item, lines;
     attrs = draw_attributes(composition.attributes);
@@ -371,5 +375,6 @@
     return "<div class='composition'>" + attrs + lines + "</div>";
   };
   root.to_html = to_html;
+  root.line_to_html = line_to_html;
   root.to_html_doc = to_html_doc;
 }).call(this);
