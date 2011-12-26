@@ -63,7 +63,7 @@
       return _results;
     },
     parse_line: function(uppers, sargam, lowers, lyrics) {
-      var attribute_lines, ctr, lower, lyric, my_items, my_line, my_lowers, my_uppers, upper, _i, _j, _k, _l, _len, _len2, _len3, _len4;
+      var attribute_lines, ctr, item, lower, lyric, my_items, my_items2, my_line, my_lowers, my_uppers, upper, x, _i, _j, _k, _l, _len, _len2, _len3, _len4;
       if (lyrics.length === 0) {
         lyrics = '';
       }
@@ -74,6 +74,16 @@
         uppers = '';
       }
       my_items = _.flatten(_.compact([uppers, sargam, lowers]));
+      my_items2 = _.flatten(_.compact([uppers, sargam, lowers, lyrics]));
+      sargam.source = (x = (function() {
+        var _i, _len, _results;
+        _results = [];
+        for (_i = 0, _len = my_items2.length; _i < _len; _i++) {
+          item = my_items2[_i];
+          _results.push(item.source);
+        }
+        return _results;
+      })()).join("\n");
       ctr = 0;
       for (_i = 0, _len = uppers.length; _i < _len; _i++) {
         upper = uppers[_i];

@@ -4,12 +4,21 @@ _console.level  = Logger.WARN
 _.mixin(_console.toObject())
 
 
-
 initialData = [
   { source: "| S - - - |", rendered_in_html: "<em>S</em>"},
   { source: "| r - - - |", rendered_in_html: "<em>r</em>"}
 ]
- 
+
+zzzinitialData = """
+Title: test
+
+| S - - - |
+
+| R - - - |
+hi
+
+"""
+
 CompositionModel = (lines) ->
   self = this
   self.raga=ko.observable("")

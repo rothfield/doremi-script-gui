@@ -160,7 +160,6 @@ DoremiScriptParser = (function(){
         "SYLLABLE": parse_SYLLABLE,
         "TALA": parse_TALA,
         "UNDELIMITED_SARGAM_PITCH_WITH_DASHES": parse_UNDELIMITED_SARGAM_PITCH_WITH_DASHES,
-        "UNUSED_STRAY_END_SLUR": parse_UNUSED_STRAY_END_SLUR,
         "UPPER_OCTAVE_DOT": parse_UPPER_OCTAVE_DOT,
         "UPPER_OCTAVE_LINE": parse_UPPER_OCTAVE_LINE,
         "UPPER_OCTAVE_LINE_ITEM": parse_UPPER_OCTAVE_LINE_ITEM,
@@ -1966,51 +1965,6 @@ DoremiScriptParser = (function(){
         reportMatchFailures = savedReportMatchFailures;
         if (reportMatchFailures && result0 === null) {
           matchFailed("tala markings. ie +203 for tintal. 012 for rupak");
-        }
-        
-        cache[cacheKey] = {
-          nextPos: pos,
-          result:  result0
-        };
-        return result0;
-      }
-      
-      function parse_UNUSED_STRAY_END_SLUR() {
-        var cacheKey = 'UNUSED_STRAY_END_SLUR@' + pos;
-        var cachedResult = cache[cacheKey];
-        if (cachedResult) {
-          pos = cachedResult.nextPos;
-          return cachedResult.result;
-        }
-        
-        var savedReportMatchFailures = reportMatchFailures;
-        reportMatchFailures = false;
-        var savedPos0 = pos;
-        if (input.substr(pos, 1) === ")") {
-          var result1 = ")";
-          pos += 1;
-        } else {
-          var result1 = null;
-          if (reportMatchFailures) {
-            matchFailed("\")\"");
-          }
-        }
-        var result2 = result1 !== null
-          ? (function(char) {
-               return {my_type: "stray_end_slur",
-                       source:char
-               }
-            })(result1)
-          : null;
-        if (result2 !== null) {
-          var result0 = result2;
-        } else {
-          var result0 = null;
-          pos = savedPos0;
-        }
-        reportMatchFailures = savedReportMatchFailures;
-        if (reportMatchFailures && result0 === null) {
-          matchFailed("TODO-a right paren that is not to the right of a pitch. ignore it");
         }
         
         cache[cacheKey] = {

@@ -400,7 +400,7 @@
     composition = test_parses(str, test);
     first_sargam_source = str.split('\n')[6];
     line = first_sargam_line(composition);
-    test.equal(line.source, first_sargam_source, "sanity check, expected first line's source to be " + first_sargam_source);
+    test.ok(line.source.indexOf(first_sargam_source) > -1, "sanity check, expected first line's source to be " + first_sargam_source);
     return test.done();
   };
   exports.test_parses_measure_at_beginning_of_line = function(test) {

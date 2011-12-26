@@ -1,4 +1,4 @@
-var CompositionModel, Logger, initialData;
+var CompositionModel, Logger, initialData, zzzinitialData;
 var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; };
 Logger = _console.constructor;
 _console.level = Logger.WARN;
@@ -12,6 +12,7 @@ initialData = [
     rendered_in_html: "<em>r</em>"
   }
 ];
+zzzinitialData = "Title: test\n\n| S - - - |\n\n| R - - - |\nhi\n";
 CompositionModel = function(lines) {
   var fun, self;
   self = this;
