@@ -1,0 +1,20 @@
+input[type="radio"]:checked+label{
+  font-weight: bold;
+  background-color:gainsboro;
+}
+
+
+table.linesEditor th {
+  text-align:left;
+}
+tr.line_header {
+  border: none;
+}
+fieldset#composition_info {
+  width: 400px;
+}
+
+textarea.parse_failed {
+  border-color:red;
+  border-size:2px;
+}
