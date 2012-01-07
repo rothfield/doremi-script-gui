@@ -16,5 +16,5 @@ fieldset#composition_info {
 
 textarea.parse_failed {
   border-color:red;
-  border-size:2px;
+  border-width:2px;
 }

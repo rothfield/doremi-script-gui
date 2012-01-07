@@ -10,13 +10,16 @@
     <div class='liveExample'>
       <p>
         Locally saved compositions:
-        <select data-bind="options: availableCountries, optionsText: 'countryName', value: selectedCountry, optionsCaption: 'Open'"></select>
+        <select data-bind="options: availableCountries, optionsText: 'countryName', value: selectedCountry, optionsCaption: 'Open'">
+          <option value=''>Open</option>
+          <option value=''></option>
+        </select>
       </p>
       <fieldset id='composition_info'>
         <legend data-bind='click: toggle_composition_info_visibility' id='composition_info_legend'>
           Composition Info(Click to hide/show)
         </legend>
-        <div data-bind='visible: composition_info_visible' id='composition_info_content'>
+        <div data-bind='visible: composition_info_visible' id='composition_info_content' style=''>
           <p>
             Raga:
             <input data-bind='value: raga' />
@@ -51,51 +54,23 @@
           </p>
         </div>
       </fieldset>
-      <h2>Composition Lines</h2>
-      <div id='linesList'>
-        <table class='linesEditor'>
-          <tbody data-bind='foreach: lines'>
-            <tr class='line_header'>
-              <th>
-                <input data-bind='checked: edit_mode, attr: { name: radio_group_name(), id: source_radio_id}' type='radio' value='source'>
-                  <label data-bind='attr: { for: source_radio_id}'>
-                    Source
-                  </label>
-                </input>
-                <input data-bind='checked: edit_mode,  attr: { name: radio_group_name(), id: html_radio_id}' name='edit_mode_group' type='radio' value='html'>
-                  <label data-bind='attr: { for: html_radio_id}'>
-                    Html
-                  </label>
-                </input>
-                <a data-bind='click: show_parse_tree_click' href='#'>
-                  Show/Hide Parse Tree
-                </a>
-              </th>
-              <th></th>
-            </tr>
-            <tr>
-              <td>
-                <textarea class='entry_area' cols='33' data-bind="css: {'parse_failed': $data.parse_failed},visible: edit_mode() == 'source', value: source, event: { keypress: handle_key_press}, valueUpdate: 'afterkeydown'" rows='3'></textarea>
-                <div class='rendered_doremi_script' data-bind="visible: edit_mode() == 'html', html: rendered_in_html"></div>
-                <div class='parse_tree_div' data-bind='visible: parse_tree_visible'>
-                  <pre class='parse_tree' data-bind='text: parse_tree_text'>Parse tree here</pre>
-                </div>
-                <div id='warnings_div'></div>
-              </td>
-              <td>
-                <div>
-                  <a data-bind='click: $root.removeLine' href='#'>Delete</a>
-                </div>
-              </td>
-            </tr>
-          </tbody>
-        </table>
+      <br />
+      <div class='composition'>
+        <div class='composition_body' data-bind='foreach: lines'>
+          <div class='line_wrapper' data-bind='attr: { id: line_wrapper_id()},event: { dblclick: edit }' tabindex='0'>
+            <div class='rendered_html' data-bind='visible: !editing(),html: rendered_in_html'></div>
+            <textarea class='entry_area' cols='33' data-bind="css: {'parse_failed': $data.parse_failed},visible: editing(), hasfocus: editing, value: source, event: { keypress: handle_key_press, blur: handle_blur}, valueUpdate: 'afterkeydown'" rows='3'></textarea>
+          </div>
+        </div>
       </div>
-      <p>
-        <button data-bind='click: addLine'>New Line</button>
-        <button data-bind='click: save, enable: lines().length &gt; 0'>Save to JSON</button>
-        <button data-bind='click: save_locally, enable: lines().length &gt; 0'>Save locally</button>
-      </p>
+      <br />
+      <br />
+      <button data-bind='click: addLine'>New Line</button>
+      <button data-bind='click: save, enable: lines().length &gt; 0'>Save to JSON</button>
+      <button data-bind='click: save_locally, enable: lines().length &gt; 0'>Save locally</button>
+      <br />
+      <br />
+      <br />
       <textarea cols='60' data-bind='value: lastSavedJson' disabled='disabled' rows='5'></textarea>
     </div>
     <script src='/js/jquery.js' type='text/javascript'></script>

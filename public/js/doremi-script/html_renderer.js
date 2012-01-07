@@ -356,8 +356,7 @@
     return "<div class='attribute_section'>" + attrs + "</div>";
   };
   line_to_html = function(line) {
-    line = draw_line(line);
-    return "<div class='composition'>" + line + "</div>";
+    return draw_line(line);
   };
   to_html = function(composition) {
     var attrs, item, lines;

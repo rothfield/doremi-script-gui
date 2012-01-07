@@ -7,7 +7,77 @@ var __indexOf = Array.prototype.indexOf || function(item) {
 }, __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; };
 root = typeof exports !== "undefined" && exports !== null ? exports : this;
 $(document).ready(function() {
-  var Logger, composition, compositions, ctr, initialData, key, old_initialData;
+  var LineViewModel, Logger, composition, compositions, ctr, id, initialData, key, old_initialData;
+  id = 1000;
+  LineViewModel = function(line) {
+    if (line == null) {
+      line = {
+        source: ""
+      };
+    }
+    return {
+      id: "" + (id++),
+      parse_failed: ko.observable(false),
+      parse_tree_visible: ko.observable(false),
+      parse_tree_text: ko.observable("parse tree text here"),
+      radio_group_name: ko.observable("group_" + line.index),
+      source_radio_id: "source_radio_" + line.index,
+      html_radio_id: "html_radio_" + line.index,
+      editing: ko.observable(false),
+      last_value_rendered: "",
+      index: ko.observable(line.index),
+      source: line.source,
+      rendered_in_html: ko.observable(line.rendered_in_html),
+      handle_blur: function(event) {},
+      edit: function(my_model, event) {
+        var current_target, height, text_area;
+        this.editing(true);
+        return false;
+        console.log(arguments);
+        console.log("edit");
+        console.log("this is", this);
+        current_target = event.currentTarget;
+        height = $(current_target).height();
+        text_area = $(current_target).find("textarea");
+        console.log("text_area", text_area);
+        return $(text_area).height(height);
+      },
+      line_wrapper_id: function() {
+        return "line_wrapper_" + this.id;
+      },
+      show_parse_tree_click: function() {
+        console.log("you clicked show parse tree");
+        this.parse_tree_visible(!this.parse_tree_visible());
+        return false;
+      },
+      handle_key_press: function(current_line, event) {
+        var let_default_action_proceed;
+        let_default_action_proceed = true;
+        return let_default_action_proceed;
+      },
+      parse: function() {
+        var result;
+        if (this.source === "" || this.source === null) {
+          this.rendered_in_html("");
+          this.parse_tree_text("");
+          return;
+        }
+        try {
+          result = DoremiScriptLineParser.parse(this.source);
+          this.rendered_in_html(line_to_html(result));
+          this.parse_tree_text("Parsing completed with no errors \n" + JSON.stringify(result, null, "  "));
+          return dom_fixes();
+        } catch (err) {
+          result = "failed";
+          this.parse_failed(true);
+          this.parse_tree_text("Parsing failed");
+          return this.rendered_in_html("parsing failed");
+        } finally {
+          this.last_value_rendered = this.source;
+        }
+      }
+    };
+  };
   composition = function(name, doremi_script) {
     this.compositionName = name;
     this.composition_doremi_script = doremi_script;
@@ -36,8 +106,8 @@ $(document).ready(function() {
     }
   ];
   initialData = "Title: test\n\n  .\n| S - - - |\n\n| R - - - |\n  hi\n";
-  window.CompositionModel = function(doremi_script_source) {
-    var fun, parsed_obj, self;
+  window.CompositionViewModel = function(doremi_script_source) {
+    var parsed_obj, self;
     parsed_obj = DoremiScriptParser.parse(doremi_script_source);
     if (!(parsed_obj.id != null)) {
       parsed_obj.id = new Date().getTime();
@@ -45,7 +115,7 @@ $(document).ready(function() {
     self = this;
     self.availableCountries = ko.observableArray(compositions);
     self.selectedCountry = ko.observable();
-    self.composition_info_visible = ko.observable(true);
+    self.composition_info_visible = ko.observable(false);
     self.toggle_composition_info_visibility = function() {
       console.log("in toggle");
       return self.composition_info_visible(!self.composition_info_visible());
@@ -62,60 +132,9 @@ $(document).ready(function() {
     self.key = ko.observable(parsed_obj.key);
     self.modes = ["Ionian", "Dorian", "Phrygian", "Lydian", "Mixolydian", "Aeolian", "Locrian"];
     self.mode = ko.observable(parsed_obj.mode);
-    fun = function(line) {
-      return {
-        parse_failed: ko.observable(false),
-        parse_tree_visible: ko.observable(false),
-        parse_tree_text: ko.observable("parse tree text here"),
-        radio_group_name: ko.observable("group_" + line.index),
-        source_radio_id: "source_radio_" + line.index,
-        html_radio_id: "html_radio_" + line.index,
-        edit_mode: ko.observable("source"),
-        in_source_edit_mode: function() {
-          return this.edit_mode() === "source";
-        },
-        in_html_edit_mode: function() {
-          return this.edit_mode() === "html";
-        },
-        last_value_rendered: "",
-        index: ko.observable(line.index),
-        source: line.source,
-        rendered_in_html: ko.observable(line.rendered_in_html),
-        show_parse_tree_click: function() {
-          console.log("you clicked show parse tree");
-          this.parse_tree_visible(!this.parse_tree_visible());
-          return false;
-        },
-        handle_key_press: function(current_line, event) {
-          var let_default_action_proceed;
-          let_default_action_proceed = true;
-          return let_default_action_proceed;
-        },
-        parse: function() {
-          var result;
-          console.log("in parse, this is", this);
-          try {
-            result = DoremiScriptLineParser.parse(this.source);
-            this.rendered_in_html(line_to_html(result));
-            this.parse_tree_text("Parsing completed with no errors \n" + JSON.stringify(result, null, "  "));
-            return dom_fixes();
-          } catch (err) {
-            result = "failed";
-            this.parse_failed(true);
-            this.parse_tree_text("Parsing failed");
-            return this.rendered_in_html("parsing failed");
-          } finally {
-            this.last_value_rendered = this.source;
-          }
-        }
-      };
-    };
-    self.lines = ko.observableArray(ko.utils.arrayMap(parsed_obj.lines, fun));
+    self.lines = ko.observableArray(ko.utils.arrayMap(parsed_obj.lines, LineViewModel));
     self.addLine = function() {
-      return self.lines.push(fun({
-        source: "",
-        rendered_in_html: ""
-      }));
+      return self.lines.push(new LineViewModel());
     };
     self.removeLine = function(line) {
       var res;
@@ -165,7 +184,7 @@ $(document).ready(function() {
     self.lastSavedJson = ko.observable("");
     return self;
   };
-  window.the_composition = new CompositionModel(initialData);
+  window.the_composition = new CompositionViewModel(initialData);
   ko.applyBindings(window.the_composition);
   window.timed_count = __bind(function() {
     var line, src, t, which_line, _i, _len, _ref;

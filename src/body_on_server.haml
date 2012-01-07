@@ -1,0 +1,64 @@
+.liveExample
+  %p
+    Locally saved compositions:
+    %select{"data-bind" => "options: availableCountries, optionsText: 'countryName', value: selectedCountry, optionsCaption: 'Open'"}
+  %fieldset#composition_info
+    %legend#composition_info_legend{"data-bind" => "click: toggle_composition_info_visibility"}
+      Composition Info(Click to hide/show)
+    #composition_info_content{"data-bind" => 'visible: composition_info_visible'}
+      %p
+        Raga: 
+        %input{"data-bind" => "value: raga"}
+      %p
+        Key: 
+        %select{"data-bind" => "options: keys, value: key"}
+      %p
+        Mode: 
+        %select{"data-bind" => "options: modes, value: mode"}
+      %p
+        Title:
+        %input{"data-bind" => "value: title"}
+      %p
+        Author:
+        %input{"data-bind" => "value: author"}
+      %p
+        Source:
+        %input{"data-bind" => "value: source"}
+      %p
+        Time Signature:
+        %input{"data-bind" => "value: time_signature"}
+      %p
+        ID#:
+        %span{"data-bind" => "text: id"}
+  %h2 Composition Lines
+  #linesList
+    %table.linesEditor
+      %tbody{"data-bind" => "foreach: lines"}
+        %tr.line_header
+          %th 
+            %input{"type" => 'radio',  "value" => "source", "data-bind" => "checked: edit_mode, attr: { name: radio_group_name(), id: source_radio_id}"}
+              %label{"data-bind" => "attr: { for: source_radio_id}"}
+                Source
+            %input{"type" => 'radio', "name" => "edit_mode_group", "value" => "html", "data-bind" => "checked: edit_mode,  attr: { name: radio_group_name(), id: html_radio_id}"}
+              %label{"data-bind" => "attr: { for: html_radio_id}"}
+                Html
+            %a{"data-bind" => "click: show_parse_tree_click", :href => "#"}
+              Show/Hide Parse Tree
+          %th 
+        %tr
+          %td
+            %textarea.entry_area{:cols => "33", :rows => "3", "data-bind" => "css: {'parse_failed': $data.parse_failed},visible: edit_mode() == 'source', value: source, event: { keypress: handle_key_press}, valueUpdate: 'afterkeydown'"}
+            %div.rendered_doremi_script{"data-bind" => "visible: edit_mode() == 'html', html: rendered_in_html"}
+            %div.parse_tree_div{"data-bind" => "visible: parse_tree_visible"}
+              %pre.parse_tree{"data-bind" => "text: parse_tree_text"}
+                :preserve
+                  Parse tree here
+            #warnings_div
+          %td
+            %div
+              %a{"data-bind" => "click: $root.removeLine", :href => "#"} Delete
+  %p
+    %button{"data-bind" => "click: addLine"} New Line
+    %button{"data-bind" => "click: save, enable: lines().length > 0"} Save to JSON
+    %button{"data-bind" => "click: save_locally, enable: lines().length > 0"} Save locally
+  %textarea{:cols => "60", "data-bind" => "value: lastSavedJson", :disabled => "disabled", :rows => "5"} 

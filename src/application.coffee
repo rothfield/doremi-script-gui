@@ -1,6 +1,69 @@
 root = exports ? this
 
 $(document).ready ->
+  id=1000
+  LineViewModel = (line= {source: ""}) ->  # parameter is PARSED line
+    # SETUP LINE OBJECT- TODO: refactor
+    id: "#{id++}"
+    parse_failed: ko.observable(false)
+    #if composition_data.warnings.length > 0
+    #  $('#warnings_div').html "The following warnings were reported:<br/>"+composition_data.warnings.join('<br/>')
+    parse_tree_visible: ko.observable(false)
+    parse_tree_text: ko.observable("parse tree text here")
+    radio_group_name: ko.observable("group_#{line.index}")
+    source_radio_id: "source_radio_#{line.index}"
+    html_radio_id: "html_radio_#{line.index}"
+    editing: ko.observable(false)
+    last_value_rendered: ""
+    index: ko.observable(line.index)
+    source: line.source
+    #rendered_in_html: line.rendered_in_html #ko.observable(line.rendered_in_html) #line.rendered_in_html
+    rendered_in_html: ko.observable(line.rendered_in_html)
+    # Behaviours
+    handle_blur: (event) ->
+      #this.parse()
+    edit: (my_model,event) ->
+      this.editing(true)
+      return false
+      console.log arguments
+      console.log "edit"
+      console.log "this is",this
+      current_target=event.currentTarget
+      height= $(current_target).height()
+      #parent=$(event.currentTarget).parent()
+      #console.log "parent",parent
+      text_area=$(current_target).find("textarea")
+      console.log "text_area",text_area
+      #$(text_area).toggle().focus()
+      $(text_area).height(height)
+    line_wrapper_id: () ->
+      "line_wrapper_#{this.id}"
+    show_parse_tree_click: () ->
+      console.log "you clicked show parse tree"
+      this.parse_tree_visible(!this.parse_tree_visible())
+      false
+    handle_key_press: (current_line,event) ->
+      let_default_action_proceed=true
+      let_default_action_proceed
+    parse: () ->
+      if this.source is "" or this.source is null
+        this.rendered_in_html("")
+        this.parse_tree_text("")
+        return
+      try
+        result=DoremiScriptLineParser.parse(this.source)
+        this.rendered_in_html(line_to_html(result))
+        this.parse_tree_text("Parsing completed with no errors \n"+JSON.stringify(result,null,"  "))
+        dom_fixes()
+      catch err
+        result="failed"
+        this.parse_failed(true)
+        this.parse_tree_text("Parsing failed")
+        this.rendered_in_html("parsing failed")
+      finally
+        this.last_value_rendered=this.source
+  
+
   # use this to grab the title: 
   # ary= /title: ([^\n]+)\n/.exec(s)
   # title=ary[1]
@@ -39,7 +102,7 @@ $(document).ready ->
   
   """
   
-  window.CompositionModel = (doremi_script_source) ->
+  window.CompositionViewModel = (doremi_script_source) ->
     
     parsed_obj=DoremiScriptParser.parse(doremi_script_source)
     if !parsed_obj.id?
@@ -49,7 +112,7 @@ $(document).ready ->
     self = this
     self.availableCountries = ko.observableArray(compositions)
     self.selectedCountry = ko.observable() # nothing selected by default
-    self.composition_info_visible=ko.observable(true)
+    self.composition_info_visible=ko.observable(false)
     self.toggle_composition_info_visibility = () ->
       console.log("in toggle")
       self.composition_info_visible(!self.composition_info_visible())
@@ -65,58 +128,10 @@ $(document).ready ->
     self.key= ko.observable(parsed_obj.key)
     self.modes=["Ionian","Dorian","Phrygian","Lydian","Mixolydian","Aeolian","Locrian"]
     self.mode= ko.observable(parsed_obj.mode)
-    fun = (line) ->
-      # SETUP LINE OBJECT- TODO: refactor
-      parse_failed: ko.observable(false)
-      # TODO: create line_model?
-      #
-      #if composition_data.warnings.length > 0
-      #  $('#warnings_div').html "The following warnings were reported:<br/>"+composition_data.warnings.join('<br/>')
-      parse_tree_visible: ko.observable(false)
-      parse_tree_text: ko.observable("parse tree text here")
-      radio_group_name: ko.observable("group_#{line.index}")
-      source_radio_id: "source_radio_#{line.index}"
-      html_radio_id: "html_radio_#{line.index}"
-      edit_mode: ko.observable("source")  # html or source
-      in_source_edit_mode: () ->
-        this.edit_mode() is "source"
-      in_html_edit_mode: () ->
-        this.edit_mode() is "html"
-      last_value_rendered: ""
-      index: ko.observable(line.index)
-      source: line.source
-      #rendered_in_html: line.rendered_in_html #ko.observable(line.rendered_in_html) #line.rendered_in_html
-      rendered_in_html: ko.observable(line.rendered_in_html)
-      show_parse_tree_click: () ->
-        console.log "you clicked show parse tree"
-        this.parse_tree_visible(!this.parse_tree_visible())
-        false
-      handle_key_press: (current_line,event) ->
-        let_default_action_proceed=true
-        let_default_action_proceed
-      parse: () ->
-        console.log("in parse, this is", this)
-        try
-          result=DoremiScriptLineParser.parse(this.source)
-          this.rendered_in_html(line_to_html(result))
-          this.parse_tree_text("Parsing completed with no errors \n"+JSON.stringify(result,null,"  "))
-          dom_fixes()
-        catch err
-          result="failed"
-          this.parse_failed(true)
-          this.parse_tree_text("Parsing failed")
-          this.rendered_in_html("parsing failed")
-        finally
-          this.last_value_rendered=this.source
-  
-    self.lines = ko.observableArray(ko.utils.arrayMap(parsed_obj.lines, fun))
+    self.lines = ko.observableArray(ko.utils.arrayMap(parsed_obj.lines, LineViewModel))
   
     self.addLine = () ->
-      self.lines.push(fun({
-              source: "",
-              rendered_in_html: ""
-          }))
-  
+      self.lines.push(new LineViewModel())
     self.removeLine = (line) ->
       res=confirm("Are you sure?")
       return if !res
@@ -152,7 +167,7 @@ $(document).ready ->
   
     self
   
-  window.the_composition=new CompositionModel(initialData)
+  window.the_composition=new CompositionViewModel(initialData)
   ko.applyBindings(window.the_composition)
   
   window.timed_count = () =>
