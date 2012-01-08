@@ -91,30 +91,34 @@ $(document).ready ->
   # ary= /title: ([^\n]+)\n/.exec(s)
   # title=ary[1]
   # Constructor for an object with two properties
-  composition = (key, doremi_script) ->
+  composition = (name, doremi_script) ->
     console.log "composition-local storage",doremi_script
-    @key = key
-    #@composition_doremi_script = doremi_script
-    ary= /Title: ([^\n]+)\n/.exec(doremi_script)
+    @compositionName = name
+    @composition_doremi_script = doremi_script
+    ary= /title: ([^\n]+)\n/.exec(doremi_script)
     @title=ary[1]
     this
   compositions=[]
   ctr=0
-  if localStorage.length > 0
-    while ctr < localStorage.length
-      key=localStorage.key(ctr)
-      if key.indexOf("composition_") is 0
-         compositions.push new composition(key,localStorage[key])
-      ctr++
+  while ctr < localStorage.length
+    key=localStorage.key(ctr)
+    if key.indexOf("composition_") is 0
+       compositions.push new composition(key,localStorage[key])
+    ctr++
   console.log "compositions", compositions
   Logger=_console.constructor
   # _console.level  = Logger.DEBUG
   _console.level  = Logger.WARN
   _.mixin(_console.toObject())
   
+  
+  old_initialData = [
+    { source: "| S - - - |", rendered_in_html: "<em>S</em>"},
+    { source: "| r - - - |", rendered_in_html: "<em>r</em>"}
+  ]
+  
   initialData = """
-  Title: sample_composition
-  id: 1326030518658
+  Title: test
   
     .
   | S - - - |
@@ -125,113 +129,67 @@ $(document).ready ->
   """
   
   window.CompositionViewModel = (doremi_script_source) ->
+    console.log("Entering CompositionViewModel, source is",doremi_script_source) 
+    parsed_obj=DoremiScriptParser.parse(doremi_script_source)
+    if !parsed_obj.id?
+      parsed_obj.id=new Date().getTime()
+    #console.log("parsed_obj is",parsed_obj)
+    #console.log("parsed_obj.lines is",parsed_obj.lines)
     self = this
-    my_compositions=compositions
+    self.available_compositions = ko.observableArray(compositions)
     self.selected_composition = ko.observable() # nothing selected by default
     self.composition_info_visible=ko.observable(false)
     self.toggle_composition_info_visibility = () ->
       console.log("in toggle")
       self.composition_info_visible(!self.composition_info_visible())
-    self.id=ko.observable("")
+    self.id=ko.observable(parsed_obj.id)
     self.raga=ko.observable("")
     self.author=ko.observable("")
     self.source=ko.observable("")
-    self.filename=ko.observable("")
-    self.time_signature=ko.observable("")
-    self.notes_used=ko.observable("")
-    self.title=ko.observable("")
+    self.filename=ko.observable(parsed_obj.filename)
+    self.time_signature=ko.observable(parsed_obj.time_signature)
+    self.notes_used=ko.observable(parsed_obj.notes_used)
+    self.title=ko.observable(parsed_obj.title)
     self.keys=["C","C#","D","D#","E","F","F#","G","G#","A","A#","B","Db","Eb","Gb","Ab","Bb"]
-    self.key= ko.observable("")
+    self.key= ko.observable(parsed_obj.key)
     self.modes=["Ionian","Dorian","Phrygian","Lydian","Mixolydian","Aeolian","Locrian"]
-    self.mode= ko.observable("")
-    self.lines = ko.observableArray([])
-
-    self.my_init = (doremi_script_source) ->
-
-      console.log("Entering CompositionViewModel.init, source is",doremi_script_source)
-      self.available_compositions = ko.observableArray(my_compositions)
-      #self.available_compositions(my_compositions)
-      parsed_obj=DoremiScriptParser.parse(doremi_script_source)
-      if !parsed_obj.id?
-        parsed_obj.id=new Date().getTime()
-      keys = [
-        "id"
-        "filename"
-        "raga"
-        "author"
-        "source"
-        "time_signature"
-        "notes_used"
-        "title"
-        "key"
-        "mode"
-      ]
-      self[key](parsed_obj[key]) for key in keys
-      self.lines(ko.utils.arrayMap(parsed_obj.lines, LineViewModel))
-
+    self.mode= ko.observable(parsed_obj.mode)
+    self.lines = ko.observableArray(ko.utils.arrayMap(parsed_obj.lines, LineViewModel))
   
-    self.add_line = () ->
+    self.addLine = () ->
       self.lines.push(x=new LineViewModel())
       x.parse()
       ko.applyBindings(x)
 
-    self.remove_line = (line) ->
+    self.removeLine = (line) ->
       res=confirm("Are you sure?")
       return if !res
       self.lines.remove(line)
-
     self.composition_select= (my_model,event) ->
       # User clicked on the locally saved compositions select list
-      # Load from local storage
       #
       # Loads the composition selected from the local storage select list
       return if !this.selected_composition()
-      key=this.selected_composition().key
-      self.composition_info_visible(true)
-
-      self.load_locally(key)
-
-    self.new_composition = () ->
-      #if confirm("Save current composition?")
-      #  self.save_locally()
-      initialData = """
-      Title: Untitled
-      id: #{new Date().getTime()}
-
-      |S
-      """
-      window.the_composition.my_init(initialData)
-      self.add_line()
-      
-    self.load_locally = (key) ->
-      if key is "composition_#{window.the_composition.id()}"
-        alert("This is the file you are currently editing")
-        return
-      source=localStorage[key]
-      window.the_composition.my_init(source)
+      source=this.selected_composition().composition_doremi_script
+      window.the_composition=new CompositionViewModel(source)
+      ko.applyBindings(window.the_composition)
 
     self.save_locally = () ->
       console.log "save_locally"
       ignore=[
         "available_compositions"
-        "selected_composition"
+        "selected_compositions"
+        "source"
         "keys"
         "modes"
         "lines"
+        "lastSavedJson"
         "composition_info_visible"
       ]
       json_str=JSON.stringify(ko.toJS(self), null, 2)
       json_object = $.parseJSON(json_str)
       # attributes don't have a blank line between them
       atts= for att,value of json_object
-        att="Filename" if att is "filename"
-        att="Title" if att is "title"
-        att="Raga" if att is "raga"
-        att="Key" if att is "key"
-        att="Mode" if att is "mode"
-        att="Author" if att is "author"
-        att="Source" if att is "source"
-        att="TimeSignature" if att is "time_signature"
         continue if att in ignore
         continue if value is ""
         continue if !value
@@ -243,15 +201,18 @@ $(document).ready ->
       str=atts_str+"\n\n"+lines_str
       console.log('str is',str)
       localStorage.setItem("composition_#{self.id()}",str)
-
-    self.my_init(doremi_script_source) if doremi_script_source?
+    self.save_json = () ->
+      # TODO: remove this
+      #self.lastSavedJson(JSON.stringify(ko.toJS(self.lines), null, 2))
+      self.lastSavedJson(JSON.stringify(ko.toJS(self), null, 2))
+      #self.lastSavedJson(JSON.stringify(ko.toJS(self.lines), null, 2))
+      self.lastSavedJson(JSON.stringify(ko.toJS(self), null, 2))
+   
+    self.lastSavedJson = ko.observable("")
+  
     self
-
-  window.the_composition=new CompositionViewModel()
-  #fun =  (new_value) ->
-  #  alert("New value is #{new_value}")
-  #window.the_composition.selected_composition.subscribe(fun)
-  window.the_composition.my_init(initialData)
+  
+  window.the_composition=new CompositionViewModel(initialData)
   ko.applyBindings(window.the_composition)
   
   window.timed_count = () =>
@@ -268,6 +229,7 @@ $(document).ready ->
     if !window.timer_is_on
       window.timer_is_on=1
       window.timed_count()
+  
   
   window.timed_count()
 

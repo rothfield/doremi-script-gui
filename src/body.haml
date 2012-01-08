@@ -1,9 +1,12 @@
 .liveExample
   %p
     Locally saved compositions:
-    %select{"data-bind" => "options: availableCountries, optionsText: 'countryName', value: selectedCountry, optionsCaption: 'Open'"}
+    %select{"data-bind" => "options: available_compositions, optionsText: 'title', value: selected_composition, optionsCaption: 'Open',click: composition_select"}
       %option{:value => ""} Open
       %option{:value => ""}
+    %button{"data-bind" => "click: save_locally, enable: lines().length > 0"} Save locally
+    %button{"data-bind" => "click: new_composition"}
+      New
   %fieldset#composition_info
     %legend#composition_info_legend{"data-bind" => "click: toggle_composition_info_visibility"}
       Composition Info(Click to hide/show)
@@ -48,10 +51,4 @@
           %textarea.entry_area{:cols => "33", "data-bind" => "style: {height:stave_height,width: stave_width},css: {'parse_failed': $data.parse_failed},visible: editing(), value: source, event: { keypress: handle_key_press, blur: handle_blur}, valueUpdate: 'afterkeydown'", :rows => "3"}
   %br
   %br
-  %button{"data-bind" => "click: addLine"} New Line
-  %button{"data-bind" => "click: save, enable: lines().length > 0"} Save to JSON
-  %button{"data-bind" => "click: save_locally, enable: lines().length > 0"} Save locally
-  %br
-  %br
-  %br/
-  %textarea{:cols => "60", "data-bind" => "value: lastSavedJson", :disabled => "disabled", :rows => "5"}
+  %button{"data-bind" => "click: add_line"} New Line

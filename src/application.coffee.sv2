@@ -95,22 +95,27 @@ $(document).ready ->
     console.log "composition-local storage",doremi_script
     @key = key
     #@composition_doremi_script = doremi_script
-    ary= /Title: ([^\n]+)\n/.exec(doremi_script)
+    ary= /title: ([^\n]+)\n/.exec(doremi_script)
     @title=ary[1]
     this
   compositions=[]
   ctr=0
-  if localStorage.length > 0
-    while ctr < localStorage.length
-      key=localStorage.key(ctr)
-      if key.indexOf("composition_") is 0
-         compositions.push new composition(key,localStorage[key])
-      ctr++
+  while ctr < localStorage.length
+    key=localStorage.key(ctr)
+    if key.indexOf("composition_") is 0
+       compositions.push new composition(key,localStorage[key])
+    ctr++
   console.log "compositions", compositions
   Logger=_console.constructor
   # _console.level  = Logger.DEBUG
   _console.level  = Logger.WARN
   _.mixin(_console.toObject())
+  
+  
+  old_initialData = [
+    { source: "| S - - - |", rendered_in_html: "<em>S</em>"},
+    { source: "| r - - - |", rendered_in_html: "<em>r</em>"}
+  ]
   
   initialData = """
   Title: sample_composition
@@ -126,7 +131,8 @@ $(document).ready ->
   
   window.CompositionViewModel = (doremi_script_source) ->
     self = this
-    my_compositions=compositions
+
+    self.available_compositions = ko.observableArray(compositions)
     self.selected_composition = ko.observable() # nothing selected by default
     self.composition_info_visible=ko.observable(false)
     self.toggle_composition_info_visibility = () ->
@@ -147,10 +153,7 @@ $(document).ready ->
     self.lines = ko.observableArray([])
 
     self.my_init = (doremi_script_source) ->
-
-      console.log("Entering CompositionViewModel.init, source is",doremi_script_source)
-      self.available_compositions = ko.observableArray(my_compositions)
-      #self.available_compositions(my_compositions)
+      console.log("Entering CompositionViewModel.init, source is",doremi_script_source) 
       parsed_obj=DoremiScriptParser.parse(doremi_script_source)
       if !parsed_obj.id?
         parsed_obj.id=new Date().getTime()
@@ -187,18 +190,14 @@ $(document).ready ->
       # Loads the composition selected from the local storage select list
       return if !this.selected_composition()
       key=this.selected_composition().key
-      self.composition_info_visible(true)
-
       self.load_locally(key)
 
     self.new_composition = () ->
-      #if confirm("Save current composition?")
-      #  self.save_locally()
+      if confirm("Save current composition?")
+        self.save_locally()
       initialData = """
       Title: Untitled
       id: #{new Date().getTime()}
-
-      |S
       """
       window.the_composition.my_init(initialData)
       self.add_line()
@@ -214,7 +213,8 @@ $(document).ready ->
       console.log "save_locally"
       ignore=[
         "available_compositions"
-        "selected_composition"
+        "selected_compositions"
+        "source"
         "keys"
         "modes"
         "lines"
@@ -224,14 +224,6 @@ $(document).ready ->
       json_object = $.parseJSON(json_str)
       # attributes don't have a blank line between them
       atts= for att,value of json_object
-        att="Filename" if att is "filename"
-        att="Title" if att is "title"
-        att="Raga" if att is "raga"
-        att="Key" if att is "key"
-        att="Mode" if att is "mode"
-        att="Author" if att is "author"
-        att="Source" if att is "source"
-        att="TimeSignature" if att is "time_signature"
         continue if att in ignore
         continue if value is ""
         continue if !value
@@ -248,9 +240,6 @@ $(document).ready ->
     self
 
   window.the_composition=new CompositionViewModel()
-  #fun =  (new_value) ->
-  #  alert("New value is #{new_value}")
-  #window.the_composition.selected_composition.subscribe(fun)
   window.the_composition.my_init(initialData)
   ko.applyBindings(window.the_composition)
   
@@ -268,6 +257,7 @@ $(document).ready ->
     if !window.timer_is_on
       window.timer_is_on=1
       window.timed_count()
+  
   
   window.timed_count()
 

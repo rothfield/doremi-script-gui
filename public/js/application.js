@@ -7,13 +7,14 @@ var __indexOf = Array.prototype.indexOf || function(item) {
 }, __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; };
 root = typeof exports !== "undefined" && exports !== null ? exports : this;
 $(document).ready(function() {
-  var LineViewModel, Logger, composition, compositions, ctr, id, initialData, key, my_stave_width, old_initialData;
+  var LineViewModel, Logger, composition, compositions, ctr, id, initialData, key, my_stave_width;
   my_stave_width = $('div.composition_body').width() - 50;
   id = 1000;
   LineViewModel = function(line) {
     if (line == null) {
       line = {
-        source: ""
+        source: "",
+        rendered_in_html: "(Empty Line)"
       };
     }
     return {
@@ -84,7 +85,7 @@ $(document).ready(function() {
       parse: function() {
         var result;
         if (this.source === "" || this.source === null) {
-          this.rendered_in_html("");
+          this.rendered_in_html("(empty line)<br/><br/><br/><br/>");
           this.parse_tree_text("");
           return;
         }
@@ -105,65 +106,75 @@ $(document).ready(function() {
       }
     };
   };
-  composition = function(name, doremi_script) {
-    this.compositionName = name;
-    this.composition_doremi_script = doremi_script;
+  composition = function(key, doremi_script) {
+    var ary;
+    console.log("composition-local storage", doremi_script);
+    this.key = key;
+    ary = /Title: ([^\n]+)\n/.exec(doremi_script);
+    this.title = ary[1];
     return this;
   };
   compositions = [];
   ctr = 0;
-  while (ctr < localStorage.length) {
-    key = localStorage.key(ctr);
-    if (key.indexOf("composition_") === 0) {
-      compositions.push(new composition(key, localStorage[key]));
+  if (localStorage.length > 0) {
+    while (ctr < localStorage.length) {
+      key = localStorage.key(ctr);
+      if (key.indexOf("composition_") === 0) {
+        compositions.push(new composition(key, localStorage[key]));
+      }
+      ctr++;
     }
-    ctr++;
   }
   console.log("compositions", compositions);
   Logger = _console.constructor;
   _console.level = Logger.WARN;
   _.mixin(_console.toObject());
-  old_initialData = [
-    {
-      source: "| S - - - |",
-      rendered_in_html: "<em>S</em>"
-    }, {
-      source: "| r - - - |",
-      rendered_in_html: "<em>r</em>"
-    }
-  ];
-  initialData = "Title: test\n\n  .\n| S - - - |\n\n| R - - - |\n  hi\n";
+  initialData = "Title: sample_composition\nid: 1326030518658\n\n  .\n| S - - - |\n\n| R - - - |\n  hi\n";
   window.CompositionViewModel = function(doremi_script_source) {
-    var parsed_obj, self;
-    parsed_obj = DoremiScriptParser.parse(doremi_script_source);
-    if (!(parsed_obj.id != null)) {
-      parsed_obj.id = new Date().getTime();
-    }
+    var my_compositions, self;
     self = this;
-    self.availableCountries = ko.observableArray(compositions);
-    self.selectedCountry = ko.observable();
+    my_compositions = compositions;
+    self.selected_composition = ko.observable();
     self.composition_info_visible = ko.observable(false);
     self.toggle_composition_info_visibility = function() {
       console.log("in toggle");
       return self.composition_info_visible(!self.composition_info_visible());
     };
-    self.id = ko.observable(parsed_obj.id);
+    self.id = ko.observable("");
     self.raga = ko.observable("");
     self.author = ko.observable("");
     self.source = ko.observable("");
-    self.filename = ko.observable(parsed_obj.filename);
-    self.time_signature = ko.observable(parsed_obj.time_signature);
-    self.notes_used = ko.observable(parsed_obj.notes_used);
-    self.title = ko.observable(parsed_obj.title);
+    self.filename = ko.observable("");
+    self.time_signature = ko.observable("");
+    self.notes_used = ko.observable("");
+    self.title = ko.observable("");
     self.keys = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B", "Db", "Eb", "Gb", "Ab", "Bb"];
-    self.key = ko.observable(parsed_obj.key);
+    self.key = ko.observable("");
     self.modes = ["Ionian", "Dorian", "Phrygian", "Lydian", "Mixolydian", "Aeolian", "Locrian"];
-    self.mode = ko.observable(parsed_obj.mode);
-    self.lines = ko.observableArray(ko.utils.arrayMap(parsed_obj.lines, LineViewModel));
-    self.addLine = function() {
-      return self.lines.push(new LineViewModel());
+    self.mode = ko.observable("");
+    self.lines = ko.observableArray([]);
+    self.my_init = function(doremi_script_source) {
+      var key, keys, parsed_obj, _i, _len;
+      console.log("Entering CompositionViewModel.init, source is", doremi_script_source);
+      self.available_compositions = ko.observableArray(my_compositions);
+      parsed_obj = DoremiScriptParser.parse(doremi_script_source);
+      if (!(parsed_obj.id != null)) {
+        parsed_obj.id = new Date().getTime();
+      }
+      keys = ["id", "filename", "raga", "author", "source", "time_signature", "notes_used", "title", "key", "mode"];
+      for (_i = 0, _len = keys.length; _i < _len; _i++) {
+        key = keys[_i];
+        self[key](parsed_obj[key]);
+      }
+      return self.lines(ko.utils.arrayMap(parsed_obj.lines, LineViewModel));
     };
-    self.removeLine = function(line) {
+    self.add_line = function() {
+      var x;
+      self.lines.push(x = new LineViewModel());
+      x.parse();
+      return ko.applyBindings(x);
+    };
+    self.remove_line = function(line) {
       var res;
       res = confirm("Are you sure?");
       if (!res) {
@@ -171,25 +182,78 @@ $(document).ready(function() {
       }
       return self.lines.remove(line);
     };
+    self.composition_select = function(my_model, event) {
+      if (!this.selected_composition()) {
+        return;
+      }
+      key = this.selected_composition().key;
+      self.composition_info_visible(true);
+      return self.load_locally(key);
+    };
+    self.new_composition = function() {
+      initialData = "Title: Untitled\nid: " + (new Date().getTime()) + "\n\n|S";
+      window.the_composition.my_init(initialData);
+      return self.add_line();
+    };
+    self.load_locally = function(key) {
+      var source;
+      if (key === ("composition_" + (window.the_composition.id()))) {
+        alert("This is the file you are currently editing");
+        return;
+      }
+      source = localStorage[key];
+      return window.the_composition.my_init(source);
+    };
     self.save_locally = function() {
-      var all, att, atts, ignore, json_object, json_str, line, str, value;
-      ignore = ["keys", "modes", "lines", "lastSavedJson", "composition_info_visible"];
+      var att, atts, atts_str, ignore, json_object, json_str, line, lines, lines_str, str, value;
+      console.log("save_locally");
+      ignore = ["available_compositions", "selected_composition", "keys", "modes", "lines", "composition_info_visible"];
       json_str = JSON.stringify(ko.toJS(self), null, 2);
       json_object = $.parseJSON(json_str);
-      console.log("json_obj", json_object);
       atts = (function() {
         var _results;
         _results = [];
         for (att in json_object) {
           value = json_object[att];
+          if (att === "filename") {
+            att = "Filename";
+          }
+          if (att === "title") {
+            att = "Title";
+          }
+          if (att === "raga") {
+            att = "Raga";
+          }
+          if (att === "key") {
+            att = "Key";
+          }
+          if (att === "mode") {
+            att = "Mode";
+          }
+          if (att === "author") {
+            att = "Author";
+          }
+          if (att === "source") {
+            att = "Source";
+          }
+          if (att === "time_signature") {
+            att = "TimeSignature";
+          }
           if (__indexOf.call(ignore, att) >= 0) {
+            continue;
+          }
+          if (value === "") {
+            continue;
+          }
+          if (!value) {
             continue;
           }
           _results.push("" + att + ": " + value);
         }
         return _results;
       })();
-      all = atts.concat((function() {
+      atts_str = atts.join("\n");
+      lines = (function() {
         var _i, _len, _ref, _results;
         _ref = self.lines();
         _results = [];
@@ -198,20 +262,19 @@ $(document).ready(function() {
           _results.push(line.source);
         }
         return _results;
-      })());
-      console.log("all", all);
-      str = all.join("\n\n");
-      console.log('str', str);
+      })();
+      lines_str = lines.join("\n\n");
+      str = atts_str + "\n\n" + lines_str;
+      console.log('str is', str);
       return localStorage.setItem("composition_" + (self.id()), str);
     };
-    self.save = function() {
-      self.lastSavedJson(JSON.stringify(ko.toJS(self), null, 2));
-      return self.lastSavedJson(JSON.stringify(ko.toJS(self), null, 2));
-    };
-    self.lastSavedJson = ko.observable("");
+    if (doremi_script_source != null) {
+      self.my_init(doremi_script_source);
+    }
     return self;
   };
-  window.the_composition = new CompositionViewModel(initialData);
+  window.the_composition = new CompositionViewModel();
+  window.the_composition.my_init(initialData);
   ko.applyBindings(window.the_composition);
   window.timed_count = __bind(function() {
     var line, src, t, which_line, _i, _len, _ref;

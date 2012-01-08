@@ -165,6 +165,12 @@
       this.composition_data.force_sargam_chars_hash = hash;
       x = get_composition_attribute(this.composition_data, "TimeSignature");
       this.composition_data.time_signature = x || "4/4";
+      x = get_composition_attribute(this.composition_data, "id");
+      if (x != null) {
+        this.composition_data.id = x;
+      } else {
+        this.composition_data.id = new Date().getTime();
+      }
       x = get_composition_attribute(this.composition_data, "Mode");
       if (x != null) {
         x = x.toLowerCase();
@@ -186,6 +192,8 @@
       this.composition_data.filename = x || "untitled";
       x = get_composition_attribute(this.composition_data, "Title");
       this.composition_data.title = x || "Untitled";
+      x = get_composition_attribute(this.composition_data, "Author");
+      this.composition_data.author = x || "";
       this.mark_partial_measures();
       return this.composition_data;
     },
