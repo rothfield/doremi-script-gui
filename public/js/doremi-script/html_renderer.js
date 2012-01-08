@@ -1,8 +1,8 @@
 (function() {
-  var class_for_octave, draw_attributes, draw_beat, draw_item, draw_line, draw_lower_octave_symbol, draw_measure, draw_ornament, draw_ornament_item, draw_pitch, draw_pitch_sign, draw_syllable, draw_upper_octave_symbol, last_slur_id, line_to_html, lookup_html_entity, lookup_simple, root, to_html, to_html_doc;
+  var class_for_octave, draw_attributes, draw_beat, draw_item, draw_line, draw_lower_octave_symbol, draw_measure, draw_ornament, draw_ornament_item, draw_pitch, draw_pitch_sign, draw_syllable, draw_upper_octave_symbol, id_ctr, last_slur_id, line_to_html, lookup_html_entity, lookup_simple, root, to_html, to_html_doc;
   var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; };
   root = typeof exports !== "undefined" && exports !== null ? exports : this;
-  this.id_ctr = new Date().getTime();
+  id_ctr = new Date().getTime() - 1326011100000;
   last_slur_id = -1;
   lookup_simple = function(str) {
     var LOOKUP;
@@ -149,8 +149,8 @@
       }
       return _results;
     })()).join('');
-    this.id_ctr++;
-    return "<span id=\"" + this.id_ctr + "\" class=\"upper_attribute ornament placement_" + ornament.placement + "\">" + x + "</span>";
+    id_ctr++;
+    return "<span id=\"" + id_ctr + "\" class=\"upper_attribute ornament placement_" + ornament.placement + "\">" + x + "</span>";
   };
   draw_pitch_sign = function(my_source) {
     var simple, snip;
@@ -276,6 +276,7 @@
               return "";
             }
             if (attribute.my_type === "begin_slur") {
+              console.log("begin slur");
               id_ctr++;
               last_slur_id = id_ctr;
               return "<span id=\"" + id_ctr + "\" class=\"slur\">&nbsp;&nbsp;</span>";

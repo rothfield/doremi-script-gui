@@ -1,34 +1,56 @@
 root = exports ? this
 
 $(document).ready ->
+  my_stave_width=$('div.composition_body').width()-50
   id=1000
+
   LineViewModel = (line= {source: ""}) ->  # parameter is PARSED line
-    # SETUP LINE OBJECT- TODO: refactor
     id: "#{id++}"
     parse_failed: ko.observable(false)
+    parse_warnings: ko.observable(false)
     #if composition_data.warnings.length > 0
     #  $('#warnings_div').html "The following warnings were reported:<br/>"+composition_data.warnings.join('<br/>')
     parse_tree_visible: ko.observable(false)
     parse_tree_text: ko.observable("parse tree text here")
+    warnings: ko.observable("")
+    checkbox_name: ko.observable("checkbox_#{line.index}")
     radio_group_name: ko.observable("group_#{line.index}")
-    source_radio_id: "source_radio_#{line.index}"
-    html_radio_id: "html_radio_#{line.index}"
     editing: ko.observable(false)
     last_value_rendered: ""
+    stave_width: ko.observable("#{my_stave_width}px")
+    stave_height: ko.observable("161px")
     index: ko.observable(line.index)
     source: line.source
     #rendered_in_html: line.rendered_in_html #ko.observable(line.rendered_in_html) #line.rendered_in_html
     rendered_in_html: ko.observable(line.rendered_in_html)
     # Behaviours
+    line_wrapper_click: (my_model,event) ->
+      console.log "line_wrapper_click",event
+      if !this.editing()
+        this.editing(true)
+        current_target=event.currentTarget
+        text_area=$(current_target).parent().find("textarea")
+        $(text_area).focus()
+      return true
+    close_edit: (my_model, event) ->
+      console.log "close_edit"
+      this.editing(false)
+      dom_fixes()
+      return true
+    toggle_parse_tree_visible: (event) ->
+      this.parse_tree_visible(!this.parse_tree_visible())
+      return true
     handle_blur: (event) ->
       #this.parse()
     edit: (my_model,event) ->
       this.editing(true)
-      return false
+      current_target=event.currentTarget
+      text_area=$(current_target).parent().find("textarea")
+      $(text_area).focus()
+      return true
       console.log arguments
       console.log "edit"
       console.log "this is",this
-      current_target=event.currentTarget
       height= $(current_target).height()
       #parent=$(event.currentTarget).parent()
       #console.log "parent",parent
@@ -40,7 +62,7 @@ $(document).ready ->
       "line_wrapper_#{this.id}"
     show_parse_tree_click: () ->
       console.log "you clicked show parse tree"
-      this.parse_tree_visible(!this.parse_tree_visible())
+      #this.parse_tree_visible(!this.parse_tree_visible())
       false
     handle_key_press: (current_line,event) ->
       let_default_action_proceed=true
@@ -54,12 +76,13 @@ $(document).ready ->
         result=DoremiScriptLineParser.parse(this.source)
         this.rendered_in_html(line_to_html(result))
         this.parse_tree_text("Parsing completed with no errors \n"+JSON.stringify(result,null,"  "))
+        this.parse_failed(false)
         dom_fixes()
       catch err
         result="failed"
         this.parse_failed(true)
         this.parse_tree_text("Parsing failed")
-        this.rendered_in_html("parsing failed")
+        this.rendered_in_html("<pre>Didn't parse\n\n#{this.source}</pre>")
       finally
         this.last_value_rendered=this.source
   

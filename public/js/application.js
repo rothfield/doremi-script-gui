@@ -7,7 +7,8 @@ var __indexOf = Array.prototype.indexOf || function(item) {
 }, __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; };
 root = typeof exports !== "undefined" && exports !== null ? exports : this;
 $(document).ready(function() {
-  var LineViewModel, Logger, composition, compositions, ctr, id, initialData, key, old_initialData;
+  var LineViewModel, Logger, composition, compositions, ctr, id, initialData, key, my_stave_width, old_initialData;
+  my_stave_width = $('div.composition_body').width() - 50;
   id = 1000;
   LineViewModel = function(line) {
     if (line == null) {
@@ -18,25 +19,51 @@ $(document).ready(function() {
     return {
       id: "" + (id++),
       parse_failed: ko.observable(false),
+      parse_warnings: ko.observable(false),
       parse_tree_visible: ko.observable(false),
       parse_tree_text: ko.observable("parse tree text here"),
+      warnings: ko.observable(""),
+      checkbox_name: ko.observable("checkbox_" + line.index),
       radio_group_name: ko.observable("group_" + line.index),
-      source_radio_id: "source_radio_" + line.index,
-      html_radio_id: "html_radio_" + line.index,
       editing: ko.observable(false),
       last_value_rendered: "",
+      stave_width: ko.observable("" + my_stave_width + "px"),
+      stave_height: ko.observable("161px"),
       index: ko.observable(line.index),
       source: line.source,
       rendered_in_html: ko.observable(line.rendered_in_html),
+      line_wrapper_click: function(my_model, event) {
+        var current_target, text_area;
+        console.log("line_wrapper_click", event);
+        if (!this.editing()) {
+          this.editing(true);
+          current_target = event.currentTarget;
+          text_area = $(current_target).parent().find("textarea");
+          $(text_area).focus();
+        }
+        return true;
+      },
+      close_edit: function(my_model, event) {
+        console.log("close_edit");
+        this.editing(false);
+        dom_fixes();
+        return true;
+      },
+      toggle_parse_tree_visible: function(event) {
+        this.parse_tree_visible(!this.parse_tree_visible());
+        return true;
+      },
       handle_blur: function(event) {},
       edit: function(my_model, event) {
         var current_target, height, text_area;
         this.editing(true);
-        return false;
+        current_target = event.currentTarget;
+        text_area = $(current_target).parent().find("textarea");
+        $(text_area).focus();
+        return true;
         console.log(arguments);
         console.log("edit");
         console.log("this is", this);
-        current_target = event.currentTarget;
         height = $(current_target).height();
         text_area = $(current_target).find("textarea");
         console.log("text_area", text_area);
@@ -47,7 +74,6 @@ $(document).ready(function() {
       },
       show_parse_tree_click: function() {
         console.log("you clicked show parse tree");
-        this.parse_tree_visible(!this.parse_tree_visible());
         return false;
       },
       handle_key_press: function(current_line, event) {
@@ -66,12 +92,13 @@ $(document).ready(function() {
           result = DoremiScriptLineParser.parse(this.source);
           this.rendered_in_html(line_to_html(result));
           this.parse_tree_text("Parsing completed with no errors \n" + JSON.stringify(result, null, "  "));
+          this.parse_failed(false);
           return dom_fixes();
         } catch (err) {
           result = "failed";
           this.parse_failed(true);
           this.parse_tree_text("Parsing failed");
-          return this.rendered_in_html("parsing failed");
+          return this.rendered_in_html("<pre>Didn't parse\n\n" + this.source + "</pre>");
         } finally {
           this.last_value_rendered = this.source;
         }

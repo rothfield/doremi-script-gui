@@ -35,9 +35,17 @@
   %br
   .composition
     .composition_body{"data-bind" => "foreach: lines"}
-      %div.line_wrapper{"tabindex" => "0", "data-bind" => "attr: { id: line_wrapper_id()},event: { dblclick: edit }"}
-        %div.rendered_html{"data-bind" => "visible: !editing(),html: rendered_in_html"}
-        %textarea.entry_area{:cols => "33", "data-bind" => "css: {'parse_failed': $data.parse_failed},visible: editing(), hasfocus: editing, value: source, event: { keypress: handle_key_press, blur: handle_blur}, valueUpdate: 'afterkeydown'", :rows => "3"}
+      %div.line_wrapper{"tabindex" => "0", "data-bind" => "attr: { id: line_wrapper_id()},click: line_wrapper_click "}
+        %div.rendered_html{"data-bind" => "visible: !editing(),html: rendered_in_html, click: edit,clickBubble:false"}
+        %div.edit_line_wrapper{"data-bind"=> "visible:editing"}
+          %button{"data-bind" => "css: {button_on:parse_tree_visible},click: toggle_parse_tree_visible"} 
+            Show/Hide Parse Tree
+          %button{"data-bind" => "click: close_edit,clickBubble:false"} 
+            Close
+          %br
+          %div.parse_tree_div{"data-bind" => "visible: parse_tree_visible"}
+            %pre{"data-bind" => "text: parse_tree_text,event:{dblclick:toggle_parse_tree_visible}"}
+          %textarea.entry_area{:cols => "33", "data-bind" => "style: {height:stave_height,width: stave_width},css: {'parse_failed': $data.parse_failed},visible: editing(), value: source, event: { keypress: handle_key_press, blur: handle_blur}, valueUpdate: 'afterkeydown'", :rows => "3"}
   %br
   %br
   %button{"data-bind" => "click: addLine"} New Line

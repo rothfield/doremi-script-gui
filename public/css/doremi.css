@@ -1,3 +1,7 @@
+button.button_on {
+  background-color: black;
+  color: white;
+}
 #controls li
 {
         display: inline;
