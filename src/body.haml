@@ -7,8 +7,10 @@
     %button{"data-bind" => "click: save_locally, enable: lines().length > 0"} Save locally
     %button{"data-bind" => "click: new_composition"}
       New
+    %button{"data-bind" => "click: to_lilypond"}
+      Lilypond 
   %fieldset#composition_info
-    %legend#composition_info_legend{"data-bind" => "click: toggle_composition_info_visibility"}
+    %legend#composition_info_legend{"data-bind" => "click: toggle_composition_info_visible"}
       Composition Info(Click to hide/show)
     #composition_info_content{"data-bind" => "visible: composition_info_visible", :style => ""}
       %p
@@ -35,8 +37,14 @@
       %p
         ID#:
         %span{"data-bind" => "text: id"} 
+      %p
+        %button{"data-bind" => "css: {button_on:doremi_script_source_visible},click: toggle_doremi_script_source_visible"} 
+          DoremiScript source
+        %div.doremi_script_source_div{"data-bind" => "text: doremi_script_source,visible: doremi_script_source_visible"}
+          %pre{"data-bind" => "text: doremi_script_source,event:{dblclick:toggle_doremi_script_source_visible}"}
   %br
   .composition
+    %div.lilypond{"data-bind" => "value: to_lilypond, visible: lilypond().length > 0"}
     .composition_body{"data-bind" => "foreach: lines"}
       %div.line_wrapper{"tabindex" => "0", "data-bind" => "attr: { id: line_wrapper_id()},click: line_wrapper_click "}
         %div.rendered_html{"data-bind" => "visible: !editing(),html: rendered_in_html, click: edit,clickBubble:false"}

@@ -124,34 +124,46 @@ $(document).ready ->
   
   """
   
-  window.CompositionViewModel = (doremi_script_source) ->
+  window.CompositionViewModel = (my_doremi_script_source) ->
     self = this
     my_compositions=compositions
     self.selected_composition = ko.observable() # nothing selected by default
+    self.doremi_script_source= ko.observable(my_doremi_script_source)
     self.composition_info_visible=ko.observable(false)
-    self.toggle_composition_info_visibility = () ->
-      console.log("in toggle")
+    self.doremi_script_source_visible=ko.observable(false)
+    self.toggle_doremi_script_source_visible = () ->
+      self.doremi_script_source_visible(!self.doremi_script_source_visible())
+      if self.doremi_script_source_visible()
+        self.doremi_script_source(self.get_doremi_script_source())
+    self.toggle_composition_info_visible = () ->
       self.composition_info_visible(!self.composition_info_visible())
+      
     self.id=ko.observable("")
     self.raga=ko.observable("")
     self.author=ko.observable("")
-    self.source=ko.observable("")
+    self.source=ko.observable("") # IE AAK
     self.filename=ko.observable("")
     self.time_signature=ko.observable("")
     self.notes_used=ko.observable("")
     self.title=ko.observable("")
+    self.lilypond=ko.observable("")
     self.keys=["C","C#","D","D#","E","F","F#","G","G#","A","A#","B","Db","Eb","Gb","Ab","Bb"]
     self.key= ko.observable("")
     self.modes=["Ionian","Dorian","Phrygian","Lydian","Mixolydian","Aeolian","Locrian"]
     self.mode= ko.observable("")
     self.lines = ko.observableArray([])
+    self.to_lilypond = () ->
+      console.log("entering self.to_lilypond")
+      str=self.get_doremi_script_source() 
+      parsed_obj=DoremiScriptParser.parse(str)
+      this.lilypond(to_lilypond(parsed_obj))
+      console.log "this.lilypond()",this.lilypond()
+    self.my_init = (doremi_script_source_param) ->
 
-    self.my_init = (doremi_script_source) ->
-
-      console.log("Entering CompositionViewModel.init, source is",doremi_script_source)
+      console.log("Entering CompositionViewModel.init, source is",doremi_script_source_param)
       self.available_compositions = ko.observableArray(my_compositions)
       #self.available_compositions(my_compositions)
-      parsed_obj=DoremiScriptParser.parse(doremi_script_source)
+      parsed_obj=DoremiScriptParser.parse(doremi_script_source_param)
       if !parsed_obj.id?
         parsed_obj.id=new Date().getTime()
       keys = [
@@ -210,9 +222,11 @@ $(document).ready ->
       source=localStorage[key]
       window.the_composition.my_init(source)
 
-    self.save_locally = () ->
-      console.log "save_locally"
+    self.get_doremi_script_source = () ->
       ignore=[
+        "lilypond"
+        "doremi_script_source"
+        "doremi_script_source_visible"
         "available_compositions"
         "selected_composition"
         "keys"
@@ -240,11 +254,14 @@ $(document).ready ->
       lines=(line.source for line in self.lines())
       # lines have a blank line between them
       lines_str=lines.join("\n\n")
-      str=atts_str+"\n\n"+lines_str
-      console.log('str is',str)
-      localStorage.setItem("composition_#{self.id()}",str)
+      atts_str+"\n\n"+lines_str
+    self.save_locally = () ->
+      console.log "save_locally"
+      self.doremi_script_source(self.get_doremi_script_source())
+      console.log('self.doremi_script_source()',self.doremi_script_source())
+      localStorage.setItem("composition_#{self.id()}",self.doremi_script_source())
 
-    self.my_init(doremi_script_source) if doremi_script_source?
+    self.my_init(my_doremi_script_source) if my_doremi_script_source?
     self
 
   window.the_composition=new CompositionViewModel()

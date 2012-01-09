@@ -18,9 +18,12 @@
         <button data-bind='click: new_composition'>
           New
         </button>
+        <button data-bind='click: to_lilypond'>
+          Lilypond
+        </button>
       </p>
       <fieldset id='composition_info'>
-        <legend data-bind='click: toggle_composition_info_visibility' id='composition_info_legend'>
+        <legend data-bind='click: toggle_composition_info_visible' id='composition_info_legend'>
           Composition Info(Click to hide/show)
         </legend>
         <div data-bind='visible: composition_info_visible' id='composition_info_content' style=''>
@@ -56,10 +59,19 @@
             ID#:
             <span data-bind='text: id'></span>
           </p>
+          <p>
+            <button data-bind='css: {button_on:doremi_script_source_visible},click: toggle_doremi_script_source_visible'>
+              DoremiScript source
+            </button>
+            <div class='doremi_script_source_div' data-bind='text: doremi_script_source,visible: doremi_script_source_visible'>
+              <pre data-bind='text: doremi_script_source,event:{dblclick:toggle_doremi_script_source_visible}'></pre>
+            </div>
+          </p>
         </div>
       </fieldset>
       <br />
       <div class='composition'>
+        <div class='lilypond' data-bind='value: to_lilypond, visible: lilypond().length &gt; 0'></div>
         <div class='composition_body' data-bind='foreach: lines'>
           <div class='line_wrapper' data-bind='attr: { id: line_wrapper_id()},click: line_wrapper_click ' tabindex='0'>
             <div class='rendered_html' data-bind='visible: !editing(),html: rendered_in_html, click: edit,clickBubble:false'></div>

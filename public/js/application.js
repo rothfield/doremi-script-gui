@@ -130,14 +130,21 @@ $(document).ready(function() {
   _console.level = Logger.WARN;
   _.mixin(_console.toObject());
   initialData = "Title: sample_composition\nid: 1326030518658\n\n  .\n| S - - - |\n\n| R - - - |\n  hi\n";
-  window.CompositionViewModel = function(doremi_script_source) {
+  window.CompositionViewModel = function(my_doremi_script_source) {
     var my_compositions, self;
     self = this;
     my_compositions = compositions;
     self.selected_composition = ko.observable();
+    self.doremi_script_source = ko.observable(my_doremi_script_source);
     self.composition_info_visible = ko.observable(false);
-    self.toggle_composition_info_visibility = function() {
-      console.log("in toggle");
+    self.doremi_script_source_visible = ko.observable(false);
+    self.toggle_doremi_script_source_visible = function() {
+      self.doremi_script_source_visible(!self.doremi_script_source_visible());
+      if (self.doremi_script_source_visible()) {
+        return self.doremi_script_source(self.get_doremi_script_source());
+      }
+    };
+    self.toggle_composition_info_visible = function() {
       return self.composition_info_visible(!self.composition_info_visible());
     };
     self.id = ko.observable("");
@@ -148,16 +155,25 @@ $(document).ready(function() {
     self.time_signature = ko.observable("");
     self.notes_used = ko.observable("");
     self.title = ko.observable("");
+    self.lilypond = ko.observable("");
     self.keys = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B", "Db", "Eb", "Gb", "Ab", "Bb"];
     self.key = ko.observable("");
     self.modes = ["Ionian", "Dorian", "Phrygian", "Lydian", "Mixolydian", "Aeolian", "Locrian"];
     self.mode = ko.observable("");
     self.lines = ko.observableArray([]);
-    self.my_init = function(doremi_script_source) {
+    self.to_lilypond = function() {
+      var parsed_obj, str;
+      console.log("entering self.to_lilypond");
+      str = self.get_doremi_script_source();
+      parsed_obj = DoremiScriptParser.parse(str);
+      this.lilypond(to_lilypond(parsed_obj));
+      return console.log("this.lilypond()", this.lilypond());
+    };
+    self.my_init = function(doremi_script_source_param) {
       var key, keys, parsed_obj, _i, _len;
-      console.log("Entering CompositionViewModel.init, source is", doremi_script_source);
+      console.log("Entering CompositionViewModel.init, source is", doremi_script_source_param);
       self.available_compositions = ko.observableArray(my_compositions);
-      parsed_obj = DoremiScriptParser.parse(doremi_script_source);
+      parsed_obj = DoremiScriptParser.parse(doremi_script_source_param);
       if (!(parsed_obj.id != null)) {
         parsed_obj.id = new Date().getTime();
       }
@@ -204,10 +220,9 @@ $(document).ready(function() {
       source = localStorage[key];
       return window.the_composition.my_init(source);
     };
-    self.save_locally = function() {
-      var att, atts, atts_str, ignore, json_object, json_str, line, lines, lines_str, str, value;
-      console.log("save_locally");
-      ignore = ["available_compositions", "selected_composition", "keys", "modes", "lines", "composition_info_visible"];
+    self.get_doremi_script_source = function() {
+      var att, atts, atts_str, ignore, json_object, json_str, line, lines, lines_str, value;
+      ignore = ["lilypond", "doremi_script_source", "doremi_script_source_visible", "available_compositions", "selected_composition", "keys", "modes", "lines", "composition_info_visible"];
       json_str = JSON.stringify(ko.toJS(self), null, 2);
       json_object = $.parseJSON(json_str);
       atts = (function() {
@@ -264,12 +279,16 @@ $(document).ready(function() {
         return _results;
       })();
       lines_str = lines.join("\n\n");
-      str = atts_str + "\n\n" + lines_str;
-      console.log('str is', str);
-      return localStorage.setItem("composition_" + (self.id()), str);
+      return atts_str + "\n\n" + lines_str;
     };
-    if (doremi_script_source != null) {
-      self.my_init(doremi_script_source);
+    self.save_locally = function() {
+      console.log("save_locally");
+      self.doremi_script_source(self.get_doremi_script_source());
+      console.log('self.doremi_script_source()', self.doremi_script_source());
+      return localStorage.setItem("composition_" + (self.id()), self.doremi_script_source());
+    };
+    if (my_doremi_script_source != null) {
+      self.my_init(my_doremi_script_source);
     }
     return self;
   };
