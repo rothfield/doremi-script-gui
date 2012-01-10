@@ -129,42 +129,21 @@ $(document).ready ->
     self = this
     my_compositions=compositions
     self.selected_composition = ko.observable() # nothing selected by default
-    self.composition_parse_tree_text=ko.observable("")
     self.doremi_script_source= ko.observable(my_doremi_script_source)
     self.composition_info_visible=ko.observable(false)
-    self.composition_parse_failed=ko.observable(false)
-    self.composition_lilypond_source_visible=ko.observable(false)
-    self.composition_lilypond_output_visible=ko.observable(false)
-    self.composition_lilypond_output=ko.observable(false)
+    self.lilypond_source_visible=ko.observable(false)
     self.doremi_script_source_visible=ko.observable(false)
 
     self.toggle_staff_notation_visible = () ->
       self.staff_notation_visible(!self.staff_notation_visible())
 
-    self.toggle_composition_lilypond_source_visible = () ->
-      self.composition_lilypond_source_visible(!self.composition_lilypond_source_visible())
-
-    self.parse_composition = () ->
-      self.refresh_doremi_script_source()
-      try
-        obj=DoremiScriptParser.parse(this.doremi_script_source())
-        #this.rendered_in_html(line_to_html(result))
-        self.composition_parse_tree_text("Parsing completed with no errors \n"+JSON.stringify(result,null,"  "))
-        self.composition_parse_failed(false) # TODO: review
-        #dom_fixes()
-      catch err
-        result="failed"
-        self.composition_parse_failed(true)
-        self.composition_parse_tree_text("Parsing failed")
-        #this.rendered_in_html("<pre>Didn't parse\n\n#{this.source}</pre>")
-      finally
-        this.last_value_rendered=this.source
+    self.toggle_lilypond_source_visible = () ->
+      self.lilypond_source_visible(!self.lilypond_source_visible())
 
     self.toggle_doremi_script_source_visible = () ->
       self.doremi_script_source_visible(!self.doremi_script_source_visible())
       if self.doremi_script_source_visible()
         self.doremi_script_source(self.get_doremi_script_source())
-
     self.toggle_composition_info_visible = () ->
       self.composition_info_visible(!self.composition_info_visible())
       
@@ -177,67 +156,46 @@ $(document).ready ->
     self.time_signature=ko.observable("")
     self.notes_used=ko.observable("")
     self.title=ko.observable("")
-    self.composition_lilypond_source=ko.observable("")
-    self.parsed_doremi_script=ko.observable()
+    self.lilypond_source=ko.observable("")
     self.staff_notation_url=ko.observable(NONE_URL)
     self.keys=["C","C#","D","D#","E","F","F#","G","G#","A","A#","B","Db","Eb","Gb","Ab","Bb"]
     self.key= ko.observable("")
     self.modes=["Ionian","Dorian","Phrygian","Lydian","Mixolydian","Aeolian","Locrian"]
     self.mode= ko.observable("")
     self.lines = ko.observableArray([])
-
     self.generate_staff_notation = (my_model) ->
-      console.log "generate_staff_notation"
-      self.refresh_composition_lilypond_source()
+      self.refresh_lilypond_source()
+      self.refresh_doremi_script_source()
       self.staff_notation_url(NONE_URL)
-      lilypond_source=self.composition_lilypond_source() 
-      console.log "lilypond_source",lilypond_source
       my_data =
-        fname: "composition_#{self.id()}"
-        lilypond: lilypond_source
-        doremi_script_source: "" #self.refresh_doremi_script_source()
-      console.log 'my_data',my_data
+        fname: "composition_#{self.id}"
+        lilypond: self.lilypond_source()
+        doremi_script_source: self.refresh_doremi_script_source()
       obj=
-        dataType : "jsonp",
-        timeout : 10000
         type:'GET'
-        url:'http://localhost:9292/lilypond_to_jpg'
+        url:'/lilypond_to_jpg'
+        dataType: "json"
         data: my_data
         error: (some_data) ->
           self.staff_notation_url(NONE_URL)
         success: (some_data,text_status) ->
-          self.composition_lilypond_output(some_data.lilypond_output)
-          if some_data.error
-            self.staff_notation_url(NONE_URL)
-            self.composition_lilypond_output_visible(true)
-            return
-          self.staff_notation_url(some_data.fname)
-          self.staff_notation_visible(true)
-          self.composition_lilypond_output_visible(false)
-      console.log 'obj',obj
+          console.log some_data
+          self.staff_notation_url(some_data.url)
       $.ajax(obj)
-      return true
-
-    self.parse = (doremi_script_source_param) ->
-      ret_val=null
-      try 
-        ret_val=DoremiScriptParser.parse(doremi_script_source_param)
-      catch err
-        console.log err
-        ret_val=null 
-      finally
-      ret_val
-
+    self.to_lilypond = () ->
+      console.log("entering self.to_lilypond")
+      str=self.get_doremi_script_source() 
+      parsed_obj=DoremiScriptParser.parse(str)
+      this.lilypond_source(to_lilypond(parsed_obj))
+      console.log "this.lilypond()",this.lilypond_source()
     self.my_init = (doremi_script_source_param) ->
+
       console.log("Entering CompositionViewModel.init, source is",doremi_script_source_param)
       self.available_compositions = ko.observableArray(my_compositions)
-      parsed=self.parse(doremi_script_source_param)
-      if !parsed
-        alert("Something bad happened, parse failed")
-        return
-      this.parsed_doremi_script(parsed)
-      if !parsed.id?
-        parsed.id=new Date().getTime()
+      #self.available_compositions(my_compositions)
+      parsed_obj=DoremiScriptParser.parse(doremi_script_source_param)
+      if !parsed_obj.id?
+        parsed_obj.id=new Date().getTime()
       keys = [
         "id"
         "filename"
@@ -250,10 +208,10 @@ $(document).ready ->
         "key"
         "mode"
       ]
-      self[key](parsed[key]) for key in keys
-      self.lines(ko.utils.arrayMap(parsed.lines, LineViewModel))
-      this.parsed_doremi_script(parsed) 
+      self[key](parsed_obj[key]) for key in keys
+      self.lines(ko.utils.arrayMap(parsed_obj.lines, LineViewModel))
 
+  
     self.add_line = () ->
       self.lines.push(x=new LineViewModel())
       x.parse()
@@ -278,11 +236,8 @@ $(document).ready ->
     self.refresh_doremi_script_source = (my_model) ->
       self.doremi_script_source(self.get_doremi_script_source())
 
-    self.refresh_composition_lilypond_source = (my_model) ->
-      console.log("refresh_composition_lilypond_source")
-      result1=self.parsed_doremi_script()
-      console.log result1
-      self.composition_lilypond_source(window.to_lilypond(self.parsed_doremi_script()))
+    self.refresh_lilypond_source = (my_model) ->
+      self.lilypond_source(self.to_lilypond())
 
     self.new_composition = () ->
       #if confirm("Save current composition?")
@@ -306,8 +261,8 @@ $(document).ready ->
     self.get_doremi_script_source = () ->
       ignore=[
         "lilypond"
-        "composition_lilypond_source"
-        "composition_lilypond_source_visible"
+        "lilypond_source"
+        "lilypond_source_visible"
         "doremi_script_source"
         "doremi_script_source_visible"
         "available_compositions"

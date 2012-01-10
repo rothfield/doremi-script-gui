@@ -18,8 +18,8 @@
         <button data-bind='click: new_composition'>
           New
         </button>
-        <button data-bind='click: to_lilypond'>
-          Lilypond
+        <button data-bind='click: generate_staff_notation'>
+          Generate staff notation
         </button>
       </p>
       <fieldset id='composition_info'>
@@ -61,17 +61,41 @@
           </p>
           <p>
             <button data-bind='css: {button_on:doremi_script_source_visible},click: toggle_doremi_script_source_visible'>
-              DoremiScript source
+              DoremiScript Source
+            </button>
+            <button data-bind='visible: doremi_script_source_visible,click: refresh_doremi_script_source'>
+              Refresh
             </button>
             <div class='doremi_script_source_div' data-bind='text: doremi_script_source,visible: doremi_script_source_visible'>
               <pre data-bind='text: doremi_script_source,event:{dblclick:toggle_doremi_script_source_visible}'></pre>
+            </div>
+          </p>
+          <p>
+            <button data-bind='css: {button_on:composition_lilypond_source_visible},click: toggle_composition_lilypond_source_visible'>
+              Lilypond source
+            </button>
+            <button data-bind='visible: composition_lilypond_source_visible,click: refresh_composition_lilypond_source'>
+              Refresh
+            </button>
+            <div class='composition_lilypond_source_div' data-bind='visible: composition_lilypond_source_visible'>
+              <pre data-bind='text: composition_lilypond_source,event:{dblclick:toggle_composition_lilypond_source_visible}'></pre>
             </div>
           </p>
         </div>
       </fieldset>
       <br />
       <div class='composition'>
-        <div class='lilypond' data-bind='value: to_lilypond, visible: lilypond().length &gt; 0'></div>
+        <div class='composition_controls'>
+          <button data-bind='css: {button_on:staff_notation_visible},click: toggle_staff_notation_visible'>
+            Show Staff Notation
+          </button>
+        </div>
+        <div class='staff_notation_div' data-bind='visible: staff_notation_visible'>
+          Staff notation here
+          <img class='staff_notation' data-bind='attr: {src:staff_notation_url}' />
+        </div>
+        <br />
+        <br />
         <div class='composition_body' data-bind='foreach: lines'>
           <div class='line_wrapper' data-bind='attr: { id: line_wrapper_id()},click: line_wrapper_click ' tabindex='0'>
             <div class='rendered_html' data-bind='visible: !editing(),html: rendered_in_html, click: edit,clickBubble:false'></div>

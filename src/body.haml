@@ -7,8 +7,8 @@
     %button{"data-bind" => "click: save_locally, enable: lines().length > 0"} Save locally
     %button{"data-bind" => "click: new_composition"}
       New
-    %button{"data-bind" => "click: to_lilypond"}
-      Lilypond 
+    %button{"data-bind" => "click: generate_staff_notation"}
+      Generate staff notation
   %fieldset#composition_info
     %legend#composition_info_legend{"data-bind" => "click: toggle_composition_info_visible"}
       Composition Info(Click to hide/show)
@@ -39,12 +39,28 @@
         %span{"data-bind" => "text: id"} 
       %p
         %button{"data-bind" => "css: {button_on:doremi_script_source_visible},click: toggle_doremi_script_source_visible"} 
-          DoremiScript source
+          DoremiScript Source
+        %button{"data-bind" => "visible: doremi_script_source_visible,click: refresh_doremi_script_source"} 
+          Refresh
         %div.doremi_script_source_div{"data-bind" => "text: doremi_script_source,visible: doremi_script_source_visible"}
           %pre{"data-bind" => "text: doremi_script_source,event:{dblclick:toggle_doremi_script_source_visible}"}
+      %p
+        %button{"data-bind" => "css: {button_on:composition_lilypond_source_visible},click: toggle_composition_lilypond_source_visible"} 
+          Lilypond source
+        %button{"data-bind" => "visible: composition_lilypond_source_visible,click: refresh_composition_lilypond_source"} 
+          Refresh 
+        %div.composition_lilypond_source_div{"data-bind" => "visible: composition_lilypond_source_visible"}
+          %pre{"data-bind" => "text: composition_lilypond_source,event:{dblclick:toggle_composition_lilypond_source_visible}"}
   %br
   .composition
-    %div.lilypond{"data-bind" => "value: to_lilypond, visible: lilypond().length > 0"}
+    %div.composition_controls
+      %button{"data-bind" => "css: {button_on:staff_notation_visible},click: toggle_staff_notation_visible"} 
+        Show Staff Notation
+    %div.staff_notation_div{"data-bind" => "visible: staff_notation_visible"}
+      Staff notation here 
+      %img.staff_notation{"data-bind" => "attr: {src:staff_notation_url}"}
+    %br
+    %br
     .composition_body{"data-bind" => "foreach: lines"}
       %div.line_wrapper{"tabindex" => "0", "data-bind" => "attr: { id: line_wrapper_id()},click: line_wrapper_click "}
         %div.rendered_html{"data-bind" => "visible: !editing(),html: rendered_in_html, click: edit,clickBubble:false"}

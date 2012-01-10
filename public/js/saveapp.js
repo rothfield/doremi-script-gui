@@ -136,34 +136,15 @@ $(document).ready(function() {
     self = this;
     my_compositions = compositions;
     self.selected_composition = ko.observable();
-    self.composition_parse_tree_text = ko.observable("");
     self.doremi_script_source = ko.observable(my_doremi_script_source);
     self.composition_info_visible = ko.observable(false);
-    self.composition_parse_failed = ko.observable(false);
-    self.composition_lilypond_source_visible = ko.observable(false);
-    self.composition_lilypond_output_visible = ko.observable(false);
-    self.composition_lilypond_output = ko.observable(false);
+    self.lilypond_source_visible = ko.observable(false);
     self.doremi_script_source_visible = ko.observable(false);
     self.toggle_staff_notation_visible = function() {
       return self.staff_notation_visible(!self.staff_notation_visible());
     };
-    self.toggle_composition_lilypond_source_visible = function() {
-      return self.composition_lilypond_source_visible(!self.composition_lilypond_source_visible());
-    };
-    self.parse_composition = function() {
-      var obj, result;
-      self.refresh_doremi_script_source();
-      try {
-        obj = DoremiScriptParser.parse(this.doremi_script_source());
-        self.composition_parse_tree_text("Parsing completed with no errors \n" + JSON.stringify(result, null, "  "));
-        return self.composition_parse_failed(false);
-      } catch (err) {
-        result = "failed";
-        self.composition_parse_failed(true);
-        return self.composition_parse_tree_text("Parsing failed");
-      } finally {
-        this.last_value_rendered = this.source;
-      }
+    self.toggle_lilypond_source_visible = function() {
+      return self.lilypond_source_visible(!self.lilypond_source_visible());
     };
     self.toggle_doremi_script_source_visible = function() {
       self.doremi_script_source_visible(!self.doremi_script_source_visible());
@@ -183,8 +164,7 @@ $(document).ready(function() {
     self.time_signature = ko.observable("");
     self.notes_used = ko.observable("");
     self.title = ko.observable("");
-    self.composition_lilypond_source = ko.observable("");
-    self.parsed_doremi_script = ko.observable();
+    self.lilypond_source = ko.observable("");
     self.staff_notation_url = ko.observable(NONE_URL);
     self.keys = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B", "Db", "Eb", "Gb", "Ab", "Bb"];
     self.key = ko.observable("");
@@ -192,76 +172,52 @@ $(document).ready(function() {
     self.mode = ko.observable("");
     self.lines = ko.observableArray([]);
     self.generate_staff_notation = function(my_model) {
-      var lilypond_source, my_data, obj;
-      console.log("generate_staff_notation");
-      self.refresh_composition_lilypond_source();
+      var my_data, obj;
+      self.refresh_lilypond_source();
+      self.refresh_doremi_script_source();
       self.staff_notation_url(NONE_URL);
-      lilypond_source = self.composition_lilypond_source();
-      console.log("lilypond_source", lilypond_source);
       my_data = {
-        fname: "composition_" + (self.id()),
-        lilypond: lilypond_source,
-        doremi_script_source: ""
+        fname: "composition_" + self.id,
+        lilypond: self.lilypond_source(),
+        doremi_script_source: self.refresh_doremi_script_source()
       };
-      console.log('my_data', my_data);
       obj = {
-        dataType: "jsonp",
-        timeout: 10000,
         type: 'GET',
-        url: 'http://localhost:9292/lilypond_to_jpg',
+        url: '/lilypond_to_jpg',
+        dataType: "json",
         data: my_data,
         error: function(some_data) {
           return self.staff_notation_url(NONE_URL);
         },
         success: function(some_data, text_status) {
-          self.composition_lilypond_output(some_data.lilypond_output);
-          if (some_data.error) {
-            self.staff_notation_url(NONE_URL);
-            self.composition_lilypond_output_visible(true);
-            return;
-          }
-          self.staff_notation_url(some_data.fname);
-          self.staff_notation_visible(true);
-          return self.composition_lilypond_output_visible(false);
+          console.log(some_data);
+          return self.staff_notation_url(some_data.url);
         }
       };
-      console.log('obj', obj);
-      $.ajax(obj);
-      return true;
+      return $.ajax(obj);
     };
-    self.parse = function(doremi_script_source_param) {
-      var ret_val;
-      ret_val = null;
-      try {
-        ret_val = DoremiScriptParser.parse(doremi_script_source_param);
-      } catch (err) {
-        console.log(err);
-        ret_val = null;
-      } finally {
-
-      }
-      return ret_val;
+    self.to_lilypond = function() {
+      var parsed_obj, str;
+      console.log("entering self.to_lilypond");
+      str = self.get_doremi_script_source();
+      parsed_obj = DoremiScriptParser.parse(str);
+      this.lilypond_source(to_lilypond(parsed_obj));
+      return console.log("this.lilypond()", this.lilypond_source());
     };
     self.my_init = function(doremi_script_source_param) {
-      var key, keys, parsed, _i, _len;
+      var key, keys, parsed_obj, _i, _len;
       console.log("Entering CompositionViewModel.init, source is", doremi_script_source_param);
       self.available_compositions = ko.observableArray(my_compositions);
-      parsed = self.parse(doremi_script_source_param);
-      if (!parsed) {
-        alert("Something bad happened, parse failed");
-        return;
-      }
-      this.parsed_doremi_script(parsed);
-      if (!(parsed.id != null)) {
-        parsed.id = new Date().getTime();
+      parsed_obj = DoremiScriptParser.parse(doremi_script_source_param);
+      if (!(parsed_obj.id != null)) {
+        parsed_obj.id = new Date().getTime();
       }
       keys = ["id", "filename", "raga", "author", "source", "time_signature", "notes_used", "title", "key", "mode"];
       for (_i = 0, _len = keys.length; _i < _len; _i++) {
         key = keys[_i];
-        self[key](parsed[key]);
+        self[key](parsed_obj[key]);
       }
-      self.lines(ko.utils.arrayMap(parsed.lines, LineViewModel));
-      return this.parsed_doremi_script(parsed);
+      return self.lines(ko.utils.arrayMap(parsed_obj.lines, LineViewModel));
     };
     self.add_line = function() {
       var x;
@@ -288,12 +244,8 @@ $(document).ready(function() {
     self.refresh_doremi_script_source = function(my_model) {
       return self.doremi_script_source(self.get_doremi_script_source());
     };
-    self.refresh_composition_lilypond_source = function(my_model) {
-      var result1;
-      console.log("refresh_composition_lilypond_source");
-      result1 = self.parsed_doremi_script();
-      console.log(result1);
-      return self.composition_lilypond_source(window.to_lilypond(self.parsed_doremi_script()));
+    self.refresh_lilypond_source = function(my_model) {
+      return self.lilypond_source(self.to_lilypond());
     };
     self.new_composition = function() {
       initialData = "Title: Untitled\nid: " + (new Date().getTime()) + "\n\n|S";
@@ -311,7 +263,7 @@ $(document).ready(function() {
     };
     self.get_doremi_script_source = function() {
       var att, atts, atts_str, ignore, json_object, json_str, line, lines, lines_str, value;
-      ignore = ["lilypond", "composition_lilypond_source", "composition_lilypond_source_visible", "doremi_script_source", "doremi_script_source_visible", "available_compositions", "selected_composition", "keys", "modes", "lines", "composition_info_visible"];
+      ignore = ["lilypond", "lilypond_source", "lilypond_source_visible", "doremi_script_source", "doremi_script_source_visible", "available_compositions", "selected_composition", "keys", "modes", "lines", "composition_info_visible"];
       json_str = JSON.stringify(ko.toJS(self), null, 2);
       json_object = $.parseJSON(json_str);
       atts = (function() {
