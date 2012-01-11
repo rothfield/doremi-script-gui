@@ -1,3 +1,8 @@
+div.edit_line_wrapper {
+  background-color: ivory;
+  border: 2px solid black;
+}
+
 button.button_on {
   background-color: black;
   color: white;
@@ -169,6 +174,9 @@ div.composition {
 }
 
 @media print {
+    .controls {
+      display:none;
+    }
     div.composition {
       border:none;
   }

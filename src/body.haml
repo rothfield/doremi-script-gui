@@ -1,15 +1,21 @@
 .liveExample
-  %p
-    Locally saved compositions:
-    %select{"data-bind" => "options: available_compositions, optionsText: 'title', value: selected_composition, optionsCaption: 'Open',click: composition_select"}
-      %option{:value => ""} Open
-      %option{:value => ""}
-    %button{"data-bind" => "click: save_locally, enable: lines().length > 0"} Save locally
-    %button{"data-bind" => "click: new_composition"}
-      New
-    %button{"data-bind" => "click: generate_staff_notation"}
-      Generate staff notation
-  %fieldset#composition_info
+  %div.controls
+    %p
+      Locally saved compositions:
+      %select{"data-bind" => "options: available_compositions, optionsText: 'title', value: selected_composition, optionsCaption: 'Open',click: composition_select"}
+        %option{:value => ""} Open
+        %option{:value => ""}
+      %button{"data-bind" => "click: save_locally, enable: lines().length > 0"} Save locally
+      %button{"data-bind" => "click: new_composition"}
+        New Composition
+      %button{"data-bind" => "css: {button_on:open_file_visible},click: toggle_open_file_visible"} 
+        Open File     
+      %div.open_file_div{"data-bind" => 'visible:open_file_visible'}
+        %label Open:
+        %input#file{:name => "files[]", :type => "file"}
+      %button{"data-bind" => "click: generate_staff_notation"}
+        Generate staff notation
+  %fieldset.controls#composition_info
     %legend#composition_info_legend{"data-bind" => "click: toggle_composition_info_visible"}
       Composition Info(Click to hide/show)
     #composition_info_content{"data-bind" => "visible: composition_info_visible", :style => ""}
@@ -53,11 +59,12 @@
           %pre{"data-bind" => "text: composition_lilypond_source,event:{dblclick:toggle_composition_lilypond_source_visible}"}
   %br
   .composition
-    %div.composition_controls
-      %button{"data-bind" => "css: {button_on:staff_notation_visible},click: toggle_staff_notation_visible"} 
-        Show Staff Notation
+    %div.controls
+      %div.composition_controls
+        %button{"data-bind" => "css: {button_on:staff_notation_visible},click: toggle_staff_notation_visible"} 
+          Show Staff Notation
+      %img.spinner{"data-bind" => "visible: generating_staff_notation", "src" => "/images/musical-notes-animated.gif"}
     %div.staff_notation_div{"data-bind" => "visible: staff_notation_visible"}
-      Staff notation here 
       %img.staff_notation{"data-bind" => "attr: {src:staff_notation_url}"}
     %br
     %br
@@ -69,10 +76,14 @@
             Show/Hide Parse Tree
           %button{"data-bind" => "click: close_edit,clickBubble:false"} 
             Close
+          %button{"data-bind" => "click: $parent.composition_insert_line,clickBubble:false"} 
+            Insert
+          %button{"data-bind" => "click: $parent.composition_append_line,clickBubble:false"} 
+            Append
           %br
           %div.parse_tree_div{"data-bind" => "visible: parse_tree_visible"}
             %pre{"data-bind" => "text: parse_tree_text,event:{dblclick:toggle_parse_tree_visible}"}
-          %textarea.entry_area{:cols => "33", "data-bind" => "style: {height:stave_height,width: stave_width},css: {'parse_failed': $data.parse_failed},visible: editing(), value: source, event: { keypress: handle_key_press, blur: handle_blur}, valueUpdate: 'afterkeydown'", :rows => "3"}
+          %textarea.entry_area{:cols => "33", "data-bind" => "style: {height:stave_height,width: $parent.composition_stave_width},css: {'parse_failed': $data.parse_failed},visible: editing(), value: source, event: { keypress: handle_key_press, blur: handle_blur}, valueUpdate: 'afterkeydown'", :rows => "3"}
   %br
   %br
-  %button{"data-bind" => "click: add_line"} New Line
+  %button.controls{"data-bind" => "click: add_line"} New Line

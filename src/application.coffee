@@ -2,7 +2,6 @@ root = exports ? this
 
 $(document).ready ->
   NONE_URL="/images/none.png"
-  my_stave_width=$('div.composition_body').width()-50
   id=1000
 
   LineViewModel = (line= {source: "",rendered_in_html:"(Empty Line)"}) ->  # parameter is PARSED line
@@ -18,7 +17,6 @@ $(document).ready ->
     radio_group_name: ko.observable("group_#{line.index}")
     editing: ko.observable(false)
     last_value_rendered: ""
-    stave_width: ko.observable("#{my_stave_width}px")
     stave_height: ko.observable("161px")
     index: ko.observable(line.index)
     source: line.source
@@ -32,6 +30,12 @@ $(document).ready ->
         current_target=event.currentTarget
         text_area=$(current_target).parent().find("textarea")
         $(text_area).focus()
+      return true
+    zappend_line: (my_model, event) ->
+      console.log "append_line"
+      return true
+    insert_line: (my_model, event) ->
+      console.log "insert_line"
       return true
     close_edit: (my_model, event) ->
       console.log "close_edit"
@@ -124,20 +128,42 @@ $(document).ready ->
     hi
   
   """
-  
+ 
+  handleFileSelect = (evt) =>
+    # Handler for file upload button(HTML5)
+    file = document.getElementById('file').files[0]
+    reader=new FileReader()
+    reader.onload =  (evt) ->
+      window.the_composition.my_init(evt.target.result)
+      window.the_composition.open_file_visible(false)
+    reader.readAsText(file, "")
+
+  document.getElementById('file').addEventListener('change', handleFileSelect, false)
+
+
   window.CompositionViewModel = (my_doremi_script_source) ->
     self = this
     my_compositions=compositions
     self.selected_composition = ko.observable() # nothing selected by default
     self.composition_parse_tree_text=ko.observable("")
     self.doremi_script_source= ko.observable(my_doremi_script_source)
+    self.open_file_visible=ko.observable(false)
     self.composition_info_visible=ko.observable(false)
     self.composition_parse_failed=ko.observable(false)
+    self.calculate_stave_width=() ->
+      "#{$('div.composition_body').width()-50}px"
+
+    self.composition_stave_width= ko.observable(self.calculate_stave_width())
+
     self.composition_lilypond_source_visible=ko.observable(false)
     self.composition_lilypond_output_visible=ko.observable(false)
     self.composition_lilypond_output=ko.observable(false)
     self.doremi_script_source_visible=ko.observable(false)
+    self.composition_handle_resize= (my_model) ->
+      console.log "handle_resize"
 
+    self.toggle_open_file_visible = () ->
+      self.open_file_visible(!self.open_file_visible())
     self.toggle_staff_notation_visible = () ->
       self.staff_notation_visible(!self.staff_notation_visible())
 
@@ -177,6 +203,7 @@ $(document).ready ->
     self.time_signature=ko.observable("")
     self.notes_used=ko.observable("")
     self.title=ko.observable("")
+    self.generating_staff_notation=ko.observable(false)
     self.composition_lilypond_source=ko.observable("")
     self.parsed_doremi_script=ko.observable()
     self.staff_notation_url=ko.observable(NONE_URL)
@@ -187,6 +214,8 @@ $(document).ready ->
     self.lines = ko.observableArray([])
 
     self.generate_staff_notation = (my_model) ->
+      self.generating_staff_notation(true)
+      url='http://localhost:9292/lilypond_to_jpg'
       console.log "generate_staff_notation"
       self.refresh_composition_lilypond_source()
       self.staff_notation_url(NONE_URL)
@@ -204,8 +233,11 @@ $(document).ready ->
         url:'http://localhost:9292/lilypond_to_jpg'
         data: my_data
         error: (some_data) ->
+          alert("Couldn't connect to staff notation generator server at #{url}")
+          self.generating_staff_notation(false)
           self.staff_notation_url(NONE_URL)
         success: (some_data,text_status) ->
+          self.generating_staff_notation(false)
           self.composition_lilypond_output(some_data.lilypond_output)
           if some_data.error
             self.staff_notation_url(NONE_URL)
@@ -220,11 +252,11 @@ $(document).ready ->
 
     self.parse = (doremi_script_source_param) ->
       ret_val=null
-      try 
+      try
         ret_val=DoremiScriptParser.parse(doremi_script_source_param)
       catch err
         console.log err
-        ret_val=null 
+        ret_val=null
       finally
       ret_val
 
@@ -258,6 +290,25 @@ $(document).ready ->
       self.lines.push(x=new LineViewModel())
       x.parse()
       ko.applyBindings(x)
+
+    self.re_index_lines = () ->
+      ctr=0
+      line.index(ctr++) for line in self.lines()
+      
+    self.composition_insert_line= (line_model, event) ->
+      console.log "insert_line"
+      index=line_model.index()
+      number_of_elements_to_remove=0
+      self.lines.splice(index,number_of_elements_to_remove,new LineViewModel())
+      self.re_index_lines()
+      return true
+
+    self.composition_append_line= (line_model, event) ->
+      index=line_model.index()
+      number_of_elements_to_remove=0
+      self.lines.splice(index+1,number_of_elements_to_remove,new LineViewModel())
+      self.re_index_lines()
+      return true
 
     self.remove_line = (line) ->
       res=confirm("Are you sure?")
@@ -352,7 +403,7 @@ $(document).ready ->
   #  alert("New value is #{new_value}")
   #window.the_composition.selected_composition.subscribe(fun)
   window.the_composition.my_init(initialData)
-  ko.applyBindings(window.the_composition)
+  ko.applyBindings(window.the_composition,$('html')[0])
   
   window.timed_count = () =>
     which_line=null
@@ -364,10 +415,9 @@ $(document).ready ->
       which_line.parse()
     t=setTimeout("timed_count()",1000)
   
-  window.zdo_timer  =  () =>
-    if !window.timer_is_on
-      window.timer_is_on=1
-      window.timed_count()
+  $(window).resize(() ->
+    window.the_composition.composition_stave_width(window.the_composition.calculate_stave_width())
+  )
   
   window.timed_count()
 

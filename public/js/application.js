@@ -1,15 +1,14 @@
 var root;
-var __indexOf = Array.prototype.indexOf || function(item) {
+var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; }, __indexOf = Array.prototype.indexOf || function(item) {
   for (var i = 0, l = this.length; i < l; i++) {
     if (this[i] === item) return i;
   }
   return -1;
-}, __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; };
+};
 root = typeof exports !== "undefined" && exports !== null ? exports : this;
 $(document).ready(function() {
-  var LineViewModel, Logger, NONE_URL, composition, compositions, ctr, id, initialData, key, my_stave_width;
+  var LineViewModel, Logger, NONE_URL, composition, compositions, ctr, handleFileSelect, id, initialData, key;
   NONE_URL = "/images/none.png";
-  my_stave_width = $('div.composition_body').width() - 50;
   id = 1000;
   LineViewModel = function(line) {
     if (line == null) {
@@ -29,7 +28,6 @@ $(document).ready(function() {
       radio_group_name: ko.observable("group_" + line.index),
       editing: ko.observable(false),
       last_value_rendered: "",
-      stave_width: ko.observable("" + my_stave_width + "px"),
       stave_height: ko.observable("161px"),
       index: ko.observable(line.index),
       source: line.source,
@@ -43,6 +41,14 @@ $(document).ready(function() {
           text_area = $(current_target).parent().find("textarea");
           $(text_area).focus();
         }
+        return true;
+      },
+      zappend_line: function(my_model, event) {
+        console.log("append_line");
+        return true;
+      },
+      insert_line: function(my_model, event) {
+        console.log("insert_line");
         return true;
       },
       close_edit: function(my_model, event) {
@@ -131,6 +137,17 @@ $(document).ready(function() {
   _console.level = Logger.WARN;
   _.mixin(_console.toObject());
   initialData = "Title: sample_composition\nid: 1326030518658\n\n  .\n| S - - - |\n\n| R - - - |\n  hi\n";
+  handleFileSelect = __bind(function(evt) {
+    var file, reader;
+    file = document.getElementById('file').files[0];
+    reader = new FileReader();
+    reader.onload = function(evt) {
+      window.the_composition.my_init(evt.target.result);
+      return window.the_composition.open_file_visible(false);
+    };
+    return reader.readAsText(file, "");
+  }, this);
+  document.getElementById('file').addEventListener('change', handleFileSelect, false);
   window.CompositionViewModel = function(my_doremi_script_source) {
     var my_compositions, self;
     self = this;
@@ -138,12 +155,23 @@ $(document).ready(function() {
     self.selected_composition = ko.observable();
     self.composition_parse_tree_text = ko.observable("");
     self.doremi_script_source = ko.observable(my_doremi_script_source);
+    self.open_file_visible = ko.observable(false);
     self.composition_info_visible = ko.observable(false);
     self.composition_parse_failed = ko.observable(false);
+    self.calculate_stave_width = function() {
+      return "" + ($('div.composition_body').width() - 50) + "px";
+    };
+    self.composition_stave_width = ko.observable(self.calculate_stave_width());
     self.composition_lilypond_source_visible = ko.observable(false);
     self.composition_lilypond_output_visible = ko.observable(false);
     self.composition_lilypond_output = ko.observable(false);
     self.doremi_script_source_visible = ko.observable(false);
+    self.composition_handle_resize = function(my_model) {
+      return console.log("handle_resize");
+    };
+    self.toggle_open_file_visible = function() {
+      return self.open_file_visible(!self.open_file_visible());
+    };
     self.toggle_staff_notation_visible = function() {
       return self.staff_notation_visible(!self.staff_notation_visible());
     };
@@ -183,6 +211,7 @@ $(document).ready(function() {
     self.time_signature = ko.observable("");
     self.notes_used = ko.observable("");
     self.title = ko.observable("");
+    self.generating_staff_notation = ko.observable(false);
     self.composition_lilypond_source = ko.observable("");
     self.parsed_doremi_script = ko.observable();
     self.staff_notation_url = ko.observable(NONE_URL);
@@ -192,7 +221,9 @@ $(document).ready(function() {
     self.mode = ko.observable("");
     self.lines = ko.observableArray([]);
     self.generate_staff_notation = function(my_model) {
-      var lilypond_source, my_data, obj;
+      var lilypond_source, my_data, obj, url;
+      self.generating_staff_notation(true);
+      url = 'http://localhost:9292/lilypond_to_jpg';
       console.log("generate_staff_notation");
       self.refresh_composition_lilypond_source();
       self.staff_notation_url(NONE_URL);
@@ -211,9 +242,12 @@ $(document).ready(function() {
         url: 'http://localhost:9292/lilypond_to_jpg',
         data: my_data,
         error: function(some_data) {
+          alert("Couldn't connect to staff notation generator server at " + url);
+          self.generating_staff_notation(false);
           return self.staff_notation_url(NONE_URL);
         },
         success: function(some_data, text_status) {
+          self.generating_staff_notation(false);
           self.composition_lilypond_output(some_data.lilypond_output);
           if (some_data.error) {
             self.staff_notation_url(NONE_URL);
@@ -268,6 +302,34 @@ $(document).ready(function() {
       self.lines.push(x = new LineViewModel());
       x.parse();
       return ko.applyBindings(x);
+    };
+    self.re_index_lines = function() {
+      var line, _i, _len, _ref, _results;
+      ctr = 0;
+      _ref = self.lines();
+      _results = [];
+      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+        line = _ref[_i];
+        _results.push(line.index(ctr++));
+      }
+      return _results;
+    };
+    self.composition_insert_line = function(line_model, event) {
+      var index, number_of_elements_to_remove;
+      console.log("insert_line");
+      index = line_model.index();
+      number_of_elements_to_remove = 0;
+      self.lines.splice(index, number_of_elements_to_remove, new LineViewModel());
+      self.re_index_lines();
+      return true;
+    };
+    self.composition_append_line = function(line_model, event) {
+      var index, number_of_elements_to_remove;
+      index = line_model.index();
+      number_of_elements_to_remove = 0;
+      self.lines.splice(index + 1, number_of_elements_to_remove, new LineViewModel());
+      self.re_index_lines();
+      return true;
     };
     self.remove_line = function(line) {
       var res;
@@ -383,7 +445,7 @@ $(document).ready(function() {
   };
   window.the_composition = new CompositionViewModel();
   window.the_composition.my_init(initialData);
-  ko.applyBindings(window.the_composition);
+  ko.applyBindings(window.the_composition, $('html')[0]);
   window.timed_count = __bind(function() {
     var line, src, t, which_line, _i, _len, _ref;
     which_line = null;
@@ -403,11 +465,8 @@ $(document).ready(function() {
     }
     return t = setTimeout("timed_count()", 1000);
   }, this);
-  window.zdo_timer = __bind(function() {
-    if (!window.timer_is_on) {
-      window.timer_is_on = 1;
-      return window.timed_count();
-    }
-  }, this);
+  $(window).resize(function() {
+    return window.the_composition.composition_stave_width(window.the_composition.calculate_stave_width());
+  });
   return window.timed_count();
 });
