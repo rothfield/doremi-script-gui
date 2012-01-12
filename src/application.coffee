@@ -97,7 +97,7 @@ $(document).ready ->
       @key = key
       # Grab the Title from the doremi script source
       ary= /Title: ([^\n]+)\n/.exec(doremi_script)
-      @title=ary[1]
+      @title= if !ary? then "untitled" else ary[1]
       this
     items=[]
     ctr=0

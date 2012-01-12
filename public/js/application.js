@@ -119,7 +119,7 @@ $(document).ready(function() {
       var ary;
       this.key = key;
       ary = /Title: ([^\n]+)\n/.exec(doremi_script);
-      this.title = ary[1];
+      this.title = !(ary != null) ? "untitled" : ary[1];
       return this;
     };
     items = [];
