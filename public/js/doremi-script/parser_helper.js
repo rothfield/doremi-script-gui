@@ -192,8 +192,18 @@
       this.composition_data.filename = x || "untitled";
       x = get_composition_attribute(this.composition_data, "Title");
       this.composition_data.title = x || "Untitled";
+      x = get_composition_attribute(this.composition_data, "Source");
+      this.composition_data.source = x || "";
       x = get_composition_attribute(this.composition_data, "Author");
       this.composition_data.author = x || "";
+      x = get_composition_attribute(this.composition_data, "Raga");
+      if (x != null) {
+        this.composition_data.raga = x;
+      }
+      x = get_composition_attribute(this.composition_data, "staff_notation_url");
+      if (x != null) {
+        this.composition_data.staff_notation_url = x;
+      }
       this.mark_partial_measures();
       return this.composition_data;
     },

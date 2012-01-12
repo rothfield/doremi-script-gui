@@ -13,8 +13,6 @@
       %div.open_file_div{"data-bind" => 'visible:open_file_visible'}
         %label Open:
         %input#file{:name => "files[]", :type => "file"}
-      %button{"data-bind" => "click: generate_staff_notation"}
-        Generate staff notation
   %fieldset.controls#composition_info
     %legend#composition_info_legend{"data-bind" => "click: toggle_composition_info_visible"}
       Composition Info(Click to hide/show)
@@ -48,24 +46,30 @@
           DoremiScript Source
         %button{"data-bind" => "visible: doremi_script_source_visible,click: refresh_doremi_script_source"} 
           Refresh
-        %div.doremi_script_source_div{"data-bind" => "text: doremi_script_source,visible: doremi_script_source_visible"}
-          %pre{"data-bind" => "text: doremi_script_source,event:{dblclick:toggle_doremi_script_source_visible}"}
+        %div.doremi_script_source_div.like_pre{"data-bind" => "text: doremi_script_source,visible: doremi_script_source_visible,event:{dblclick:toggle_doremi_script_source_visible}"}
+      %p
+        %button{"data-bind" => "css: {button_on:parsed_doremi_script_visible},click: toggle_parsed_doremi_script_visible"} 
+          Parsed DoremiScript
+        %button{"data-bind" => "visible: parsed_doremi_script_visible,click: refresh_parsed_doremi_script"} 
+          Refresh
+        %div.parsed_doremi_script_div.like_pre{"data-bind" => "text: composition_parsed_doremi_script,visible: parsed_doremi_script_visible,event:{dblclick:toggle_parsed_doremi_script_visible}"}
       %p
         %button{"data-bind" => "css: {button_on:composition_lilypond_source_visible},click: toggle_composition_lilypond_source_visible"} 
           Lilypond source
         %button{"data-bind" => "visible: composition_lilypond_source_visible,click: refresh_composition_lilypond_source"} 
           Refresh 
-        %div.composition_lilypond_source_div{"data-bind" => "visible: composition_lilypond_source_visible"}
-          %pre{"data-bind" => "text: composition_lilypond_source,event:{dblclick:toggle_composition_lilypond_source_visible}"}
+        %div.composition_lilypond_source_div.like_pre{"data-bind" => "visible: composition_lilypond_source_visible,text: composition_lilypond_source,event:{dblclick:toggle_composition_lilypond_source_visible}"}
   %br
   .composition
     %div.controls
       %div.composition_controls
+        %button{"data-bind" => "disable: generating_staff_notation,click: generate_staff_notation"}
+          Generate staff notation
         %button{"data-bind" => "css: {button_on:staff_notation_visible},click: toggle_staff_notation_visible"} 
           Show Staff Notation
-      %img.spinner{"data-bind" => "visible: generating_staff_notation", "src" => "/images/musical-notes-animated.gif"}
+      %img.spinner{"data-bind" => "visible: generating_staff_notation", "src" => "/images/musical-notes-animated.gif", "width" => '50px'}
     %div.staff_notation_div{"data-bind" => "visible: staff_notation_visible"}
-      %img.staff_notation{"data-bind" => "attr: {src:staff_notation_url}"}
+      %img.staff_notation{"data-bind" => "attr: {src:staff_notation_url_with_time_stamp}"}
     %br
     %br
     .composition_body{"data-bind" => "foreach: lines"}

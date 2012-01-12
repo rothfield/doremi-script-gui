@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html>
   <head>
+    <meta charset='UTF-8' />
     <title data-bind='text: title'></title>
     <link href='/css/application.css' rel='stylesheet' type='text/css' />
     <link href='/css/styles.css' rel='stylesheet' type='text/css' />
@@ -26,9 +27,6 @@
             <label>Open:</label>
             <input id='file' name='files[]' type='file' />
           </div>
-          <button data-bind='click: generate_staff_notation'>
-            Generate staff notation
-          </button>
         </p>
       </div>
       <fieldset class='controls' id='composition_info'>
@@ -75,9 +73,16 @@
             <button data-bind='visible: doremi_script_source_visible,click: refresh_doremi_script_source'>
               Refresh
             </button>
-            <div class='doremi_script_source_div' data-bind='text: doremi_script_source,visible: doremi_script_source_visible'>
-              <pre data-bind='text: doremi_script_source,event:{dblclick:toggle_doremi_script_source_visible}'></pre>
-            </div>
+            <div class='doremi_script_source_div like_pre' data-bind='text: doremi_script_source,visible: doremi_script_source_visible,event:{dblclick:toggle_doremi_script_source_visible}'></div>
+          </p>
+          <p>
+            <button data-bind='css: {button_on:parsed_doremi_script_visible},click: toggle_parsed_doremi_script_visible'>
+              Parsed DoremiScript
+            </button>
+            <button data-bind='visible: parsed_doremi_script_visible,click: refresh_parsed_doremi_script'>
+              Refresh
+            </button>
+            <div class='parsed_doremi_script_div like_pre' data-bind='text: composition_parsed_doremi_script,visible: parsed_doremi_script_visible,event:{dblclick:toggle_parsed_doremi_script_visible}'></div>
           </p>
           <p>
             <button data-bind='css: {button_on:composition_lilypond_source_visible},click: toggle_composition_lilypond_source_visible'>
@@ -86,9 +91,7 @@
             <button data-bind='visible: composition_lilypond_source_visible,click: refresh_composition_lilypond_source'>
               Refresh
             </button>
-            <div class='composition_lilypond_source_div' data-bind='visible: composition_lilypond_source_visible'>
-              <pre data-bind='text: composition_lilypond_source,event:{dblclick:toggle_composition_lilypond_source_visible}'></pre>
-            </div>
+            <div class='composition_lilypond_source_div like_pre' data-bind='visible: composition_lilypond_source_visible,text: composition_lilypond_source,event:{dblclick:toggle_composition_lilypond_source_visible}'></div>
           </p>
         </div>
       </fieldset>
@@ -96,14 +99,17 @@
       <div class='composition'>
         <div class='controls'>
           <div class='composition_controls'>
+            <button data-bind='disable: generating_staff_notation,click: generate_staff_notation'>
+              Generate staff notation
+            </button>
             <button data-bind='css: {button_on:staff_notation_visible},click: toggle_staff_notation_visible'>
               Show Staff Notation
             </button>
           </div>
-          <img class='spinner' data-bind='visible: generating_staff_notation' src='/images/musical-notes-animated.gif' />
+          <img class='spinner' data-bind='visible: generating_staff_notation' src='/images/musical-notes-animated.gif' width='50px' />
         </div>
         <div class='staff_notation_div' data-bind='visible: staff_notation_visible'>
-          <img class='staff_notation' data-bind='attr: {src:staff_notation_url}' />
+          <img class='staff_notation' data-bind='attr: {src:staff_notation_url_with_time_stamp}' />
         </div>
         <br />
         <br />
@@ -136,6 +142,7 @@
       <br />
       <button class='controls' data-bind='click: add_line'>New Line</button>
     </div>
+    <span class="note left_repeat" id="testing_utf_support" style="display: none; ">&#x1d106</span>
     <script src='/js/jquery.js' type='text/javascript'></script>
     <script src='/js/knockout-2.0.0.debug.js' type='text/javascript'></script>
     <script src='/js/doremi-script/third_party/jquery.js' type='text/javascript'></script>

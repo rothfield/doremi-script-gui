@@ -11,7 +11,6 @@ tr.line_header {
   border: none;
 }
 fieldset#composition_info {
-  width: 400px;
 }
 
 textarea.parse_failed {

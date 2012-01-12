@@ -1,7 +1,13 @@
 .like_pre {
    font-family: monospace;
-   white-space: pre; 
-   border: 2px dotted #CCCCCC;
+   white-space: pre 
+}
+div.composition_lilypond_source_div,  div.doremi_script_source_div  {
+  border: 2px dotted black;
+}
+div.edit_line_wrapper {
+  background-color: ivory;
+  border: 2px solid black;
 }
 
 button.button_on {
@@ -21,7 +27,8 @@ h2.step {
   background-color: lavender;
   border: 1px solid black;
 }
-div.staff_notation_div {
+div#western_notation_div {
+  border: 2px dotted #CCCCCC;
 }
 div#open_div {
   display:none
@@ -52,15 +59,6 @@ span.note_wrapper {
     font-family: monospace; 
     font-size: 18px;
     padding-left: 10px;
-}
-
-div.edit_line_wrapper {
-  background-color: AntiqueWhite;
-  border: 2px solid black;
-}
-
-div.edit_line_wrapper textarea.entry_area {
- border:none;
 }
 textarea#entry_area, textarea.entry_area {
     /* don't try nowrap or overflow: auto. Causes problems in chrome */

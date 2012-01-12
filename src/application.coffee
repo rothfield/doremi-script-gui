@@ -91,27 +91,24 @@ $(document).ready ->
       finally
         this.last_value_rendered=this.source
   
+  compositions_in_local_storage = () ->
+    Item = (key, doremi_script) ->
+      # For list of compositions in local storage, grab the key and title
+      @key = key
+      # Grab the Title from the doremi script source
+      ary= /Title: ([^\n]+)\n/.exec(doremi_script)
+      @title=ary[1]
+      this
+    items=[]
+    ctr=0
+    if localStorage.length > 0
+      while ctr < localStorage.length
+        key=localStorage.key(ctr)
+        if key.indexOf("composition_") is 0  # key starts with composition_
+           items.push new Item(key,localStorage[key])
+        ctr++
+    items
 
-  # use this to grab the title: 
-  # ary= /title: ([^\n]+)\n/.exec(s)
-  # title=ary[1]
-  # Constructor for an object with two properties
-  composition = (key, doremi_script) ->
-    console.log "composition-local storage",doremi_script
-    @key = key
-    #@composition_doremi_script = doremi_script
-    ary= /Title: ([^\n]+)\n/.exec(doremi_script)
-    @title=ary[1]
-    this
-  compositions=[]
-  ctr=0
-  if localStorage.length > 0
-    while ctr < localStorage.length
-      key=localStorage.key(ctr)
-      if key.indexOf("composition_") is 0
-         compositions.push new composition(key,localStorage[key])
-      ctr++
-  console.log "compositions", compositions
   Logger=_console.constructor
   # _console.level  = Logger.DEBUG
   _console.level  = Logger.WARN
@@ -119,7 +116,6 @@ $(document).ready ->
   
   initialData = """
   Title: sample_composition
-  id: 1326030518658
   
     .
   | S - - - |
@@ -143,7 +139,6 @@ $(document).ready ->
 
   window.CompositionViewModel = (my_doremi_script_source) ->
     self = this
-    my_compositions=compositions
     self.selected_composition = ko.observable() # nothing selected by default
     self.composition_parse_tree_text=ko.observable("")
     self.doremi_script_source= ko.observable(my_doremi_script_source)
@@ -156,6 +151,7 @@ $(document).ready ->
     self.composition_stave_width= ko.observable(self.calculate_stave_width())
 
     self.composition_lilypond_source_visible=ko.observable(false)
+    self.parsed_doremi_script_visible=ko.observable(false)
     self.composition_lilypond_output_visible=ko.observable(false)
     self.composition_lilypond_output=ko.observable(false)
     self.doremi_script_source_visible=ko.observable(false)
@@ -164,6 +160,8 @@ $(document).ready ->
 
     self.toggle_open_file_visible = () ->
       self.open_file_visible(!self.open_file_visible())
+    self.toggle_parsed_doremi_script_visible = () ->
+      self.parsed_doremi_script_visible(!self.parsed_doremi_script_visible())
     self.toggle_staff_notation_visible = () ->
       self.staff_notation_visible(!self.staff_notation_visible())
 
@@ -172,19 +170,20 @@ $(document).ready ->
 
     self.parse_composition = () ->
       self.refresh_doremi_script_source()
+      console.log("parse_composition")
       try
-        obj=DoremiScriptParser.parse(this.doremi_script_source())
-        #this.rendered_in_html(line_to_html(result))
+        parsed=DoremiScriptParser.parse(self.doremi_script_source())
+        #console.log("parse_composition, parse =",parsed)
+        self.composition_parsed_doremi_script(parsed)
         self.composition_parse_tree_text("Parsing completed with no errors \n"+JSON.stringify(result,null,"  "))
-        self.composition_parse_failed(false) # TODO: review
-        #dom_fixes()
+        self.composition_parse_failed(false) 
       catch err
         result="failed"
+        console.log("parse_composition, ERROR=",err)
+        self.composition_parsed_doremi_script(null)
         self.composition_parse_failed(true)
         self.composition_parse_tree_text("Parsing failed")
-        #this.rendered_in_html("<pre>Didn't parse\n\n#{this.source}</pre>")
       finally
-        this.last_value_rendered=this.source
 
     self.toggle_doremi_script_source_visible = () ->
       self.doremi_script_source_visible(!self.doremi_script_source_visible())
@@ -205,37 +204,48 @@ $(document).ready ->
     self.title=ko.observable("")
     self.generating_staff_notation=ko.observable(false)
     self.composition_lilypond_source=ko.observable("")
-    self.parsed_doremi_script=ko.observable()
+    self.composition_parsed_doremi_script=ko.observable()
     self.staff_notation_url=ko.observable(NONE_URL)
+    
     self.keys=["C","C#","D","D#","E","F","F#","G","G#","A","A#","B","Db","Eb","Gb","Ab","Bb"]
     self.key= ko.observable("")
+    self.staff_notation_url_with_time_stamp = ko.computed () ->
+      if self.staff_notation_url() is NONE_URL
+        return self.staff_notation_url()
+      time_stamp=new Date().getTime()
+      "#{self.staff_notation_url()}?ts=#{time_stamp}"
     self.modes=["Ionian","Dorian","Phrygian","Lydian","Mixolydian","Aeolian","Locrian"]
     self.mode= ko.observable("")
     self.lines = ko.observableArray([])
 
     self.generate_staff_notation = (my_model) ->
+      # generate staff notation by converting doremi_script
+      # to lilypond and call a jsonp web service
+      console.log "entering generate_staff_notation"
       self.generating_staff_notation(true)
-      url='http://localhost:9292/lilypond_to_jpg'
-      console.log "generate_staff_notation"
+      self.refresh_doremi_script_source()
+      self.parse_composition()
       self.refresh_composition_lilypond_source()
       self.staff_notation_url(NONE_URL)
-      lilypond_source=self.composition_lilypond_source() 
+      lilypond_source=self.composition_lilypond_source()
       console.log "lilypond_source",lilypond_source
+      ts= new Date().getTime()
+      url='http://ragapedia.com:9292/lilypond_to_jpg'
+      timeout_in_seconds=60
       my_data =
         fname: "composition_#{self.id()}"
         lilypond: lilypond_source
-        doremi_script_source: "" #self.refresh_doremi_script_source()
-      console.log 'my_data',my_data
+        doremi_script_source: self.doremi_script_source() 
       obj=
         dataType : "jsonp",
-        timeout : 10000
+        timeout : timeout_in_seconds * 1000  # milliseconds
         type:'GET'
-        url:'http://localhost:9292/lilypond_to_jpg'
+        url: url
         data: my_data
         error: (some_data) ->
-          alert("Couldn't connect to staff notation generator server at #{url}")
           self.generating_staff_notation(false)
           self.staff_notation_url(NONE_URL)
+          alert("Couldn't connect to staff notation generator server at #{url}")
         success: (some_data,text_status) ->
           self.generating_staff_notation(false)
           self.composition_lilypond_output(some_data.lilypond_output)
@@ -246,7 +256,6 @@ $(document).ready ->
           self.staff_notation_url(some_data.fname)
           self.staff_notation_visible(true)
           self.composition_lilypond_output_visible(false)
-      console.log 'obj',obj
       $.ajax(obj)
       return true
 
@@ -260,17 +269,8 @@ $(document).ready ->
       finally
       ret_val
 
-    self.my_init = (doremi_script_source_param) ->
-      console.log("Entering CompositionViewModel.init, source is",doremi_script_source_param)
-      self.available_compositions = ko.observableArray(my_compositions)
-      parsed=self.parse(doremi_script_source_param)
-      if !parsed
-        alert("Something bad happened, parse failed")
-        return
-      this.parsed_doremi_script(parsed)
-      if !parsed.id?
-        parsed.id=new Date().getTime()
-      keys = [
+    self.attribute_keys=
+      [
         "id"
         "filename"
         "raga"
@@ -281,10 +281,22 @@ $(document).ready ->
         "title"
         "key"
         "mode"
+        "staff_notation_url"
       ]
-      self[key](parsed[key]) for key in keys
+    self.my_init = (doremi_script_source_param) ->
+      console.log("Entering CompositionViewModel.init, source is",doremi_script_source_param)
+      list=compositions_in_local_storage()
+      self.available_compositions = ko.observableArray(list)
+      parsed=self.parse(doremi_script_source_param)
+      console.log "parsed",parsed
+      if !parsed
+        alert("Something bad happened, parse failed")
+        return
+      self.composition_parsed_doremi_script(parsed)
+      if !parsed.id?
+        parsed.id=new Date().getTime()
+      self[key](parsed[key]) for key in self.attribute_keys
       self.lines(ko.utils.arrayMap(parsed.lines, LineViewModel))
-      this.parsed_doremi_script(parsed) 
 
     self.add_line = () ->
       self.lines.push(x=new LineViewModel())
@@ -328,19 +340,19 @@ $(document).ready ->
 
     self.refresh_doremi_script_source = (my_model) ->
       self.doremi_script_source(self.get_doremi_script_source())
-
+    self.refresh_parsed_doremi_script = (my_model) ->
+      self.parse_composition()
     self.refresh_composition_lilypond_source = (my_model) ->
       console.log("refresh_composition_lilypond_source")
-      result1=self.parsed_doremi_script()
-      console.log result1
-      self.composition_lilypond_source(window.to_lilypond(self.parsed_doremi_script()))
+      parsed=self.composition_parsed_doremi_script()
+      options= { omit_header: true }
+      self.composition_lilypond_source(window.to_lilypond(parsed,options))
 
     self.new_composition = () ->
       #if confirm("Save current composition?")
       #  self.save_locally()
       initialData = """
       Title: Untitled
-      id: #{new Date().getTime()}
 
       |S
       """
@@ -348,6 +360,7 @@ $(document).ready ->
       self.add_line()
       
     self.load_locally = (key) ->
+      console.log "load_locally"
       if key is "composition_#{window.the_composition.id()}"
         alert("This is the file you are currently editing")
         return
@@ -355,23 +368,12 @@ $(document).ready ->
       window.the_composition.my_init(source)
 
     self.get_doremi_script_source = () ->
-      ignore=[
-        "lilypond"
-        "composition_lilypond_source"
-        "composition_lilypond_source_visible"
-        "doremi_script_source"
-        "doremi_script_source_visible"
-        "available_compositions"
-        "selected_composition"
-        "keys"
-        "modes"
-        "lines"
-        "composition_info_visible"
-      ]
+      keys_to_use=self.attribute_keys
       json_str=JSON.stringify(ko.toJS(self), null, 2)
       json_object = $.parseJSON(json_str)
       # attributes don't have a blank line between them
       atts= for att,value of json_object
+        continue if att not in keys_to_use
         att="Filename" if att is "filename"
         att="Title" if att is "title"
         att="Raga" if att is "raga"
@@ -380,7 +382,6 @@ $(document).ready ->
         att="Author" if att is "author"
         att="Source" if att is "source"
         att="TimeSignature" if att is "time_signature"
-        continue if att in ignore
         continue if value is ""
         continue if !value
         "#{att}: #{value}"
@@ -389,12 +390,15 @@ $(document).ready ->
       # lines have a blank line between them
       lines_str=lines.join("\n\n")
       atts_str+"\n\n"+lines_str
+
     self.save_locally = () ->
       console.log "save_locally"
       self.doremi_script_source(self.get_doremi_script_source())
       console.log('self.doremi_script_source()',self.doremi_script_source())
       localStorage.setItem("composition_#{self.id()}",self.doremi_script_source())
-
+      # NOT WORKING
+      #self.available_compositions(compositions_in_local_storage())
+      
     self.my_init(my_doremi_script_source) if my_doremi_script_source?
     self
 

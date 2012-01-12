@@ -7,7 +7,7 @@ var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments)
 };
 root = typeof exports !== "undefined" && exports !== null ? exports : this;
 $(document).ready(function() {
-  var LineViewModel, Logger, NONE_URL, composition, compositions, ctr, handleFileSelect, id, initialData, key;
+  var LineViewModel, Logger, NONE_URL, compositions_in_local_storage, handleFileSelect, id, initialData;
   NONE_URL = "/images/none.png";
   id = 1000;
   LineViewModel = function(line) {
@@ -113,30 +113,32 @@ $(document).ready(function() {
       }
     };
   };
-  composition = function(key, doremi_script) {
-    var ary;
-    console.log("composition-local storage", doremi_script);
-    this.key = key;
-    ary = /Title: ([^\n]+)\n/.exec(doremi_script);
-    this.title = ary[1];
-    return this;
-  };
-  compositions = [];
-  ctr = 0;
-  if (localStorage.length > 0) {
-    while (ctr < localStorage.length) {
-      key = localStorage.key(ctr);
-      if (key.indexOf("composition_") === 0) {
-        compositions.push(new composition(key, localStorage[key]));
+  compositions_in_local_storage = function() {
+    var Item, ctr, items, key;
+    Item = function(key, doremi_script) {
+      var ary;
+      this.key = key;
+      ary = /Title: ([^\n]+)\n/.exec(doremi_script);
+      this.title = ary[1];
+      return this;
+    };
+    items = [];
+    ctr = 0;
+    if (localStorage.length > 0) {
+      while (ctr < localStorage.length) {
+        key = localStorage.key(ctr);
+        if (key.indexOf("composition_") === 0) {
+          items.push(new Item(key, localStorage[key]));
+        }
+        ctr++;
       }
-      ctr++;
     }
-  }
-  console.log("compositions", compositions);
+    return items;
+  };
   Logger = _console.constructor;
   _console.level = Logger.WARN;
   _.mixin(_console.toObject());
-  initialData = "Title: sample_composition\nid: 1326030518658\n\n  .\n| S - - - |\n\n| R - - - |\n  hi\n";
+  initialData = "Title: sample_composition\n\n  .\n| S - - - |\n\n| R - - - |\n  hi\n";
   handleFileSelect = __bind(function(evt) {
     var file, reader;
     file = document.getElementById('file').files[0];
@@ -149,9 +151,8 @@ $(document).ready(function() {
   }, this);
   document.getElementById('file').addEventListener('change', handleFileSelect, false);
   window.CompositionViewModel = function(my_doremi_script_source) {
-    var my_compositions, self;
+    var self;
     self = this;
-    my_compositions = compositions;
     self.selected_composition = ko.observable();
     self.composition_parse_tree_text = ko.observable("");
     self.doremi_script_source = ko.observable(my_doremi_script_source);
@@ -163,6 +164,7 @@ $(document).ready(function() {
     };
     self.composition_stave_width = ko.observable(self.calculate_stave_width());
     self.composition_lilypond_source_visible = ko.observable(false);
+    self.parsed_doremi_script_visible = ko.observable(false);
     self.composition_lilypond_output_visible = ko.observable(false);
     self.composition_lilypond_output = ko.observable(false);
     self.doremi_script_source_visible = ko.observable(false);
@@ -172,6 +174,9 @@ $(document).ready(function() {
     self.toggle_open_file_visible = function() {
       return self.open_file_visible(!self.open_file_visible());
     };
+    self.toggle_parsed_doremi_script_visible = function() {
+      return self.parsed_doremi_script_visible(!self.parsed_doremi_script_visible());
+    };
     self.toggle_staff_notation_visible = function() {
       return self.staff_notation_visible(!self.staff_notation_visible());
     };
@@ -179,18 +184,22 @@ $(document).ready(function() {
       return self.composition_lilypond_source_visible(!self.composition_lilypond_source_visible());
     };
     self.parse_composition = function() {
-      var obj, result;
+      var parsed, result;
       self.refresh_doremi_script_source();
+      console.log("parse_composition");
       try {
-        obj = DoremiScriptParser.parse(this.doremi_script_source());
+        parsed = DoremiScriptParser.parse(self.doremi_script_source());
+        self.composition_parsed_doremi_script(parsed);
         self.composition_parse_tree_text("Parsing completed with no errors \n" + JSON.stringify(result, null, "  "));
         return self.composition_parse_failed(false);
       } catch (err) {
         result = "failed";
+        console.log("parse_composition, ERROR=", err);
+        self.composition_parsed_doremi_script(null);
         self.composition_parse_failed(true);
         return self.composition_parse_tree_text("Parsing failed");
       } finally {
-        this.last_value_rendered = this.source;
+
       }
     };
     self.toggle_doremi_script_source_visible = function() {
@@ -213,38 +222,49 @@ $(document).ready(function() {
     self.title = ko.observable("");
     self.generating_staff_notation = ko.observable(false);
     self.composition_lilypond_source = ko.observable("");
-    self.parsed_doremi_script = ko.observable();
+    self.composition_parsed_doremi_script = ko.observable();
     self.staff_notation_url = ko.observable(NONE_URL);
     self.keys = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B", "Db", "Eb", "Gb", "Ab", "Bb"];
     self.key = ko.observable("");
+    self.staff_notation_url_with_time_stamp = ko.computed(function() {
+      var time_stamp;
+      if (self.staff_notation_url() === NONE_URL) {
+        return self.staff_notation_url();
+      }
+      time_stamp = new Date().getTime();
+      return "" + (self.staff_notation_url()) + "?ts=" + time_stamp;
+    });
     self.modes = ["Ionian", "Dorian", "Phrygian", "Lydian", "Mixolydian", "Aeolian", "Locrian"];
     self.mode = ko.observable("");
     self.lines = ko.observableArray([]);
     self.generate_staff_notation = function(my_model) {
-      var lilypond_source, my_data, obj, url;
+      var lilypond_source, my_data, obj, timeout_in_seconds, ts, url;
+      console.log("entering generate_staff_notation");
       self.generating_staff_notation(true);
-      url = 'http://localhost:9292/lilypond_to_jpg';
-      console.log("generate_staff_notation");
+      self.refresh_doremi_script_source();
+      self.parse_composition();
       self.refresh_composition_lilypond_source();
       self.staff_notation_url(NONE_URL);
       lilypond_source = self.composition_lilypond_source();
       console.log("lilypond_source", lilypond_source);
+      ts = new Date().getTime();
+      url = 'http://ragapedia.com:9292/lilypond_to_jpg';
+      timeout_in_seconds = 60;
       my_data = {
         fname: "composition_" + (self.id()),
         lilypond: lilypond_source,
-        doremi_script_source: ""
+        doremi_script_source: self.doremi_script_source()
       };
-      console.log('my_data', my_data);
       obj = {
         dataType: "jsonp",
-        timeout: 10000,
+        timeout: timeout_in_seconds * 1000,
         type: 'GET',
-        url: 'http://localhost:9292/lilypond_to_jpg',
+        url: url,
         data: my_data,
         error: function(some_data) {
-          alert("Couldn't connect to staff notation generator server at " + url);
           self.generating_staff_notation(false);
-          return self.staff_notation_url(NONE_URL);
+          self.staff_notation_url(NONE_URL);
+          return alert("Couldn't connect to staff notation generator server at " + url);
         },
         success: function(some_data, text_status) {
           self.generating_staff_notation(false);
@@ -259,7 +279,6 @@ $(document).ready(function() {
           return self.composition_lilypond_output_visible(false);
         }
       };
-      console.log('obj', obj);
       $.ajax(obj);
       return true;
     };
@@ -276,26 +295,28 @@ $(document).ready(function() {
       }
       return ret_val;
     };
+    self.attribute_keys = ["id", "filename", "raga", "author", "source", "time_signature", "notes_used", "title", "key", "mode", "staff_notation_url"];
     self.my_init = function(doremi_script_source_param) {
-      var key, keys, parsed, _i, _len;
+      var key, list, parsed, _i, _len, _ref;
       console.log("Entering CompositionViewModel.init, source is", doremi_script_source_param);
-      self.available_compositions = ko.observableArray(my_compositions);
+      list = compositions_in_local_storage();
+      self.available_compositions = ko.observableArray(list);
       parsed = self.parse(doremi_script_source_param);
+      console.log("parsed", parsed);
       if (!parsed) {
         alert("Something bad happened, parse failed");
         return;
       }
-      this.parsed_doremi_script(parsed);
+      self.composition_parsed_doremi_script(parsed);
       if (!(parsed.id != null)) {
         parsed.id = new Date().getTime();
       }
-      keys = ["id", "filename", "raga", "author", "source", "time_signature", "notes_used", "title", "key", "mode"];
-      for (_i = 0, _len = keys.length; _i < _len; _i++) {
-        key = keys[_i];
+      _ref = self.attribute_keys;
+      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+        key = _ref[_i];
         self[key](parsed[key]);
       }
-      self.lines(ko.utils.arrayMap(parsed.lines, LineViewModel));
-      return this.parsed_doremi_script(parsed);
+      return self.lines(ko.utils.arrayMap(parsed.lines, LineViewModel));
     };
     self.add_line = function() {
       var x;
@@ -304,7 +325,7 @@ $(document).ready(function() {
       return ko.applyBindings(x);
     };
     self.re_index_lines = function() {
-      var line, _i, _len, _ref, _results;
+      var ctr, line, _i, _len, _ref, _results;
       ctr = 0;
       _ref = self.lines();
       _results = [];
@@ -340,6 +361,7 @@ $(document).ready(function() {
       return self.lines.remove(line);
     };
     self.composition_select = function(my_model, event) {
+      var key;
       if (!this.selected_composition()) {
         return;
       }
@@ -350,20 +372,26 @@ $(document).ready(function() {
     self.refresh_doremi_script_source = function(my_model) {
       return self.doremi_script_source(self.get_doremi_script_source());
     };
+    self.refresh_parsed_doremi_script = function(my_model) {
+      return self.parse_composition();
+    };
     self.refresh_composition_lilypond_source = function(my_model) {
-      var result1;
+      var options, parsed;
       console.log("refresh_composition_lilypond_source");
-      result1 = self.parsed_doremi_script();
-      console.log(result1);
-      return self.composition_lilypond_source(window.to_lilypond(self.parsed_doremi_script()));
+      parsed = self.composition_parsed_doremi_script();
+      options = {
+        omit_header: true
+      };
+      return self.composition_lilypond_source(window.to_lilypond(parsed, options));
     };
     self.new_composition = function() {
-      initialData = "Title: Untitled\nid: " + (new Date().getTime()) + "\n\n|S";
+      initialData = "Title: Untitled\n\n|S";
       window.the_composition.my_init(initialData);
       return self.add_line();
     };
     self.load_locally = function(key) {
       var source;
+      console.log("load_locally");
       if (key === ("composition_" + (window.the_composition.id()))) {
         alert("This is the file you are currently editing");
         return;
@@ -372,8 +400,8 @@ $(document).ready(function() {
       return window.the_composition.my_init(source);
     };
     self.get_doremi_script_source = function() {
-      var att, atts, atts_str, ignore, json_object, json_str, line, lines, lines_str, value;
-      ignore = ["lilypond", "composition_lilypond_source", "composition_lilypond_source_visible", "doremi_script_source", "doremi_script_source_visible", "available_compositions", "selected_composition", "keys", "modes", "lines", "composition_info_visible"];
+      var att, atts, atts_str, json_object, json_str, keys_to_use, line, lines, lines_str, value;
+      keys_to_use = self.attribute_keys;
       json_str = JSON.stringify(ko.toJS(self), null, 2);
       json_object = $.parseJSON(json_str);
       atts = (function() {
@@ -381,6 +409,9 @@ $(document).ready(function() {
         _results = [];
         for (att in json_object) {
           value = json_object[att];
+          if (__indexOf.call(keys_to_use, att) < 0) {
+            continue;
+          }
           if (att === "filename") {
             att = "Filename";
           }
@@ -404,9 +435,6 @@ $(document).ready(function() {
           }
           if (att === "time_signature") {
             att = "TimeSignature";
-          }
-          if (__indexOf.call(ignore, att) >= 0) {
-            continue;
           }
           if (value === "") {
             continue;

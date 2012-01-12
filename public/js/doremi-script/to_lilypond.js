@@ -373,8 +373,11 @@
     fixed = composition_data.key[0].toLowerCase();
     return "\\transpose c' " + lilypond_pitch_map[composition.key] + "'";
   };
-  to_lilypond = function(composition_data) {
+  to_lilypond = function(composition_data, options) {
     var all, ary, at_beginning_of_first_measure_of_line, beat, composer, composer_snippet, dash, dashes_at_beginning_of_line_array, in_times, item, key_snippet, last_pitch, lilypond_template, line, measure, mode, notes, src, src1, tied_array, time, title, title_snippet, transpose_snip, x, _i, _j, _k, _len, _len2, _len3, _ref, _ref2, _ref3;
+    if (options == null) {
+      options = {};
+    }
     ary = [];
     in_times = false;
     at_beginning_of_first_measure_of_line = false;
@@ -494,6 +497,9 @@
     }
     src1 = composition_data.source.replace(/%\{/gi, "% {");
     src = src1.replace(/\{%/gi, "% }");
+    if (options.omit_header) {
+      title_snippet = composer_snippet = "";
+    }
     lilypond_template = "#(ly:set-option 'midi-extension \"mid\")\n\\version \"2.12.3\"\n\\include \"english.ly\"\n\\header{ " + title_snippet + " " + composer_snippet + " }\n\\include \"english.ly\"\n%{\n" + src + "  \n%}\nmelody = {\n\\clef treble\n" + key_snippet + "\n\\time " + time + "\n\\autoBeamOn  \n" + notes + "\n}\n\ntext = \\lyricmode {\n" + (extract_lyrics(composition_data).join(' ')) + "\n}\n\n\\score{\n" + transpose_snip + "\n<<\n\\new Voice = \"one\" {\n  \\melody\n}\n\\new Lyrics \\lyricsto \"one\" \\text\n>>\n\\layout { }\n\\midi { }\n}";
     return lilypond_template;
   };
