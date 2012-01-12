@@ -48,7 +48,7 @@
       }
       x.hide();
     }
-    if ((window.left_repeat_width === 0) || (window.left_repeat_width > 10)) {
+    if ((window.left_repeat_width === 0) || (window.left_repeat_width > 20)) {
       tag = "data-fallback-if-no-utf8-chars";
       return $("span[" + tag + "]").each(function(index) {
         var attr, obj;

@@ -87,7 +87,7 @@
           %br
           %div.parse_tree_div{"data-bind" => "visible: parse_tree_visible"}
             %pre{"data-bind" => "text: parse_tree_text,event:{dblclick:toggle_parse_tree_visible}"}
-          %textarea.entry_area{:cols => "33", "data-bind" => "style: {height:stave_height,width: $parent.composition_stave_width},css: {'parse_failed': $data.parse_failed},visible: editing(), value: source, event: { keypress: handle_key_press, blur: handle_blur}, valueUpdate: 'afterkeydown'", :rows => "3"}
+          %textarea.entry_area{:spellcheck => "false", :cols => "33", "data-bind" => "style: {height:stave_height,width: $parent.composition_stave_width},css: {'parse_failed': $data.parse_failed},visible: editing(), value: source, event: { keypress: handle_key_press, blur: handle_blur}, valueUpdate: 'afterkeydown'", :rows => "3"}
   %br
   %br
   %button.controls{"data-bind" => "click: add_line"} New Line
