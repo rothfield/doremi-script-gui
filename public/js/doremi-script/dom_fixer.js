@@ -38,17 +38,15 @@
     return _results;
   };
   fallback_if_utf8_characters_not_supported = function() {
-    var tag, x;
-    if (!(window.left_repeat_width != null)) {
-      x = $('#testing_utf_support');
-      x.show();
-      window.left_repeat_width = $(x).width();
-      if (!(window.left_repeat_width != null)) {
-        window.left_repeat_width = 0;
-      }
-      x.hide();
+    var tag, width1, width2;
+    if (!(window.ok_to_use_utf8_music_characters != null)) {
+      width1 = $('#utf_left_repeat').show().width();
+      width2 = $('#utf_single_barline').show().width();
+      $('#utf_left_repeat').hide();
+      $('#utf_single_barline').hide();
+      window.ok_to_use_utf8_music_characters = width1 !== width2;
     }
-    if ((window.left_repeat_width === 0) || (window.left_repeat_width > 20)) {
+    if (!window.ok_to_use_utf8_music_characters) {
       tag = "data-fallback-if-no-utf8-chars";
       return $("span[" + tag + "]").each(function(index) {
         var attr, obj;
