@@ -59,6 +59,12 @@
         %button{"data-bind" => "visible: composition_lilypond_source_visible,click: refresh_composition_lilypond_source"} 
           Refresh 
         %div.composition_lilypond_source_div.like_pre{"data-bind" => "visible: composition_lilypond_source_visible,text: composition_lilypond_source,event:{dblclick:toggle_composition_lilypond_source_visible}"}
+      %p
+        %button{"data-bind" => "css: {button_on:composition_musicxml_source_visible},click: toggle_composition_musicxml_source_visible"} 
+          MusicXML Source 
+        %button{"data-bind" => "visible: composition_musicxml_source_visible,click: refresh_composition_musicxml_source"} 
+          Refresh 
+        %div.composition_musicxml_source_div.like_pre{"data-bind" => "visible: composition_musicxml_source_visible,text: composition_musicxml_source,event:{dblclick:toggle_composition_musicxml_source_visible}"}
   %br
   .composition
     %div.controls

@@ -166,8 +166,10 @@ span.note.barline {
     padding:.2em;
 }
 
-span.note.double_barline {
-    font-weight:bold;
+/* displayed as || */
+span.note.double_barline.dont_use_utf8_chars {
+    font-weight:normal;
+    letter-spacing: -0.2em;
 }
 
 div.composition {

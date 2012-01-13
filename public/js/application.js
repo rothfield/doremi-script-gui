@@ -138,7 +138,7 @@ $(document).ready(function() {
   Logger = _console.constructor;
   _console.level = Logger.WARN;
   _.mixin(_console.toObject());
-  initialData = "Title: sample_composition\n\n  .\n| S - - - |\n\n| R - - - |\n  hi\n";
+  initialData = "Title: sample_composition\n\n   .\n|: S - - -  :|\n\n|| R - - - ||\n   hi\n";
   handleFileSelect = __bind(function(evt) {
     var file, reader;
     file = document.getElementById('file').files[0];
@@ -164,6 +164,7 @@ $(document).ready(function() {
     };
     self.composition_stave_width = ko.observable(self.calculate_stave_width());
     self.composition_lilypond_source_visible = ko.observable(false);
+    self.composition_musicxml_source_visible = ko.observable(false);
     self.parsed_doremi_script_visible = ko.observable(false);
     self.composition_lilypond_output_visible = ko.observable(false);
     self.composition_lilypond_output = ko.observable(false);
@@ -179,6 +180,9 @@ $(document).ready(function() {
     };
     self.toggle_staff_notation_visible = function() {
       return self.staff_notation_visible(!self.staff_notation_visible());
+    };
+    self.toggle_composition_musicxml_source_visible = function() {
+      return self.composition_musicxml_source_visible(!self.composition_musicxml_source_visible());
     };
     self.toggle_composition_lilypond_source_visible = function() {
       return self.composition_lilypond_source_visible(!self.composition_lilypond_source_visible());
@@ -221,6 +225,7 @@ $(document).ready(function() {
     self.notes_used = ko.observable("");
     self.title = ko.observable("");
     self.generating_staff_notation = ko.observable(false);
+    self.composition_musicxml_source = ko.observable("");
     self.composition_lilypond_source = ko.observable("");
     self.composition_parsed_doremi_script = ko.observable();
     self.staff_notation_url = ko.observable(NONE_URL);
@@ -369,6 +374,9 @@ $(document).ready(function() {
       self.composition_info_visible(true);
       return self.load_locally(key);
     };
+    self.refresh_composition_musicxml_source = function(my_model) {
+      return self.composition_musicxml_source(self.get_musicxml_source());
+    };
     self.refresh_doremi_script_source = function(my_model) {
       return self.doremi_script_source(self.get_doremi_script_source());
     };
@@ -398,6 +406,9 @@ $(document).ready(function() {
       }
       source = localStorage[key];
       return window.the_composition.my_init(source);
+    };
+    self.get_musicxml_source = function() {
+      return window.to_musicxml(self.composition_parsed_doremi_script());
     };
     self.get_doremi_script_source = function() {
       var att, atts, atts_str, json_object, json_str, keys_to_use, line, lines, lines_str, value;

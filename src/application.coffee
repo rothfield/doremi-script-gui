@@ -117,11 +117,11 @@ $(document).ready ->
   initialData = """
   Title: sample_composition
   
-    .
-  | S - - - |
+     .
+  |: S - - -  :|
   
-  | R - - - |
-    hi
+  || R - - - ||
+     hi
   
   """
  
@@ -151,6 +151,7 @@ $(document).ready ->
     self.composition_stave_width= ko.observable(self.calculate_stave_width())
 
     self.composition_lilypond_source_visible=ko.observable(false)
+    self.composition_musicxml_source_visible=ko.observable(false)
     self.parsed_doremi_script_visible=ko.observable(false)
     self.composition_lilypond_output_visible=ko.observable(false)
     self.composition_lilypond_output=ko.observable(false)
@@ -164,6 +165,9 @@ $(document).ready ->
       self.parsed_doremi_script_visible(!self.parsed_doremi_script_visible())
     self.toggle_staff_notation_visible = () ->
       self.staff_notation_visible(!self.staff_notation_visible())
+
+    self.toggle_composition_musicxml_source_visible = () ->
+      self.composition_musicxml_source_visible(!self.composition_musicxml_source_visible())
 
     self.toggle_composition_lilypond_source_visible = () ->
       self.composition_lilypond_source_visible(!self.composition_lilypond_source_visible())
@@ -203,6 +207,7 @@ $(document).ready ->
     self.notes_used=ko.observable("")
     self.title=ko.observable("")
     self.generating_staff_notation=ko.observable(false)
+    self.composition_musicxml_source=ko.observable("")
     self.composition_lilypond_source=ko.observable("")
     self.composition_parsed_doremi_script=ko.observable()
     self.staff_notation_url=ko.observable(NONE_URL)
@@ -338,6 +343,8 @@ $(document).ready ->
 
       self.load_locally(key)
 
+    self.refresh_composition_musicxml_source = (my_model) ->
+      self.composition_musicxml_source(self.get_musicxml_source())
     self.refresh_doremi_script_source = (my_model) ->
       self.doremi_script_source(self.get_doremi_script_source())
     self.refresh_parsed_doremi_script = (my_model) ->
@@ -367,6 +374,8 @@ $(document).ready ->
       source=localStorage[key]
       window.the_composition.my_init(source)
 
+    self.get_musicxml_source = () ->
+      window.to_musicxml(self.composition_parsed_doremi_script())
     self.get_doremi_script_source = () ->
       keys_to_use=self.attribute_keys
       json_str=JSON.stringify(ko.toJS(self), null, 2)

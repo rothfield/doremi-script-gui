@@ -48,6 +48,7 @@
     }
     if (!window.ok_to_use_utf8_music_characters) {
       tag = "data-fallback-if-no-utf8-chars";
+      $("span[" + tag + "]").addClass('dont_use_utf8_chars');
       return $("span[" + tag + "]").each(function(index) {
         var attr, obj;
         obj = $(this);

@@ -93,6 +93,15 @@
             </button>
             <div class='composition_lilypond_source_div like_pre' data-bind='visible: composition_lilypond_source_visible,text: composition_lilypond_source,event:{dblclick:toggle_composition_lilypond_source_visible}'></div>
           </p>
+          <p>
+            <button data-bind='css: {button_on:composition_musicxml_source_visible},click: toggle_composition_musicxml_source_visible'>
+              MusicXML Source
+            </button>
+            <button data-bind='visible: composition_musicxml_source_visible,click: refresh_composition_musicxml_source'>
+              Refresh
+            </button>
+            <div class='composition_musicxml_source_div like_pre' data-bind='visible: composition_musicxml_source_visible,text: composition_musicxml_source,event:{dblclick:toggle_composition_musicxml_source_visible}'></div>
+          </p>
         </div>
       </fieldset>
       <br />

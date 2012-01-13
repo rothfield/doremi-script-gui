@@ -260,7 +260,7 @@
       "reverse_final_barline": '\\bar "|."',
       "final_barline": '\\bar "||"',
       "double_barline": '\\bar "||" ',
-      "single_barline": '\\bar "|" ',
+      "single_barline": "|",
       "left_repeat": '\\bar "|:" ',
       "right_repeat": '\\bar ":|" '
     };
@@ -500,7 +500,7 @@
     if (options.omit_header) {
       title_snippet = composer_snippet = "";
     }
-    lilypond_template = "#(ly:set-option 'midi-extension \"mid\")\n\\version \"2.12.3\"\n\\include \"english.ly\"\n\\header{ " + title_snippet + " " + composer_snippet + " }\n\\include \"english.ly\"\n%{\n" + src + "  \n%}\nmelody = {\n\\clef treble\n" + key_snippet + "\n\\time " + time + "\n\\autoBeamOn  \n" + notes + "\n}\n\ntext = \\lyricmode {\n" + (extract_lyrics(composition_data).join(' ')) + "\n}\n\n\\score{\n" + transpose_snip + "\n<<\n\\new Voice = \"one\" {\n  \\melody\n}\n\\new Lyrics \\lyricsto \"one\" \\text\n>>\n\\layout { }\n\\midi { }\n}";
+    lilypond_template = "#(ly:set-option 'midi-extension \"mid\")\n\\version \"2.12.3\"\n\\include \"english.ly\"\n\\header{ " + title_snippet + " " + composer_snippet + " }\n%{\n" + src + "  \n%}\nmelody = {\n\\clef treble\n" + key_snippet + "\n\\time " + time + "\n\\autoBeamOn  \n" + notes + "\n}\n\ntext = \\lyricmode {\n" + (extract_lyrics(composition_data).join(' ')) + "\n}\n\n\\score{\n" + transpose_snip + "\n<<\n\\new Voice = \"one\" {\n  \\melody\n}\n\\new Lyrics \\lyricsto \"one\" \\text\n>>\n\\layout {\n\\context {\n     \\Score\n  \\remove \"Bar_number_engraver\"\n} \n}\n\\midi { }\n}";
     return lilypond_template;
   };
   root.to_lilypond = to_lilypond;
