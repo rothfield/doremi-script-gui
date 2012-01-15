@@ -8,7 +8,7 @@ var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments)
 root = typeof exports !== "undefined" && exports !== null ? exports : this;
 $(document).ready(function() {
   var LineViewModel, Logger, NONE_URL, compositions_in_local_storage, handleFileSelect, id, initialData;
-  NONE_URL = "/images/none.png";
+  NONE_URL = "images/none.png";
   id = 1000;
   LineViewModel = function(line) {
     if (line == null) {
@@ -253,7 +253,7 @@ $(document).ready(function() {
       lilypond_source = self.composition_lilypond_source();
       console.log("lilypond_source", lilypond_source);
       ts = new Date().getTime();
-      url = 'http://ragapedia.com:9292/lilypond_to_jpg';
+      url = '/lilypond_server/lilypond_to_jpg';
       timeout_in_seconds = 60;
       my_data = {
         fname: "composition_" + (self.id()),
@@ -261,9 +261,9 @@ $(document).ready(function() {
         doremi_script_source: self.doremi_script_source()
       };
       obj = {
-        dataType: "jsonp",
+        dataType: "json",
         timeout: timeout_in_seconds * 1000,
-        type: 'GET',
+        type: 'POST',
         url: url,
         data: my_data,
         error: function(some_data) {

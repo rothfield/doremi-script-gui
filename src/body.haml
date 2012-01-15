@@ -73,7 +73,7 @@
           Generate staff notation
         %button{"data-bind" => "css: {button_on:staff_notation_visible},click: toggle_staff_notation_visible"} 
           Show Staff Notation
-      %img.spinner{"data-bind" => "visible: generating_staff_notation", "src" => "/images/musical-notes-animated.gif", "width" => '50px'}
+      %img.spinner{"data-bind" => "visible: generating_staff_notation", "src" => "images/musical-notes-animated.gif", "width" => '50px'}
     %div.staff_notation_div{"data-bind" => "visible: staff_notation_visible"}
       %img.staff_notation{"data-bind" => "attr: {src:staff_notation_url_with_time_stamp}"}
     %br

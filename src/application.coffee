@@ -1,7 +1,7 @@
 root = exports ? this
 
 $(document).ready ->
-  NONE_URL="/images/none.png"
+  NONE_URL="images/none.png"
   id=1000
 
   LineViewModel = (line= {source: "",rendered_in_html:"(Empty Line)"}) ->  # parameter is PARSED line
@@ -225,7 +225,7 @@ $(document).ready ->
 
     self.generate_staff_notation = (my_model) ->
       # generate staff notation by converting doremi_script
-      # to lilypond and call a jsonp web service
+      # to lilypond and call a web service
       console.log "entering generate_staff_notation"
       self.generating_staff_notation(true)
       self.refresh_doremi_script_source()
@@ -235,16 +235,16 @@ $(document).ready ->
       lilypond_source=self.composition_lilypond_source()
       console.log "lilypond_source",lilypond_source
       ts= new Date().getTime()
-      url='http://ragapedia.com:9292/lilypond_to_jpg'
+      url='/lilypond_server/lilypond_to_jpg'
       timeout_in_seconds=60
       my_data =
         fname: "composition_#{self.id()}"
         lilypond: lilypond_source
         doremi_script_source: self.doremi_script_source() 
       obj=
-        dataType : "jsonp",
+        dataType : "json",
         timeout : timeout_in_seconds * 1000  # milliseconds
-        type:'GET'
+        type:'POST'
         url: url
         data: my_data
         error: (some_data) ->
