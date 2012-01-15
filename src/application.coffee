@@ -6,13 +6,25 @@ $(document).ready ->
 
   LineViewModel = (line= {source: "",rendered_in_html:"(Empty Line)"}) ->  # parameter is PARSED line
     id: "#{id++}"
-    parse_failed: ko.observable(false)
-    parse_warnings: ko.observable(false)
-    #if composition_data.warnings.length > 0
-    #  $('#warnings_div').html "The following warnings were reported:<br/>"+composition_data.warnings.join('<br/>')
+
+    ### TODO: make computed with throttle? ###
+    line_parsed_doremi_script: ko.observable(null)
+
+    line_parse_failed: ko.observable(false)
+
+    line_parsed_doremiscript_warnings: ko.computed () ->
+      return [] if this.document?
+      parse_tree= self.line_parsed_doremi_script()
+      return [] if !parse_tree?
+      return [] if !parse_tree.warnings?
+      parse_tree.warnings
+    line_parsed_doremiscript_has_warnings: ko.computed () ->
+      return false if this.document?
+      parse_tree= self.line_parsed_doremi_script()
+      return false if !parse_tree?
+      return false if !parse_tree.warnings?
     parse_tree_visible: ko.observable(false)
     parse_tree_text: ko.observable("parse tree text here")
-    warnings: ko.observable("")
     checkbox_name: ko.observable("checkbox_#{line.index}")
     radio_group_name: ko.observable("group_#{line.index}")
     editing: ko.observable(false)
@@ -47,6 +59,7 @@ $(document).ready ->
       return true
     handle_blur: (event) ->
       #this.parse()
+    
     edit: (my_model,event) ->
       this.editing(true)
       current_target=event.currentTarget
@@ -73,19 +86,23 @@ $(document).ready ->
       let_default_action_proceed=true
       let_default_action_proceed
     parse: () ->
+      return null if this.document?
       if this.source is "" or this.source is null
         this.rendered_in_html("(empty line)<br/><br/><br/><br/>")
         this.parse_tree_text("")
         return
       try
         result=DoremiScriptLineParser.parse(this.source)
+        this.line_parsed_doremi_script(result)
         this.rendered_in_html(line_to_html(result))
         this.parse_tree_text("Parsing completed with no errors \n"+JSON.stringify(result,null,"  "))
-        this.parse_failed(false)
+        this.line_parse_failed(false)
         dom_fixes()
       catch err
-        result="failed"
-        this.parse_failed(true)
+        console.log "line.parse - ERROR is #{err}"
+        result="failed. (#{err})"
+        this.line_parsed_doremi_script(null)
+        this.line_parse_failed(true)
         this.parse_tree_text("Parsing failed")
         this.rendered_in_html("<pre>Didn't parse\n\n#{this.source}</pre>")
       finally
@@ -126,6 +143,7 @@ $(document).ready ->
   """
  
   handleFileSelect = (evt) =>
+
     # Handler for file upload button(HTML5)
     file = document.getElementById('file').files[0]
     reader=new FileReader()
@@ -182,7 +200,7 @@ $(document).ready ->
         self.composition_parse_tree_text("Parsing completed with no errors \n"+JSON.stringify(result,null,"  "))
         self.composition_parse_failed(false) 
       catch err
-        result="failed"
+        result="failed. (#{err})"
         console.log("parse_composition, ERROR=",err)
         self.composition_parsed_doremi_script(null)
         self.composition_parse_failed(true)
@@ -210,6 +228,11 @@ $(document).ready ->
     self.composition_musicxml_source=ko.observable("")
     self.composition_lilypond_source=ko.observable("")
     self.composition_parsed_doremi_script=ko.observable()
+    self.composition_parse_warnings = ko.computed () ->
+      parse_tree= self.composition_parsed_doremi_script()
+      return false if !parse_tree?
+      return false if !parse_tree.warnings?
+      parse_tree.warnings.length > 0
     self.staff_notation_url=ko.observable(NONE_URL)
     
     self.keys=["C","C#","D","D#","E","F","F#","G","G#","A","A#","B","Db","Eb","Gb","Ab","Bb"]
@@ -269,7 +292,7 @@ $(document).ready ->
       try
         ret_val=DoremiScriptParser.parse(doremi_script_source_param)
       catch err
-        console.log err
+        console.log "composition.parse- error is #{err}"
         ret_val=null
       finally
       ret_val
@@ -306,7 +329,7 @@ $(document).ready ->
     self.add_line = () ->
       self.lines.push(x=new LineViewModel())
       x.parse()
-      ko.applyBindings(x)
+      #ko.applyBindings(x)
 
     self.re_index_lines = () ->
       ctr=0
@@ -340,7 +363,6 @@ $(document).ready ->
       return if !this.selected_composition()
       key=this.selected_composition().key
       self.composition_info_visible(true)
-
       self.load_locally(key)
 
     self.refresh_composition_musicxml_source = (my_model) ->
@@ -407,7 +429,6 @@ $(document).ready ->
       localStorage.setItem("composition_#{self.id()}",self.doremi_script_source())
       # NOT WORKING
       #self.available_compositions(compositions_in_local_storage())
-      
     self.my_init(my_doremi_script_source) if my_doremi_script_source?
     self
 

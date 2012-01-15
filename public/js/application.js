@@ -19,11 +19,38 @@ $(document).ready(function() {
     }
     return {
       id: "" + (id++),
-      parse_failed: ko.observable(false),
-      parse_warnings: ko.observable(false),
+      /* TODO: make computed with throttle? */
+      line_parsed_doremi_script: ko.observable(null),
+      line_parse_failed: ko.observable(false),
+      line_parsed_doremiscript_warnings: ko.computed(function() {
+        var parse_tree;
+        if (this.document != null) {
+          return [];
+        }
+        parse_tree = self.line_parsed_doremi_script();
+        if (!(parse_tree != null)) {
+          return [];
+        }
+        if (!(parse_tree.warnings != null)) {
+          return [];
+        }
+        return parse_tree.warnings;
+      }),
+      line_parsed_doremiscript_has_warnings: ko.computed(function() {
+        var parse_tree;
+        if (this.document != null) {
+          return false;
+        }
+        parse_tree = self.line_parsed_doremi_script();
+        if (!(parse_tree != null)) {
+          return false;
+        }
+        if (!(parse_tree.warnings != null)) {
+          return false;
+        }
+      }),
       parse_tree_visible: ko.observable(false),
       parse_tree_text: ko.observable("parse tree text here"),
-      warnings: ko.observable(""),
       checkbox_name: ko.observable("checkbox_" + line.index),
       radio_group_name: ko.observable("group_" + line.index),
       editing: ko.observable(false),
@@ -91,6 +118,9 @@ $(document).ready(function() {
       },
       parse: function() {
         var result;
+        if (this.document != null) {
+          return null;
+        }
         if (this.source === "" || this.source === null) {
           this.rendered_in_html("(empty line)<br/><br/><br/><br/>");
           this.parse_tree_text("");
@@ -98,13 +128,16 @@ $(document).ready(function() {
         }
         try {
           result = DoremiScriptLineParser.parse(this.source);
+          this.line_parsed_doremi_script(result);
           this.rendered_in_html(line_to_html(result));
           this.parse_tree_text("Parsing completed with no errors \n" + JSON.stringify(result, null, "  "));
-          this.parse_failed(false);
+          this.line_parse_failed(false);
           return dom_fixes();
         } catch (err) {
-          result = "failed";
-          this.parse_failed(true);
+          console.log("line.parse - ERROR is " + err);
+          result = "failed. (" + err + ")";
+          this.line_parsed_doremi_script(null);
+          this.line_parse_failed(true);
           this.parse_tree_text("Parsing failed");
           return this.rendered_in_html("<pre>Didn't parse\n\n" + this.source + "</pre>");
         } finally {
@@ -197,7 +230,7 @@ $(document).ready(function() {
         self.composition_parse_tree_text("Parsing completed with no errors \n" + JSON.stringify(result, null, "  "));
         return self.composition_parse_failed(false);
       } catch (err) {
-        result = "failed";
+        result = "failed. (" + err + ")";
         console.log("parse_composition, ERROR=", err);
         self.composition_parsed_doremi_script(null);
         self.composition_parse_failed(true);
@@ -228,6 +261,17 @@ $(document).ready(function() {
     self.composition_musicxml_source = ko.observable("");
     self.composition_lilypond_source = ko.observable("");
     self.composition_parsed_doremi_script = ko.observable();
+    self.composition_parse_warnings = ko.computed(function() {
+      var parse_tree;
+      parse_tree = self.composition_parsed_doremi_script();
+      if (!(parse_tree != null)) {
+        return false;
+      }
+      if (!(parse_tree.warnings != null)) {
+        return false;
+      }
+      return parse_tree.warnings.length > 0;
+    });
     self.staff_notation_url = ko.observable(NONE_URL);
     self.keys = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B", "Db", "Eb", "Gb", "Ab", "Bb"];
     self.key = ko.observable("");
@@ -293,7 +337,7 @@ $(document).ready(function() {
       try {
         ret_val = DoremiScriptParser.parse(doremi_script_source_param);
       } catch (err) {
-        console.log(err);
+        console.log("composition.parse- error is " + err);
         ret_val = null;
       } finally {
 
@@ -326,8 +370,7 @@ $(document).ready(function() {
     self.add_line = function() {
       var x;
       self.lines.push(x = new LineViewModel());
-      x.parse();
-      return ko.applyBindings(x);
+      return x.parse();
     };
     self.re_index_lines = function() {
       var ctr, line, _i, _len, _ref, _results;
