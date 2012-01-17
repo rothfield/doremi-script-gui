@@ -1,9 +1,21 @@
+div.edit_line_wrapper.line_has_warnings {
+  border-color: orange;
+  border-width: 2px;
+}
+div.edit_line_wrapper.line_parse_failed {
+  border-color: red;
+  border-width: 2px;
+}
+
 .like_pre {
    font-family: monospace;
    white-space: pre; 
    border: 2px dotted #CCCCCC;
 }
 
+button.toggle_line_parse_tree {
+  margin-left: 10em;
+}
 button.button_on {
   background-color: black;
   color: white;

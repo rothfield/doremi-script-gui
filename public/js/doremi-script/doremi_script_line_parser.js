@@ -8457,6 +8457,8 @@ DoremiScriptLineParser = (function(){
       
     map_ornaments=Helper.map_ornaments
       
+    push_warning =Helper.push_warning
+      
     parse_ornament=Helper.parse_ornament
       
     parse_composition=Helper.parse_composition

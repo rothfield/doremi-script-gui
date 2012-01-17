@@ -64,6 +64,7 @@
     },
     parse_line: function(uppers, sargam, lowers, lyrics) {
       var attribute_lines, ctr, item, lower, lyric, my_items, my_items2, my_line, my_lowers, my_uppers, upper, x, _i, _j, _k, _l, _len, _len2, _len3, _len4;
+      this.line_warnings = [];
       if (lyrics.length === 0) {
         lyrics = '';
       }
@@ -110,6 +111,7 @@
       attribute_lines = _.flatten(_.compact([uppers, lowers, lyrics]));
       this.assign_attributes(sargam, attribute_lines);
       this.assign_lyrics(sargam, lyrics);
+      sargam.line_warnings = this.line_warnings;
       return sargam;
     },
     parse_composition: function(attributes, lines) {
@@ -145,7 +147,7 @@
       x = get_composition_attribute(this.composition_data, "NotesUsed");
       valid = true;
       if ((x != null) && (/^[sSrRgGmMpPdDnN]*$/.test(x) === false)) {
-        warnings.push("ForceSargamChars should be all sargam characters, for example 'SrGmMdN'");
+        this.warnings.push("ForceSargamChars should be all sargam characters, for example 'SrGmMdN'");
         valid = false;
       }
       this.composition_data.notes_used = x || "";
@@ -178,14 +180,14 @@
       this.composition_data.mode = x || "major";
       x = get_composition_attribute(this.composition_data, "Key");
       if ((x != null) && !valid_abc_pitch(x)) {
-        warnings.push("Invalid key " + x + ". Valid keys are C,D,Eb,F# etc");
+        this.warnings.push("Invalid key " + x + ". Valid keys are C,D,Eb,F# etc");
         x = "C";
       }
       this.composition_data.key = x || "C";
       x = get_composition_attribute(this.composition_data, "Filename");
       if ((x != null) && x !== "") {
         if (/^[a-zA-Z0-9_]+$/.test(x) === false) {
-          warnings.push("Filename must consist of alphanumeric characters plus underscores only");
+          this.warnings.push("Filename must consist of alphanumeric characters plus underscores only");
           x = "untitled";
         }
       }
@@ -587,7 +589,7 @@
         return item_has_attribute(item, 'end_slur');
       }, this));
       if (x.length !== y.length) {
-        this.warnings.push("Error on line ? unbalanced parens, line was " + line.source + " Note that parens are used for slurs and should bracket pitches as so (S--- R)--- and NOT  (S--) ");
+        this.push_warning("Error on line ? unbalanced parens, line was " + line.source + " Note that parens are used for slurs and should bracket pitches as so (S--- R)--- and NOT  (S--) ");
         return true;
       }
       return false;
@@ -646,7 +648,11 @@
         s.attributes.push(ornament);
         return;
       }
-      return this.warnings.push(("" + ornament.my_type + " (" + ornament.source + ") not to right ") + ("or left of pitch , column is " + ornament.column));
+      return this.push_warning(("" + ornament.my_type + " (" + ornament.source + ") not to right ") + ("or left of pitch , column is " + ornament.column));
+    },
+    push_warning: function(str) {
+      this.warnings.push(str);
+      return this.line_warnings.push(str);
     },
     check_semantics: function(sargam, sarg_obj, attribute, sargam_nodes) {
       var srgmpdn_in_devanagri;
@@ -658,7 +664,7 @@
         return false;
       }
       if (!sarg_obj) {
-        this.warnings.push("Attribute " + attribute.my_type + " (" + attribute.source + ") above/below nothing, column is " + attribute.column);
+        push_warning("Attribute " + attribute.my_type + " (" + attribute.source + ") above/below nothing, column is " + attribute.column);
         return false;
       }
       if (attribute.my_type === "kommal_indicator") {
@@ -667,12 +673,12 @@
           sarg_obj.normalized_pitch = sarg_obj.normalized_pitch + "b";
           return true;
         }
-        this.warnings.push("Error on line ?, column " + sarg_obj.column + ("kommal indicator below non-devanagri pitch. Type of obj was " + sarg_obj.my_type + ". sargam line was:") + sargam.source);
+        push_warning("Error on line ?, column " + sarg_obj.column + ("kommal indicator below non-devanagri pitch. Type of obj was " + sarg_obj.my_type + ". sargam line was:") + sargam.source);
         return false;
       }
       if (attribute.octave != null) {
         if (sarg_obj.my_type !== 'pitch') {
-          this.warnings.push("Error on line ?, column " + sarg_obj.column + ("" + attribute.my_type + " below non-pitch. Type of obj was " + sarg_obj.my_type + ". sargam line was:") + sargam.source);
+          push_warning("Error on line ?, column " + sarg_obj.column + ("" + attribute.my_type + " below non-pitch. Type of obj was " + sarg_obj.my_type + ". sargam line was:") + sargam.source);
           return false;
         }
         sarg_obj.octave = attribute.octave;
@@ -680,7 +686,7 @@
       }
       if (attribute.syllable != null) {
         if (sarg_obj.my_type !== 'pitch') {
-          this.warnings.push("Error on line ?, column " + sarg_obj.column + ("syllable " + attribute.syllable + " below non-pitch. Type of obj was " + sarg_obj.my_type + ". sargam line was:") + sargam.source);
+          push_warning("Error on line ?, column " + sarg_obj.column + ("syllable " + attribute.syllable + " below non-pitch. Type of obj was " + sarg_obj.my_type + ". sargam line was:") + sargam.source);
           return false;
         }
         sarg_obj.syllable = attribute.syllable;

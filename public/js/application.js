@@ -22,33 +22,9 @@ $(document).ready(function() {
       /* TODO: make computed with throttle? */
       line_parsed_doremi_script: ko.observable(null),
       line_parse_failed: ko.observable(false),
-      line_parsed_doremiscript_warnings: ko.computed(function() {
-        var parse_tree;
-        if (this.document != null) {
-          return [];
-        }
-        parse_tree = self.line_parsed_doremi_script();
-        if (!(parse_tree != null)) {
-          return [];
-        }
-        if (!(parse_tree.warnings != null)) {
-          return [];
-        }
-        return parse_tree.warnings;
-      }),
-      line_parsed_doremiscript_has_warnings: ko.computed(function() {
-        var parse_tree;
-        if (this.document != null) {
-          return false;
-        }
-        parse_tree = self.line_parsed_doremi_script();
-        if (!(parse_tree != null)) {
-          return false;
-        }
-        if (!(parse_tree.warnings != null)) {
-          return false;
-        }
-      }),
+      line_warnings: ko.observable([]),
+      line_has_warnings: ko.observable(false),
+      line_warnings_visible: ko.observable(false),
       parse_tree_visible: ko.observable(false),
       parse_tree_text: ko.observable("parse tree text here"),
       checkbox_name: ko.observable("checkbox_" + line.index),
@@ -83,6 +59,9 @@ $(document).ready(function() {
         this.editing(false);
         dom_fixes();
         return true;
+      },
+      toggle_line_warnings_visible: function(event) {
+        return this.line_warnings_visible(!this.line_warnings_visible());
       },
       toggle_parse_tree_visible: function(event) {
         this.parse_tree_visible(!this.parse_tree_visible());
@@ -132,11 +111,14 @@ $(document).ready(function() {
           this.rendered_in_html(line_to_html(result));
           this.parse_tree_text("Parsing completed with no errors \n" + JSON.stringify(result, null, "  "));
           this.line_parse_failed(false);
+          this.line_warnings(result.line_warnings);
+          this.line_has_warnings(result.line_warnings.length > 0);
           return dom_fixes();
         } catch (err) {
           console.log("line.parse - ERROR is " + err);
           result = "failed. (" + err + ")";
           this.line_parsed_doremi_script(null);
+          this.line_warnings([]);
           this.line_parse_failed(true);
           this.parse_tree_text("Parsing failed");
           return this.rendered_in_html("<pre>Didn't parse\n\n" + this.source + "</pre>");

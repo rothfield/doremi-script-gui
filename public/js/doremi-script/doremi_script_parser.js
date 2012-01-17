@@ -8370,6 +8370,8 @@ DoremiScriptParser = (function(){
       
     sa_helper=Helper.sa_helper
       
+    push_warning=Helper.push_warning
+      
     parse_line=Helper.parse_line
       
     handle_ornament=Helper.handle_ornament

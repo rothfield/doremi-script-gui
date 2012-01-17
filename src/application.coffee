@@ -11,18 +11,9 @@ $(document).ready ->
     line_parsed_doremi_script: ko.observable(null)
 
     line_parse_failed: ko.observable(false)
-
-    line_parsed_doremiscript_warnings: ko.computed () ->
-      return [] if this.document?
-      parse_tree= self.line_parsed_doremi_script()
-      return [] if !parse_tree?
-      return [] if !parse_tree.warnings?
-      parse_tree.warnings
-    line_parsed_doremiscript_has_warnings: ko.computed () ->
-      return false if this.document?
-      parse_tree= self.line_parsed_doremi_script()
-      return false if !parse_tree?
-      return false if !parse_tree.warnings?
+    line_warnings: ko.observable([])
+    line_has_warnings: ko.observable(false)
+    line_warnings_visible: ko.observable(false)
     parse_tree_visible: ko.observable(false)
     parse_tree_text: ko.observable("parse tree text here")
     checkbox_name: ko.observable("checkbox_#{line.index}")
@@ -54,6 +45,9 @@ $(document).ready ->
       this.editing(false)
       dom_fixes()
       return true
+    
+    toggle_line_warnings_visible: (event) ->
+      this.line_warnings_visible(!this.line_warnings_visible())
     toggle_parse_tree_visible: (event) ->
       this.parse_tree_visible(!this.parse_tree_visible())
       return true
@@ -94,14 +88,20 @@ $(document).ready ->
       try
         result=DoremiScriptLineParser.parse(this.source)
         this.line_parsed_doremi_script(result)
+        
         this.rendered_in_html(line_to_html(result))
         this.parse_tree_text("Parsing completed with no errors \n"+JSON.stringify(result,null,"  "))
         this.line_parse_failed(false)
+        this.line_warnings(result.line_warnings)
+        this.line_has_warnings(result.line_warnings.length > 0)
+        # this.line_has_warnings(result.warnings? and result.warnings.length > 0)
+
         dom_fixes()
       catch err
         console.log "line.parse - ERROR is #{err}"
         result="failed. (#{err})"
         this.line_parsed_doremi_script(null)
+        this.line_warnings([])
         this.line_parse_failed(true)
         this.parse_tree_text("Parsing failed")
         this.rendered_in_html("<pre>Didn't parse\n\n#{this.source}</pre>")
