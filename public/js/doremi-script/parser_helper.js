@@ -193,7 +193,7 @@
       }
       this.composition_data.filename = x || "untitled";
       x = get_composition_attribute(this.composition_data, "Title");
-      this.composition_data.title = x || "Untitled";
+      this.composition_data.title = x || "";
       x = get_composition_attribute(this.composition_data, "Source");
       this.composition_data.source = x || "";
       x = get_composition_attribute(this.composition_data, "Author");

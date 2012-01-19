@@ -4,6 +4,9 @@ $(document).ready ->
   NONE_URL="images/none.png"
   id=1000
 
+  message_box= (str) ->
+    alert(str)
+
   LineViewModel = (line= {source: "",rendered_in_html:"(Empty Line)"}) ->  # parameter is PARSED line
     id: "#{id++}"
 
@@ -88,7 +91,6 @@ $(document).ready ->
       try
         result=DoremiScriptLineParser.parse(this.source)
         this.line_parsed_doremi_script(result)
-        
         this.rendered_in_html(line_to_html(result))
         this.parse_tree_text("Parsing completed with no errors \n"+JSON.stringify(result,null,"  "))
         this.line_parse_failed(false)
@@ -108,30 +110,13 @@ $(document).ready ->
       finally
         this.last_value_rendered=this.source
   
-  compositions_in_local_storage = () ->
-    Item = (key, doremi_script) ->
-      # For list of compositions in local storage, grab the key and title
-      @key = key
-      # Grab the Title from the doremi script source
-      ary= /Title: ([^\n]+)\n/.exec(doremi_script)
-      @title= if !ary? then "untitled" else ary[1]
-      this
-    items=[]
-    ctr=0
-    if localStorage.length > 0
-      while ctr < localStorage.length
-        key=localStorage.key(ctr)
-        if key.indexOf("composition_") is 0  # key starts with composition_
-           items.push new Item(key,localStorage[key])
-        ctr++
-    items
 
   Logger=_console.constructor
   # _console.level  = Logger.DEBUG
   _console.level  = Logger.WARN
   _.mixin(_console.toObject())
   
-  initialData = """
+  unused_initialData = """
   Title: sample_composition
   
      .
@@ -141,6 +126,7 @@ $(document).ready ->
      hi
   
   """
+  initialData = ""
  
   handleFileSelect = (evt) =>
 
@@ -161,12 +147,17 @@ $(document).ready ->
     self.composition_parse_tree_text=ko.observable("")
     self.doremi_script_source= ko.observable(my_doremi_script_source)
     self.open_file_visible=ko.observable(false)
-    self.composition_info_visible=ko.observable(false)
+    self.composition_info_visible=ko.observable(true)
     self.composition_parse_failed=ko.observable(false)
     self.calculate_stave_width=() ->
-      "#{$('div.composition_body').width()-50}px"
+      width=$('div.composition_body').width()
+      "#{width-50}px"
+    self.calculate_textarea_width=() ->
+      width=$('div.composition_body').width()
+      "#{(width-50)/2}px"
 
     self.composition_stave_width= ko.observable(self.calculate_stave_width())
+    self.composition_textarea_width= ko.observable(self.calculate_textarea_width())
 
     self.composition_lilypond_source_visible=ko.observable(false)
     self.composition_musicxml_source_visible=ko.observable(false)
@@ -176,6 +167,10 @@ $(document).ready ->
     self.doremi_script_source_visible=ko.observable(false)
     self.composition_handle_resize= (my_model) ->
       console.log "handle_resize"
+
+    self.toggle_composition_select_visible= (event) ->
+      self.composition_select_visible(!this.composition_select_visible())
+      self.refresh_compositions_in_local_storage()
 
     self.toggle_open_file_visible = () ->
       self.open_file_visible(!self.open_file_visible())
@@ -261,7 +256,7 @@ $(document).ready ->
       url='/lilypond_server/lilypond_to_jpg'
       timeout_in_seconds=60
       my_data =
-        fname: "composition_#{self.id()}"
+        fname: "#{self.title()}_#{self.author()}_#{self.id()}"
         lilypond: lilypond_source
         doremi_script_source: self.doremi_script_source() 
       obj=
@@ -313,8 +308,6 @@ $(document).ready ->
       ]
     self.my_init = (doremi_script_source_param) ->
       console.log("Entering CompositionViewModel.init, source is",doremi_script_source_param)
-      list=compositions_in_local_storage()
-      self.available_compositions = ko.observableArray(list)
       parsed=self.parse(doremi_script_source_param)
       console.log "parsed",parsed
       if !parsed
@@ -355,16 +348,23 @@ $(document).ready ->
       return if !res
       self.lines.remove(line)
 
+    self.composition_select_visible= ko.observable(false)
+
     self.composition_select= (my_model,event) ->
+      console.log "composition_select"
       # User clicked on the locally saved compositions select list
       # Load from local storage
       #
       # Loads the composition selected from the local storage select list
       return if !this.selected_composition()
       key=this.selected_composition().key
+      
       self.composition_info_visible(true)
-      self.load_locally(key)
-
+      self.loading_localy=true
+      try
+        self.load_locally(key)
+      finally
+        self.loading_locally=false
     self.refresh_composition_musicxml_source = (my_model) ->
       self.composition_musicxml_source(self.get_musicxml_source())
     self.refresh_doremi_script_source = (my_model) ->
@@ -377,25 +377,57 @@ $(document).ready ->
       options= { omit_header: true }
       self.composition_lilypond_source(window.to_lilypond(parsed,options))
 
+    self.saveable = ko.computed () ->
+      self.lines().length > 0 and self.title isnt ""
+    self.print_composition = () ->
+      line.editing(false) for line in self.lines()
+      window.print()
     self.new_composition = () ->
-      #if confirm("Save current composition?")
-      #  self.save_locally()
-      initialData = """
-      Title: Untitled
-
-      |S
-      """
+      if self.saveable()
+        if confirm("Save current composition in localStorage?")
+          self.save_locally()
+      initialData = ""
       window.the_composition.my_init(initialData)
-      self.add_line()
+      message_box("An untitled composition was created with a new id. Please enter a title")
+      self.composition_info_visible(true)
+      $('#composition_title').focus()
+
+    self.refresh_compositions_in_local_storage  = () ->
+      console.log "refresh_compositions_in_local_storage"
+      Item = (key, doremi_script) ->
+        # For list of compositions in local storage, grab the key and title
+        @key = key
+        # Grab the Title from the doremi script source
+        ary= /Title: ([^\n]+)\n/.exec(doremi_script)
+        @title= if !ary? then "untitled" else ary[1]
+        this
+      items=[]
+      ctr=0
+      if localStorage.length > 0
+        while ctr < localStorage.length
+          key=localStorage.key(ctr)
+          if key.indexOf("composition_") is 0  # key starts with composition_
+             items.push new Item(key,localStorage[key])
+          ctr++
+      items
+      self.compositions_in_local_storage(items)
+
+    self.compositions_in_local_storage = ko.observable([])
       
     self.load_locally = (key) ->
+      return if self.loading_locally # avoid calling more than once
       console.log "load_locally"
       if key is "composition_#{window.the_composition.id()}"
-        alert("This is the file you are currently editing")
+        self.composition_select_visible(false)
+        message_box("This is the file you are currently editing")
         return
+      if self.saveable() # TODO:dry
+        if confirm("Save current composition in localStorage before continuing?")
+          self.save_locally()
       source=localStorage[key]
       window.the_composition.my_init(source)
-
+      self.composition_select_visible(false)
+      message_box("#{self.title()} was loaded from your browser's localStorage")
     self.get_musicxml_source = () ->
       window.to_musicxml(self.composition_parsed_doremi_script())
     self.get_doremi_script_source = () ->
@@ -427,8 +459,8 @@ $(document).ready ->
       self.doremi_script_source(self.get_doremi_script_source())
       console.log('self.doremi_script_source()',self.doremi_script_source())
       localStorage.setItem("composition_#{self.id()}",self.doremi_script_source())
+      message_box("#{self.title()} was saved in your browser's localStorage")
       # NOT WORKING
-      #self.available_compositions(compositions_in_local_storage())
     self.my_init(my_doremi_script_source) if my_doremi_script_source?
     self
 
@@ -443,7 +475,7 @@ $(document).ready ->
     which_line=null
     src=null
     for line in window.the_composition.lines()
-      which_line=line if line.last_value_rendered isnt  line.source
+      which_line=line if line.last_value_rendered isnt line.source
       break if which_line
     if which_line?
       which_line.parse()
@@ -454,4 +486,5 @@ $(document).ready ->
   )
   
   window.timed_count()
+  $('#composition_title').focus()
 

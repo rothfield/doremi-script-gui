@@ -10,60 +10,82 @@
   <body data-bind='event: {resize: composition_handle_resize}'>
     <div class='liveExample'>
       <div class='controls'>
-        <p>
-          Locally saved compositions:
-          <select data-bind="options: available_compositions, optionsText: 'title', value: selected_composition, optionsCaption: 'Open',click: composition_select">
-            <option value=''>Open</option>
-            <option value=''></option>
-          </select>
-          <button data-bind='click: save_locally, enable: lines().length &gt; 0'>Save locally</button>
-          <button data-bind='click: new_composition'>
-            New Composition
-          </button>
-          <button data-bind='css: {button_on:open_file_visible},click: toggle_open_file_visible'>
-            Open File
-          </button>
-          <div class='open_file_div' data-bind='visible:open_file_visible'>
-            <label>Open:</label>
-            <input id='file' name='files[]' type='file' />
-          </div>
-        </p>
+        <button data-bind='click: toggle_composition_select_visible'>
+          Open locally saved
+        </button>
+        <select data-bind="visible: composition_select_visible, options: compositions_in_local_storage, optionsText: 'title', value: selected_composition,click: composition_select" size='4'></select>
+        <button data-bind='click: save_locally, enable: saveable'>
+          Save locally
+        </button>
+        <button data-bind='click: new_composition'>
+          New Composition
+        </button>
+        <button data-bind='click: print_composition'>
+          Print
+        </button>
+        <button data-bind='css: {button_on:open_file_visible},click: toggle_open_file_visible'>
+          Open File
+        </button>
+        <div class='open_file_div' data-bind='visible:open_file_visible'>
+          <label>Open:</label>
+          <input id='file' name='files[]' type='file' />
+        </div>
       </div>
       <fieldset class='controls' id='composition_info'>
         <legend data-bind='click: toggle_composition_info_visible' id='composition_info_legend'>
-          Composition Info(Click to hide/show)
+          <span data-bind='text: title'></span>
+          (Click to hide/show composition info such as title and key)
         </legend>
         <div data-bind='visible: composition_info_visible' id='composition_info_content' style=''>
           <p>
-            Raga:
-            <input data-bind='value: raga' />
+            <label>
+              Title:
+            </label>
+            <input data-bind='value: title' id='composition_title' />
+            <span class='required'>
+              Required
+            </span>
           </p>
           <p>
-            Key:
-            <select data-bind='options: keys, value: key'></select>
-          </p>
-          <p>
-            Mode:
-            <select data-bind='options: modes, value: mode'></select>
-          </p>
-          <p>
-            Title:
-            <input data-bind='value: title' />
-          </p>
-          <p>
-            Author:
+            <label>
+              Author:
+            </label>
             <input data-bind='value: author' />
           </p>
           <p>
-            Source:
-            <input data-bind='value: source' />
+            <label>
+              Key:
+            </label>
+            <select data-bind='options: keys, value: key'></select>
           </p>
           <p>
-            Time Signature:
+            <label>
+              Mode:
+            </label>
+            <select data-bind='options: modes, value: mode'></select>
+          </p>
+          <p>
+            <label>
+              Time Signature:
+            </label>
             <input data-bind='value: time_signature' />
           </p>
           <p>
-            ID#:
+            <label>
+              Source:
+            </label>
+            <input data-bind='value: source' />
+          </p>
+          <p>
+            <label>
+              Raga:
+            </label>
+            <input data-bind='value: raga' />
+          </p>
+          <p>
+            <label>
+              ID#:
+            </label>
             <span data-bind='text: id'></span>
           </p>
           <p>
@@ -154,8 +176,10 @@
         </div>
       </div>
       <br />
-      <br />
-      <button class='controls' data-bind='click: add_line'>New Line</button>
+      <br>
+        <button data-bind='click: save_locally, enable: saveable'></button>
+      </br>
+      <button class='controls' data-bind="click: add_line, enable: title() !=='' ">New Line</button>
     </div>
     <span class="note testing_utf_support" id="utf_left_repeat" style="display: none; ">&#x1d106</span>
     <span id="utf_single_barline" class="note testing_utf_support" style="display: none; ">&#x1d100</span>
