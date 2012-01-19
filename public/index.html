@@ -30,6 +30,9 @@
           <label>Open:</label>
           <input id='file' name='files[]' type='file' />
         </div>
+        <a href='http://github.com/rothfield/doremi-script-gui'>
+          Documentation/github home page
+        </a>
       </div>
       <fieldset class='controls' id='composition_info'>
         <legend data-bind='click: toggle_composition_info_visible' id='composition_info_legend'>
@@ -88,7 +91,7 @@
             </label>
             <span data-bind='text: id'></span>
           </p>
-          <p>
+          <div>
             <button data-bind='css: {button_on:doremi_script_source_visible},click: toggle_doremi_script_source_visible'>
               DoremiScript Source
             </button>
@@ -96,8 +99,8 @@
               Refresh
             </button>
             <div class='doremi_script_source_div like_pre' data-bind='text: doremi_script_source,visible: doremi_script_source_visible,event:{dblclick:toggle_doremi_script_source_visible}'></div>
-          </p>
-          <p>
+          </div>
+          <div>
             <button data-bind='css: {button_on:parsed_doremi_script_visible},click: toggle_parsed_doremi_script_visible'>
               Parsed DoremiScript
             </button>
@@ -105,8 +108,8 @@
               Refresh
             </button>
             <div class='parsed_doremi_script_div like_pre' data-bind='text: composition_parsed_doremi_script,visible: parsed_doremi_script_visible,event:{dblclick:toggle_parsed_doremi_script_visible}'></div>
-          </p>
-          <p>
+          </div>
+          <div>
             <button data-bind='css: {button_on:composition_lilypond_source_visible},click: toggle_composition_lilypond_source_visible'>
               Lilypond source
             </button>
@@ -114,8 +117,8 @@
               Refresh
             </button>
             <div class='composition_lilypond_source_div like_pre' data-bind='visible: composition_lilypond_source_visible,text: composition_lilypond_source,event:{dblclick:toggle_composition_lilypond_source_visible}'></div>
-          </p>
-          <p>
+          </div>
+          <div>
             <button data-bind='css: {button_on:composition_musicxml_source_visible},click: toggle_composition_musicxml_source_visible'>
               MusicXML Source
             </button>
@@ -123,7 +126,7 @@
               Refresh
             </button>
             <div class='composition_musicxml_source_div like_pre' data-bind='visible: composition_musicxml_source_visible,text: composition_musicxml_source,event:{dblclick:toggle_composition_musicxml_source_visible}'></div>
-          </p>
+          </div>
         </div>
       </fieldset>
       <br />
