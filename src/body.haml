@@ -87,9 +87,9 @@
           Generate staff notation
         %button{"data-bind" => "css: {button_on:staff_notation_visible},click: toggle_staff_notation_visible"} 
           Show Staff Notation
-      %img.spinner{"data-bind" => "visible: generating_staff_notation", "src" => "images/musical-notes-animated.gif", "width" => '50'}
+      %img.spinner{"alt" => 'spinner', "data-bind" => "visible: generating_staff_notation", "src" => "images/musical-notes-animated.gif", "width" => '50'}
     %div.staff_notation_div{"data-bind" => "visible: staff_notation_visible"}
-      %img.staff_notation{"src" => 'images/none.jpg', "data-bind" => "attr: {src:staff_notation_url_with_time_stamp}"}
+      %img.staff_notation{"alt" => 'staff notation', "src" => 'images/none.jpg', "data-bind" => "attr: {src:staff_notation_url_with_time_stamp}"}
     %br
     %br
     .composition_body{"data-bind" => "foreach: lines"}
@@ -114,5 +114,4 @@
           %textarea.entry_area{:spellcheck => "false", :cols => "33", "data-bind" => "style: {height:stave_height,width: $parent.composition_stave_width},css: {'line_has_warnings': $data.line_has_warnings,'parse_failed': $data.parse_failed},visible: editing(), value: source, event: { keypress: handle_key_press, blur: handle_blur}, valueUpdate: 'afterkeydown'", :rows => "3"}
   %br
   %br
-    %button{"data-bind" => "click: save_locally, enable: saveable"} 
   %button.controls{"data-bind" => "click: add_line, enable: title() !=='' "} New Line

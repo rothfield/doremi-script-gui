@@ -140,10 +140,10 @@
               Show Staff Notation
             </button>
           </div>
-          <img class='spinner' data-bind='visible: generating_staff_notation' src='images/musical-notes-animated.gif' width='50' />
+          <img alt='spinner' class='spinner' data-bind='visible: generating_staff_notation' src='images/musical-notes-animated.gif' width='50' />
         </div>
         <div class='staff_notation_div' data-bind='visible: staff_notation_visible'>
-          <img class='staff_notation' data-bind='attr: {src:staff_notation_url_with_time_stamp}' src='images/none.jpg' />
+          <img alt='staff notation' class='staff_notation' data-bind='attr: {src:staff_notation_url_with_time_stamp}' src='images/none.jpg' />
         </div>
         <br />
         <br />
@@ -179,9 +179,7 @@
         </div>
       </div>
       <br />
-      <br>
-        <button data-bind='click: save_locally, enable: saveable'></button>
-      </br>
+      <br />
       <button class='controls' data-bind="click: add_line, enable: title() !=='' ">New Line</button>
     </div>
     <span class="note testing_utf_support" id="utf_left_repeat" style="display: none; ">&#x1d106</span>
