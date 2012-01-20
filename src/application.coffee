@@ -454,6 +454,11 @@ $(document).ready ->
       lines_str=lines.join("\n\n")
       atts_str+"\n\n"+lines_str
 
+    self.disable_generate_staff_notation= ko.computed () ->
+      return true if self.title() is ""
+      return true if self.lines().size is 0
+      false
+
     self.save_locally = () ->
       console.log "save_locally"
       self.doremi_script_source(self.get_doremi_script_source())

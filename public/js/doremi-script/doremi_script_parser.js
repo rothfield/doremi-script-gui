@@ -92,6 +92,7 @@ DoremiScriptParser = (function(){
         "LOWER_OCTAVE_LINE": parse_LOWER_OCTAVE_LINE,
         "LOWER_OCTAVE_LINE_ITEM": parse_LOWER_OCTAVE_LINE_ITEM,
         "LYRICS_LINE": parse_LYRICS_LINE,
+        "LYRICS_SECTION": parse_LYRICS_SECTION,
         "MEASURE": parse_MEASURE,
         "MORDENT": parse_MORDENT,
         "NON_BARLINE": parse_NON_BARLINE,
@@ -935,6 +936,74 @@ DoremiScriptParser = (function(){
         reportMatchFailures = savedReportMatchFailures;
         if (reportMatchFailures && result0 === null) {
           matchFailed("main line of music. multiple lines including syllables etc,delimited by empty line. There is an order, optional upper octave lines followed by main line of sargam followed by optional lyrics line");
+        }
+        
+        cache[cacheKey] = {
+          nextPos: pos,
+          result:  result0
+        };
+        return result0;
+      }
+      
+      function parse_LYRICS_SECTION() {
+        var cacheKey = 'LYRICS_SECTION@' + pos;
+        var cachedResult = cache[cacheKey];
+        if (cachedResult) {
+          pos = cachedResult.nextPos;
+          return cachedResult.result;
+        }
+        
+        var savedReportMatchFailures = reportMatchFailures;
+        reportMatchFailures = false;
+        var savedPos0 = pos;
+        var savedPos1 = pos;
+        var result7 = parse_LYRICS_LINE();
+        if (result7 !== null) {
+          var result3 = [];
+          while (result7 !== null) {
+            result3.push(result7);
+            var result7 = parse_LYRICS_LINE();
+          }
+        } else {
+          var result3 = null;
+        }
+        if (result3 !== null) {
+          var result4 = parse_LINE_END();
+          if (result4 !== null) {
+            var result5 = [];
+            var result6 = parse_EMPTY_LINE();
+            while (result6 !== null) {
+              result5.push(result6);
+              var result6 = parse_EMPTY_LINE();
+            }
+            if (result5 !== null) {
+              var result1 = [result3, result4, result5];
+            } else {
+              var result1 = null;
+              pos = savedPos1;
+            }
+          } else {
+            var result1 = null;
+            pos = savedPos1;
+          }
+        } else {
+          var result1 = null;
+          pos = savedPos1;
+        }
+        var result2 = result1 !== null
+          ? (function(lyrics_lines) { 
+                   return {} // return parse_lyrics_section(lyrics_lines)
+              })(result1[0])
+          : null;
+        if (result2 !== null) {
+          var result0 = result2;
+        } else {
+          var result0 = null;
+          pos = savedPos0;
+        }
+        reportMatchFailures = savedReportMatchFailures;
+        if (reportMatchFailures && result0 === null) {
+          matchFailed("AKA verse,chorus,paragraph. Lines of lyrics");
         }
         
         cache[cacheKey] = {
@@ -8423,6 +8492,8 @@ DoremiScriptParser = (function(){
     check_semantics=Helper.check_semantics
       
     measure_pitch_durations=Helper.measure_pitch_durations
+      
+    //parse_lyrics_section=Helper.parse_lyrics_section
       
     if (typeof require !== 'undefined') {
       

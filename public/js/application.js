@@ -550,6 +550,15 @@ $(document).ready(function() {
       lines_str = lines.join("\n\n");
       return atts_str + "\n\n" + lines_str;
     };
+    self.disable_generate_staff_notation = ko.computed(function() {
+      if (self.title() === "") {
+        return true;
+      }
+      if (self.lines().size === 0) {
+        return true;
+      }
+      return false;
+    });
     self.save_locally = function() {
       console.log("save_locally");
       self.doremi_script_source(self.get_doremi_script_source());
