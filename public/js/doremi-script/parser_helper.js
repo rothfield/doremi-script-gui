@@ -1,5 +1,5 @@
 (function() {
-  var debug, root;
+  var Hypher, debug, english, hypher, root;
   var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; }, __indexOf = Array.prototype.indexOf || function(item) {
     for (var i = 0, l = this.length; i < l; i++) {
       if (this[i] === item) return i;
@@ -8,7 +8,18 @@
   };
   debug = false;
   root = typeof exports !== "undefined" && exports !== null ? exports : this;
+  if (typeof exports !== "undefined" && exports !== null) {
+    Hypher = require('./third_party/hypher/hypher.js');
+    english = require('./third_party/hyphenation_patterns/en-us.js');
+  } else {
+    english = window.english;
+    Hypher = window.Hypher;
+  }
+  hypher = new Hypher(english, {
+    minLength: 1
+  });
   root.ParserHelper = {
+    hypher: hypher,
     sa_helper: function(source, normalized) {
       var obj;
       obj = {
@@ -62,6 +73,67 @@
       }
       return _results;
     },
+    parse_lyrics_section: function(lyrics_lines) {
+      var all_words, hy_ary, hyphenated_words, item, line, result, soft_hyphen, source, word;
+      console.log("parse_lyrics_section");
+      if (lyrics_lines === "") {
+        source = "";
+      } else {
+        source = ((function() {
+          var _i, _len, _results;
+          _results = [];
+          for (_i = 0, _len = lyrics_lines.length; _i < _len; _i++) {
+            line = lyrics_lines[_i];
+            _results.push(line.source);
+          }
+          return _results;
+        })()).join("\n");
+      }
+      all_words = (function() {
+        var _i, _len, _results;
+        _results = [];
+        for (_i = 0, _len = lyrics_lines.length; _i < _len; _i++) {
+          line = lyrics_lines[_i];
+          _results.push((function() {
+            var _j, _len2, _ref, _results2;
+            _ref = line.items;
+            _results2 = [];
+            for (_j = 0, _len2 = _ref.length; _j < _len2; _j++) {
+              item = _ref[_j];
+              if (item.my_type === "syllable") {
+                _results2.push(item.syllable);
+              }
+            }
+            return _results2;
+          })());
+        }
+        return _results;
+      })();
+      all_words = _.flatten(all_words);
+      hy_ary = [];
+      hyphenated_words = (function() {
+        var _i, _len, _results;
+        _results = [];
+        for (_i = 0, _len = all_words.length; _i < _len; _i++) {
+          word = all_words[_i];
+          _results.push(result = hypher.hyphenate(word.toLowerCase()));
+        }
+        return _results;
+      })();
+      hyphenated_words = _.flatten(hyphenated_words);
+      hyphenated_words = hypher.hyphenateText(all_words.join(' '));
+      soft_hyphen = "\u00AD";
+      hyphenated_words = hyphenated_words.split(soft_hyphen).join('-');
+      return {
+        my_type: "lyrics_section",
+        source: source,
+        lyrics_lines: lyrics_lines,
+        line_warnings: [],
+        items: [],
+        all_words: all_words,
+        hyphenated_words: hyphenated_words
+      };
+    },
     parse_line: function(uppers, sargam, lowers, lyrics) {
       var attribute_lines, ctr, item, lower, lyric, my_items, my_items2, my_line, my_lowers, my_uppers, upper, x, _i, _j, _k, _l, _len, _len2, _len3, _len4;
       this.line_warnings = [];
@@ -113,6 +185,18 @@
       this.assign_lyrics(sargam, lyrics);
       sargam.line_warnings = this.line_warnings;
       return sargam;
+    },
+    assign_syllables_from_lyrics_sections: function(composition) {
+      var line, syls, _i, _len, _ref, _results;
+      console.log("assign_syllables_from_lyrics_sections");
+      syls = [];
+      _ref = composition.lines;
+      _results = [];
+      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+        line = _ref[_i];
+        _results.push(line.my_type === "lyrics_section" ? syls.concat(line.all_syllables) : void 0);
+      }
+      return _results;
     },
     parse_composition: function(attributes, lines) {
       var char, ctr, hash, line, lower, split_chars, to_string, valid, x, _i, _j, _len, _len2;
@@ -207,6 +291,9 @@
         this.composition_data.staff_notation_url = x;
       }
       this.mark_partial_measures();
+      ({
+        assign_syllables_from_lyrics_sections: this.composition_data
+      });
       return this.composition_data;
     },
     parse_sargam_pitch: function(begin_slur, musical_char, end_slur) {
@@ -345,6 +432,9 @@
       _results = [];
       for (_i = 0, _len = _ref.length; _i < _len; _i++) {
         sargam_line = _ref[_i];
+        if (sargam_line.my_type === 'lyrics_section') {
+          continue;
+        }
         this.log("processing " + sargam_line.source);
         measures = (function() {
           var _j, _len2, _ref2, _results2;

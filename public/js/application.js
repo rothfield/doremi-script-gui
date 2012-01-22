@@ -99,7 +99,23 @@ $(document).ready(function() {
         return let_default_action_proceed;
       },
       parse: function() {
-        var result;
+        var ary, composition, composition_lines, index, my_line, my_obj, result, _ref;
+        console.log("grabbing lyrics");
+        composition = window.the_composition;
+        composition_lines = composition.lines();
+        ary = [];
+        for (index = 0, _ref = this.index(); 0 <= _ref ? index < _ref : index > _ref; 0 <= _ref ? index++ : index--) {
+          my_line = composition_lines[index];
+          console.log("grabbing lyrics-line is", my_line);
+          if (!my_line.line_parse_failed()) {
+            my_obj = my_line.line_parsed_doremi_script();
+            if (my_obj.my_type === "lyrics_section") {
+              ary.push(my_obj);
+            }
+            console.log("grabbing lyrics-line is", my_line);
+          }
+        }
+        console.log("grabbing lyrics-ary is", ary);
         if (this.document != null) {
           return null;
         }
@@ -196,15 +212,20 @@ $(document).ready(function() {
     self.toggle_composition_lilypond_source_visible = function() {
       return self.composition_lilypond_source_visible(!self.composition_lilypond_source_visible());
     };
+    self.composition_as_html = ko.observable("");
     self.parse_composition = function() {
-      var parsed, result;
+      var my_html, parsed, result, x;
       self.refresh_doremi_script_source();
       console.log("parse_composition");
       try {
         parsed = DoremiScriptParser.parse(self.doremi_script_source());
         self.composition_parsed_doremi_script(parsed);
         self.composition_parse_tree_text("Parsing completed with no errors \n" + JSON.stringify(result, null, "  "));
-        return self.composition_parse_failed(false);
+        self.composition_parse_failed(false);
+        x = to_html(parsed);
+        console.log("parse_composition, x=", x);
+        my_html = to_html(parsed);
+        return self.composition_as_html(my_html);
       } catch (err) {
         result = "failed. (" + err + ")";
         console.log("parse_composition, ERROR=", err);

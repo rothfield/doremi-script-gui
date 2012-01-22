@@ -92,6 +92,7 @@ DoremiScriptLineParser = (function(){
         "LOWER_OCTAVE_LINE": parse_LOWER_OCTAVE_LINE,
         "LOWER_OCTAVE_LINE_ITEM": parse_LOWER_OCTAVE_LINE_ITEM,
         "LYRICS_LINE": parse_LYRICS_LINE,
+        "LYRICS_SECTION": parse_LYRICS_SECTION,
         "MEASURE": parse_MEASURE,
         "MORDENT": parse_MORDENT,
         "NON_BARLINE": parse_NON_BARLINE,
@@ -160,7 +161,6 @@ DoremiScriptLineParser = (function(){
         "SYLLABLE": parse_SYLLABLE,
         "TALA": parse_TALA,
         "UNDELIMITED_SARGAM_PITCH_WITH_DASHES": parse_UNDELIMITED_SARGAM_PITCH_WITH_DASHES,
-        "UNUSED_STRAY_END_SLUR": parse_UNUSED_STRAY_END_SLUR,
         "UPPER_OCTAVE_DOT": parse_UPPER_OCTAVE_DOT,
         "UPPER_OCTAVE_LINE": parse_UPPER_OCTAVE_LINE,
         "UPPER_OCTAVE_LINE_ITEM": parse_UPPER_OCTAVE_LINE_ITEM,
@@ -922,23 +922,71 @@ DoremiScriptLineParser = (function(){
         
         var savedReportMatchFailures = reportMatchFailures;
         reportMatchFailures = false;
-        var savedPos0 = pos;
-        var savedPos1 = pos;
-        var result6 = parse_COMPOUND_LINE();
-        if (result6 !== null) {
-          var result3 = result6;
+        var result3 = parse_COMPOUND_LINE();
+        if (result3 !== null) {
+          var result0 = result3;
         } else {
-          var result5 = parse_SIMPLE_LINE();
-          if (result5 !== null) {
-            var result3 = result5;
+          var result2 = parse_SIMPLE_LINE();
+          if (result2 !== null) {
+            var result0 = result2;
           } else {
-            var result3 = null;;
+            var result1 = parse_LYRICS_SECTION();
+            if (result1 !== null) {
+              var result0 = result1;
+            } else {
+              var result0 = null;;
+            };
           };
         }
+        reportMatchFailures = savedReportMatchFailures;
+        if (reportMatchFailures && result0 === null) {
+          matchFailed("main line of music. multiple lines including syllables etc,delimited by empty line. There is an order, optional upper octave lines followed by main line of sargam followed by optional lyrics line");
+        }
+        
+        cache[cacheKey] = {
+          nextPos: pos,
+          result:  result0
+        };
+        return result0;
+      }
+      
+      function parse_LYRICS_SECTION() {
+        var cacheKey = 'LYRICS_SECTION@' + pos;
+        var cachedResult = cache[cacheKey];
+        if (cachedResult) {
+          pos = cachedResult.nextPos;
+          return cachedResult.result;
+        }
+        
+        var savedReportMatchFailures = reportMatchFailures;
+        reportMatchFailures = false;
+        var savedPos0 = pos;
+        var savedPos1 = pos;
+        var result7 = parse_LYRICS_LINE();
+        if (result7 !== null) {
+          var result3 = [];
+          while (result7 !== null) {
+            result3.push(result7);
+            var result7 = parse_LYRICS_LINE();
+          }
+        } else {
+          var result3 = null;
+        }
         if (result3 !== null) {
-          var result4 = parse_EOF();
+          var result4 = parse_LINE_END();
           if (result4 !== null) {
-            var result1 = [result3, result4];
+            var result5 = [];
+            var result6 = parse_EMPTY_LINE();
+            while (result6 !== null) {
+              result5.push(result6);
+              var result6 = parse_EMPTY_LINE();
+            }
+            if (result5 !== null) {
+              var result1 = [result3, result4, result5];
+            } else {
+              var result1 = null;
+              pos = savedPos1;
+            }
           } else {
             var result1 = null;
             pos = savedPos1;
@@ -948,9 +996,9 @@ DoremiScriptLineParser = (function(){
           pos = savedPos1;
         }
         var result2 = result1 !== null
-          ? (function(line) {
-             return line
-            })(result1[0])
+          ? (function(lyrics_lines) { 
+                   return parse_lyrics_section(lyrics_lines)
+              })(result1[0])
           : null;
         if (result2 !== null) {
           var result0 = result2;
@@ -960,7 +1008,7 @@ DoremiScriptLineParser = (function(){
         }
         reportMatchFailures = savedReportMatchFailures;
         if (reportMatchFailures && result0 === null) {
-          matchFailed("main line of music. multiple lines including syllables etc,delimited by empty line. There is an order, optional upper octave lines followed by main line of sargam followed by optional lyrics line");
+          matchFailed("AKA verse,chorus,paragraph. Lines of lyrics");
         }
         
         cache[cacheKey] = {
@@ -981,21 +1029,21 @@ DoremiScriptLineParser = (function(){
         
         var savedPos0 = pos;
         var savedPos1 = pos;
-        var result15 = parse_DEVANAGRI_SARGAM_LINE();
-        if (result15 !== null) {
-          var result3 = result15;
+        var result14 = parse_DEVANAGRI_SARGAM_LINE();
+        if (result14 !== null) {
+          var result3 = result14;
         } else {
-          var result14 = parse_SARGAM_LINE();
-          if (result14 !== null) {
-            var result3 = result14;
+          var result13 = parse_SARGAM_LINE();
+          if (result13 !== null) {
+            var result3 = result13;
           } else {
-            var result13 = parse_ABC_SARGAM_LINE();
-            if (result13 !== null) {
-              var result3 = result13;
+            var result12 = parse_ABC_SARGAM_LINE();
+            if (result12 !== null) {
+              var result3 = result12;
             } else {
-              var result12 = parse_NUMBER_SARGAM_LINE();
-              if (result12 !== null) {
-                var result3 = result12;
+              var result11 = parse_NUMBER_SARGAM_LINE();
+              if (result11 !== null) {
+                var result3 = result11;
               } else {
                 var result3 = null;;
               };
@@ -1003,32 +1051,26 @@ DoremiScriptLineParser = (function(){
           };
         }
         if (result3 !== null) {
-          var result4 = parse_EOF();
+          var result4 = [];
+          var result10 = parse_LOWER_OCTAVE_LINE();
+          while (result10 !== null) {
+            result4.push(result10);
+            var result10 = parse_LOWER_OCTAVE_LINE();
+          }
           if (result4 !== null) {
-            var result5 = [];
-            var result11 = parse_LOWER_OCTAVE_LINE();
-            while (result11 !== null) {
-              result5.push(result11);
-              var result11 = parse_LOWER_OCTAVE_LINE();
-            }
+            var result9 = parse_LYRICS_LINE();
+            var result5 = result9 !== null ? result9 : '';
             if (result5 !== null) {
-              var result10 = parse_LYRICS_LINE();
-              var result6 = result10 !== null ? result10 : '';
+              var result6 = parse_LINE_END();
               if (result6 !== null) {
-                var result7 = parse_LINE_END();
+                var result7 = [];
+                var result8 = parse_EMPTY_LINE();
+                while (result8 !== null) {
+                  result7.push(result8);
+                  var result8 = parse_EMPTY_LINE();
+                }
                 if (result7 !== null) {
-                  var result8 = [];
-                  var result9 = parse_EMPTY_LINE();
-                  while (result9 !== null) {
-                    result8.push(result9);
-                    var result9 = parse_EMPTY_LINE();
-                  }
-                  if (result8 !== null) {
-                    var result1 = [result3, result4, result5, result6, result7, result8];
-                  } else {
-                    var result1 = null;
-                    pos = savedPos1;
-                  }
+                  var result1 = [result3, result4, result5, result6, result7];
                 } else {
                   var result1 = null;
                   pos = savedPos1;
@@ -1053,7 +1095,7 @@ DoremiScriptLineParser = (function(){
           ? (function(sargam, lowers, lyrics) { 
                     uppers=''
                     return parse_line(uppers,sargam,lowers,lyrics)
-              })(result1[0], result1[2], result1[3])
+              })(result1[0], result1[1], result1[2])
           : null;
         if (result2 !== null) {
           var result0 = result2;
@@ -1997,51 +2039,6 @@ DoremiScriptLineParser = (function(){
         reportMatchFailures = savedReportMatchFailures;
         if (reportMatchFailures && result0 === null) {
           matchFailed("tala markings. ie +203 for tintal. 012 for rupak");
-        }
-        
-        cache[cacheKey] = {
-          nextPos: pos,
-          result:  result0
-        };
-        return result0;
-      }
-      
-      function parse_UNUSED_STRAY_END_SLUR() {
-        var cacheKey = 'UNUSED_STRAY_END_SLUR@' + pos;
-        var cachedResult = cache[cacheKey];
-        if (cachedResult) {
-          pos = cachedResult.nextPos;
-          return cachedResult.result;
-        }
-        
-        var savedReportMatchFailures = reportMatchFailures;
-        reportMatchFailures = false;
-        var savedPos0 = pos;
-        if (input.substr(pos, 1) === ")") {
-          var result1 = ")";
-          pos += 1;
-        } else {
-          var result1 = null;
-          if (reportMatchFailures) {
-            matchFailed("\")\"");
-          }
-        }
-        var result2 = result1 !== null
-          ? (function(char) {
-               return {my_type: "stray_end_slur",
-                       source:char
-               }
-            })(result1)
-          : null;
-        if (result2 !== null) {
-          var result0 = result2;
-        } else {
-          var result0 = null;
-          pos = savedPos0;
-        }
-        reportMatchFailures = savedReportMatchFailures;
-        if (reportMatchFailures && result0 === null) {
-          matchFailed("TODO-a right paren that is not to the right of a pitch. ignore it");
         }
         
         cache[cacheKey] = {
@@ -8447,6 +8444,8 @@ DoremiScriptLineParser = (function(){
       
     sa_helper=Helper.sa_helper
       
+    push_warning=Helper.push_warning
+      
     parse_line=Helper.parse_line
       
     handle_ornament=Helper.handle_ornament
@@ -8456,8 +8455,6 @@ DoremiScriptLineParser = (function(){
     running_under_node=Helper.running_under_node
       
     map_ornaments=Helper.map_ornaments
-      
-    push_warning =Helper.push_warning
       
     parse_ornament=Helper.parse_ornament
       
@@ -8500,6 +8497,8 @@ DoremiScriptLineParser = (function(){
     check_semantics=Helper.check_semantics
       
     measure_pitch_durations=Helper.measure_pitch_durations
+      
+    parse_lyrics_section=Helper.parse_lyrics_section
       
     if (typeof require !== 'undefined') {
       

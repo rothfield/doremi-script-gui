@@ -247,7 +247,7 @@
     grace1 = grace2 = grace_notes = "";
     if ((ornament != null ? ornament.placement : void 0) === "after") {
       grace1 = "\\afterGrace ";
-      grace2 = "( { " + (lilypond_grace_notes(ornament)) + ") }";
+      grace2 = " { " + (lilypond_grace_notes(ornament)) + " }";
     }
     if ((ornament != null ? ornament.placement : void 0) === "before") {
       grace1 = "\\acciaccatura {" + (lilypond_grace_notes(ornament)) + "}";

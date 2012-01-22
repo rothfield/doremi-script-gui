@@ -616,6 +616,16 @@
     x = sys.inspect(line, true, null);
     return test.done();
   };
+  exports.test_lyrics_section = function(test) {
+    var composition, str, str1;
+    debug = true;
+    str1 = 'Title: Happy Birthday to You \n  \n  Happy birthday to you\n  Happy birthday to you\n  Happy birthday dear Ji-im\n  Happy birthday to you\n\n| -- -- P-P | D P S | N\n        . .   . .     .';
+    str = 'Hello\n\n| S';
+    composition = test_parses(str, test);
+    test.equal(composition.lines[0].my_type, "lyrics_section", "First 'line' should be lyrics_section");
+    debug = false;
+    return test.done();
+  };
   exports.test_title = function(test) {
     var composition, str;
     str = 'Title: The entertainer \n  \n| S';

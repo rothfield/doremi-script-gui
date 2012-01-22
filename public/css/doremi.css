@@ -15,6 +15,11 @@ div.edit_line_wrapper.line_parse_failed {
   border-width: 2px;
 }
 
+div.lyrics_section {
+   font-family: serif;
+   white-space: pre; 
+   border: 2px dotted #CCCCCC;
+}
 .like_pre {
    font-family: monospace;
    white-space: pre; 

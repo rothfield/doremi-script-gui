@@ -922,15 +922,20 @@ DoremiScriptParser = (function(){
         
         var savedReportMatchFailures = reportMatchFailures;
         reportMatchFailures = false;
-        var result2 = parse_COMPOUND_LINE();
-        if (result2 !== null) {
-          var result0 = result2;
+        var result3 = parse_COMPOUND_LINE();
+        if (result3 !== null) {
+          var result0 = result3;
         } else {
-          var result1 = parse_SIMPLE_LINE();
-          if (result1 !== null) {
-            var result0 = result1;
+          var result2 = parse_SIMPLE_LINE();
+          if (result2 !== null) {
+            var result0 = result2;
           } else {
-            var result0 = null;;
+            var result1 = parse_LYRICS_SECTION();
+            if (result1 !== null) {
+              var result0 = result1;
+            } else {
+              var result0 = null;;
+            };
           };
         }
         reportMatchFailures = savedReportMatchFailures;
@@ -992,7 +997,7 @@ DoremiScriptParser = (function(){
         }
         var result2 = result1 !== null
           ? (function(lyrics_lines) { 
-                   return {} // return parse_lyrics_section(lyrics_lines)
+                   return parse_lyrics_section(lyrics_lines)
               })(result1[0])
           : null;
         if (result2 !== null) {
@@ -8493,7 +8498,11 @@ DoremiScriptParser = (function(){
       
     measure_pitch_durations=Helper.measure_pitch_durations
       
-    //parse_lyrics_section=Helper.parse_lyrics_section
+    parse_lyrics_section=Helper.parse_lyrics_section
+      
+    assign_syllables_from_lyrics_sections=Helper.assign_syllables_from_lyrics_sections
+      
+    hypher=Helper.hypher
       
     if (typeof require !== 'undefined') {
       

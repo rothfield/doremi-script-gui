@@ -1,5 +1,5 @@
 (function() {
-  var class_for_octave, draw_attributes, draw_beat, draw_item, draw_line, draw_lower_octave_symbol, draw_measure, draw_ornament, draw_ornament_item, draw_pitch, draw_pitch_sign, draw_syllable, draw_upper_octave_symbol, id_ctr, last_slur_id, line_to_html, lookup_html_entity, lookup_simple, root, to_html, to_html_doc;
+  var class_for_octave, draw_attributes, draw_beat, draw_item, draw_line, draw_lower_octave_symbol, draw_lyrics_section, draw_measure, draw_ornament, draw_ornament_item, draw_pitch, draw_pitch_sign, draw_syllable, draw_upper_octave_symbol, id_ctr, last_slur_id, line_to_html, lookup_html_entity, lookup_simple, root, to_html, to_html_doc;
   var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; };
   root = typeof exports !== "undefined" && exports !== null ? exports : this;
   id_ctr = new Date().getTime() - 1326011100000;
@@ -40,8 +40,14 @@
     };
     return LOOKUP[str];
   };
+  draw_lyrics_section = function(lyrics_section) {
+    return "<div class='stave lyrics_section'>" + lyrics_section.source + "</div>";
+  };
   draw_line = function(line) {
     var item, x;
+    if (line.my_type === 'lyrics_section') {
+      return draw_lyrics_section(line);
+    }
     x = ((function() {
       var _i, _len, _ref, _results;
       _ref = line.items;
