@@ -73,14 +73,14 @@ $(document).ready(function() {
       handle_blur: function(event) {},
       edit: function(my_model, event) {
         var current_target, height, text_area;
+        if (this.editing()) {
+          return false;
+        }
         this.editing(true);
         current_target = event.currentTarget;
         text_area = $(current_target).parent().find("textarea");
         $(text_area).focus();
         return true;
-        console.log(arguments);
-        console.log("edit");
-        console.log("this is", this);
         height = $(current_target).height();
         text_area = $(current_target).find("textarea");
         console.log("text_area", text_area);
@@ -167,6 +167,7 @@ $(document).ready(function() {
     var self;
     self = this;
     self.selected_composition = ko.observable();
+    self.apply_hyphenated_lyrics = ko.observable(false);
     self.composition_parse_tree_text = ko.observable("");
     self.doremi_script_source = ko.observable(my_doremi_script_source);
     self.open_file_visible = ko.observable(false);
@@ -341,7 +342,7 @@ $(document).ready(function() {
       }
       return ret_val;
     };
-    self.attribute_keys = ["id", "filename", "raga", "author", "source", "time_signature", "notes_used", "title", "key", "mode", "staff_notation_url"];
+    self.attribute_keys = ["id", "filename", "raga", "author", "source", "time_signature", "notes_used", "title", "key", "mode", "staff_notation_url", "apply_hyphenated_lyrics"];
     self.my_init = function(doremi_script_source_param) {
       var key, parsed, _i, _len, _ref;
       console.log("Entering CompositionViewModel.init, source is", doremi_script_source_param);
@@ -546,6 +547,9 @@ $(document).ready(function() {
           }
           if (att === "time_signature") {
             att = "TimeSignature";
+          }
+          if (att === "apply_hyphenated_lyrics") {
+            att = "ApplyHyphenatedLyrics";
           }
           if (value === "") {
             continue;

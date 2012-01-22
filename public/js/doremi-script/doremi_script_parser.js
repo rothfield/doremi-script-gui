@@ -8490,6 +8490,8 @@ DoremiScriptParser = (function(){
       
     assign_lyrics=Helper.assign_lyrics
       
+    assign_lyrics2=Helper.assign_lyrics2
+      
     collect_nodes = Helper.collect_nodes
       
     map_nodes = Helper.map_nodes

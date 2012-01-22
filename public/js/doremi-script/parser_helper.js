@@ -28,6 +28,39 @@
       };
       return obj;
     },
+    assign_lyrics2: function(sargam, syls) {
+      var item, slurring_state, _i, _len, _ref, _results;
+      if (!syls) {
+        return;
+      }
+      if (syls === "") {
+        return;
+      }
+      slurring_state = false;
+      _ref = this.all_items(sargam);
+      _results = [];
+      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+        item = _ref[_i];
+        _results.push(__bind(function(item) {
+          if (item.my_type !== "pitch") {
+            return;
+          }
+          if (syls.length === 0) {
+            return;
+          }
+          if (!slurring_state) {
+            item.syllable = syls.shift();
+          }
+          if (item_has_attribute(item, 'begin_slur')) {
+            slurring_state = true;
+          }
+          if (item_has_attribute(item, 'end_slur')) {
+            return slurring_state = false;
+          }
+        }, this)(item));
+      }
+      return _results;
+    },
     assign_lyrics: function(sargam, lyrics) {
       var item, slurring_state, syls, _i, _len, _ref, _results;
       if (!(lyrics != null)) {
@@ -194,7 +227,10 @@
       _results = [];
       for (_i = 0, _len = _ref.length; _i < _len; _i++) {
         line = _ref[_i];
-        _results.push(line.my_type === "lyrics_section" ? syls.concat(line.all_syllables) : void 0);
+        if (line.my_type === "lyrics_section") {
+          syls.concat(line.all_syllables);
+        }
+        _results.push(line.my_type === "sargam_line" ? this.assign_lyrics2(line, syls) : void 0);
       }
       return _results;
     },
@@ -220,6 +256,7 @@
       };
       this.composition_data = {
         my_type: "composition",
+        apply_hyphenated_lyrics: false,
         title: "",
         filename: "",
         attributes: attributes,
@@ -290,10 +327,12 @@
       if (x != null) {
         this.composition_data.staff_notation_url = x;
       }
+      x = get_composition_attribute(this.composition_data, "ApplyHyphenatedLyrics");
+      this.composition_data.apply_hyphenated_lyrics = x || false;
       this.mark_partial_measures();
-      ({
-        assign_syllables_from_lyrics_sections: this.composition_data
-      });
+      if (this.composition_data.apply_hyphenated_lyrics) {
+        assign_syllables_from_lyrics_sections(this.composition_data);
+      }
       return this.composition_data;
     },
     parse_sargam_pitch: function(begin_slur, musical_char, end_slur) {

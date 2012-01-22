@@ -58,20 +58,16 @@ $(document).ready ->
       #this.parse()
     
     edit: (my_model,event) ->
+      if (this.editing())
+        return false
       this.editing(true)
       current_target=event.currentTarget
       text_area=$(current_target).parent().find("textarea")
       $(text_area).focus()
       return true
-      console.log arguments
-      console.log "edit"
-      console.log "this is",this
       height= $(current_target).height()
-      #parent=$(event.currentTarget).parent()
-      #console.log "parent",parent
       text_area=$(current_target).find("textarea")
       console.log "text_area",text_area
-      #$(text_area).toggle().focus()
       $(text_area).height(height)
     line_wrapper_id: () ->
       "line_wrapper_#{this.id}"
@@ -156,6 +152,7 @@ $(document).ready ->
   window.CompositionViewModel = (my_doremi_script_source) ->
     self = this
     self.selected_composition = ko.observable() # nothing selected by default
+    self.apply_hyphenated_lyrics=ko.observable(false)
     self.composition_parse_tree_text=ko.observable("")
     self.doremi_script_source= ko.observable(my_doremi_script_source)
     self.open_file_visible=ko.observable(false)
@@ -322,6 +319,7 @@ $(document).ready ->
         "key"
         "mode"
         "staff_notation_url"
+        "apply_hyphenated_lyrics"
       ]
     self.my_init = (doremi_script_source_param) ->
       console.log("Entering CompositionViewModel.init, source is",doremi_script_source_param)
@@ -462,6 +460,7 @@ $(document).ready ->
         att="Author" if att is "author"
         att="Source" if att is "source"
         att="TimeSignature" if att is "time_signature"
+        att="ApplyHyphenatedLyrics" if att is "apply_hyphenated_lyrics"
         continue if value is ""
         continue if !value
         "#{att}: #{value}"

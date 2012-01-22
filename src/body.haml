@@ -53,6 +53,10 @@
         %input{"data-bind" => "value: raga"}/
       %p
         %label
+          Apply Hyphenated Lyrics:
+        %input{"type" => "checkbox", "data-bind" => "checked: apply_hyphenated_lyrics"}
+      %p
+        %label
           ID#:
         %span{"data-bind" => "text: id"} 
       %div
@@ -94,7 +98,8 @@
     %br
     .composition_body{"data-bind" => "foreach: lines"}
       %div.line_wrapper{"tabindex" => "0", "data-bind" => "attr: { id: line_wrapper_id()},click: line_wrapper_click "}
-        %div.rendered_html{"data-bind" => "visible: !editing(),html: rendered_in_html, click: edit,clickBubble:false"}
+
+        %div.rendered_html{"data-bind" => "css:{editing:editing},html: rendered_in_html, click: edit,clickBubble:false"}
         %div.edit_line_wrapper{"data-bind"=> "visible:editing,css: {line_has_warnings: line_has_warnings,line_parse_failed: line_parse_failed}"}
           %button{"data-bind" => "click: close_edit,clickBubble:false"} 
             Close
@@ -111,7 +116,7 @@
             %pre{"data-bind" => "text: line_warnings,event:{dblclick:toggle_line_warnings_visible}"}
           %div.parse_tree_div{"data-bind" => "visible: parse_tree_visible"}
             %pre{"data-bind" => "text: parse_tree_text,event:{dblclick:toggle_parse_tree_visible}"}
-          %textarea.entry_area{:spellcheck => "false", :cols => "33", "data-bind" => "style: {height:stave_height,width: $parent.composition_stave_width},css: {'line_has_warnings': $data.line_has_warnings,'parse_failed': $data.parse_failed},visible: editing(), value: source, event: { keypress: handle_key_press, blur: handle_blur}, valueUpdate: 'afterkeydown'", :rows => "3"}
+          %textarea.entry_area{:spellcheck => "false",:rows => "6", :cols => "33", "data-bind" => "style: {width: $parent.composition_stave_width},css: {'line_has_warnings': $data.line_has_warnings,'parse_failed': $data.parse_failed},visible: editing(), value: source, event: { keypress: handle_key_press, blur: handle_blur}, valueUpdate: 'afterkeydown'"}
   %br
   %br
   %button.controls{"data-bind" => "click: add_line, enable: title() !=='' "} New Line
