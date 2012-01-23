@@ -1,7 +1,6 @@
 // The en-US hyphenation patterns are retrieved from
 // http://tug_org/svn/texhyphen/trunk/collaboration/repository/hyphenator/
-var english
-english = {
+module.exports = {
 	id: ['en-us', 'en'],
 	leftmin : 2,
 	rightmin : 2,
@@ -18,4 +17,3 @@ english = {
 		12 : "3ra4m5e1triz1e6p3i3neph1"
 	}
 };
-

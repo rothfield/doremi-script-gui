@@ -24,13 +24,13 @@
       %p
         %label
           Title:
-        %input#composition_title{"data-bind" => "value: title"}/
+        %input#composition_title{"data-bind" => "valueUpdate: 'afterkeydown',value: title"}/
         %span.required
           Required
       %p
         %label
           Author:
-        %input{"data-bind" => "value: author"}/
+        %input{"data-bind" => "value: author, valueUpdate: 'afterkeydown'"}/
       %p
         %label
           Key:
@@ -42,15 +42,15 @@
       %p
         %label
           Time Signature:
-        %input{"data-bind" => "value: time_signature"}/
+        %input{"data-bind" => "value: time_signature,valueUpdate: 'afterkeydown'"}/
       %p
         %label
           Source:
-        %input{"data-bind" => "value: source"}/
+        %input{"data-bind" => "value: source,valueUpdate: 'afterkeydown'"}/
       %p
         %label
           Raga:
-        %input{"data-bind" => "value: raga"}/
+        %input{"data-bind" => "value: raga,valueUpdate: 'afterkeydown'"}/
       %p
         %label
           Apply Hyphenated Lyrics:
@@ -62,26 +62,18 @@
       %div
         %button{"data-bind" => "css: {button_on:doremi_script_source_visible},click: toggle_doremi_script_source_visible"} 
           DoremiScript Source
-        %button{"data-bind" => "visible: doremi_script_source_visible,click: refresh_doremi_script_source"} 
-          Refresh
-        %div.doremi_script_source_div.like_pre{"data-bind" => "text: doremi_script_source,visible: doremi_script_source_visible,event:{dblclick:toggle_doremi_script_source_visible}"}
+        %div.doremi_script_source_div.like_pre{"data-bind" => "text:doremi_script_source,visible: doremi_script_source_visible,event:{dblclick:toggle_doremi_script_source_visible}"}
       %div
         %button{"data-bind" => "css: {button_on:parsed_doremi_script_visible},click: toggle_parsed_doremi_script_visible"} 
           Parsed DoremiScript
-        %button{"data-bind" => "visible: parsed_doremi_script_visible,click: refresh_parsed_doremi_script"} 
-          Refresh
         %div.parsed_doremi_script_div.like_pre{"data-bind" => "text: composition_parsed_doremi_script,visible: parsed_doremi_script_visible,event:{dblclick:toggle_parsed_doremi_script_visible}"}
       %div
         %button{"data-bind" => "css: {button_on:composition_lilypond_source_visible},click: toggle_composition_lilypond_source_visible"} 
           Lilypond source
-        %button{"data-bind" => "visible: composition_lilypond_source_visible,click: refresh_composition_lilypond_source"} 
-          Refresh 
         %div.composition_lilypond_source_div.like_pre{"data-bind" => "visible: composition_lilypond_source_visible,text: composition_lilypond_source,event:{dblclick:toggle_composition_lilypond_source_visible}"}
       %div
         %button{"data-bind" => "css: {button_on:composition_musicxml_source_visible},click: toggle_composition_musicxml_source_visible"} 
           MusicXML Source 
-        %button{"data-bind" => "visible: composition_musicxml_source_visible,click: refresh_composition_musicxml_source"} 
-          Refresh 
         %div.composition_musicxml_source_div.like_pre{"data-bind" => "visible: composition_musicxml_source_visible,text: composition_musicxml_source,event:{dblclick:toggle_composition_musicxml_source_visible}"}
   %br
   .composition
@@ -99,7 +91,7 @@
     .composition_body{"data-bind" => "foreach: lines"}
       %div.line_wrapper{"tabindex" => "0", "data-bind" => "attr: { id: line_wrapper_id()},click: line_wrapper_click "}
 
-        %div.rendered_html{"data-bind" => "css:{editing:editing},html: rendered_in_html, click: edit,clickBubble:false"}
+        %div.rendered_html{"data-bind" => "css:{editing:editing,not_editing: not_editing},html: rendered_in_html, click: edit,clickBubble:false"}
         %div.edit_line_wrapper{"data-bind"=> "visible:editing,css: {line_has_warnings: line_has_warnings,line_parse_failed: line_parse_failed}"}
           %button{"data-bind" => "click: close_edit,clickBubble:false"} 
             Close

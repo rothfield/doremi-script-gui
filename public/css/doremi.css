@@ -65,9 +65,25 @@ input#url_to_reopen {
   width:500px;
 }
 
-div.rendered_html.editing {
-  background-color: gainsboro;
+div.rendered_html.editing:hover
+{ 
+  background-color:normal;
 }
+
+
+div.rendered_html.editing:hover {
+  cursor:normal;
+}
+div.rendered_html.editing {
+  background-color: wheat;
+}
+
+div.rendered_html.not_editing:hover
+{ 
+  cursor:pointer;
+  background-color:gainsboro;
+}
+
 div#rendered_doremi_script, div.rendered_doremi_script, div.parse_tree_div {
   border: 2px dotted #CCCCCC;
 }

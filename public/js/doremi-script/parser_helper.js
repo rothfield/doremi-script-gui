@@ -16,7 +16,7 @@
     Hypher = window.Hypher;
   }
   hypher = new Hypher(english, {
-    minLength: 1
+    minLength: 2
   });
   root.ParserHelper = {
     hypher: hypher,
@@ -27,39 +27,6 @@
         normalized_pitch: normalized
       };
       return obj;
-    },
-    assign_lyrics2: function(sargam, syls) {
-      var item, slurring_state, _i, _len, _ref, _results;
-      if (!syls) {
-        return;
-      }
-      if (syls === "") {
-        return;
-      }
-      slurring_state = false;
-      _ref = this.all_items(sargam);
-      _results = [];
-      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-        item = _ref[_i];
-        _results.push(__bind(function(item) {
-          if (item.my_type !== "pitch") {
-            return;
-          }
-          if (syls.length === 0) {
-            return;
-          }
-          if (!slurring_state) {
-            item.syllable = syls.shift();
-          }
-          if (item_has_attribute(item, 'begin_slur')) {
-            slurring_state = true;
-          }
-          if (item_has_attribute(item, 'end_slur')) {
-            return slurring_state = false;
-          }
-        }, this)(item));
-      }
-      return _results;
     },
     assign_lyrics: function(sargam, lyrics) {
       var item, slurring_state, syls, _i, _len, _ref, _results;
@@ -107,7 +74,7 @@
       return _results;
     },
     parse_lyrics_section: function(lyrics_lines) {
-      var all_words, hy_ary, hyphenated_words, item, line, result, soft_hyphen, source, word;
+      var all_words, hy_ary, hyphenated_words, hyphenated_words_str, item, line, regex, result, soft_hyphen, source, word;
       console.log("parse_lyrics_section");
       if (lyrics_lines === "") {
         source = "";
@@ -156,7 +123,11 @@
       hyphenated_words = _.flatten(hyphenated_words);
       hyphenated_words = hypher.hyphenateText(all_words.join(' '));
       soft_hyphen = "\u00AD";
-      hyphenated_words = hyphenated_words.split(soft_hyphen).join('-');
+      hyphenated_words_str = hyphenated_words.split(soft_hyphen).join('-');
+      regex = new RegExp(/([^ -]+)/);
+      regex = /([^- ]+[- ]?)/g;
+      hyphenated_words = hyphenated_words_str.match(regex);
+      console.log(hyphenated_words);
       return {
         my_type: "lyrics_section",
         source: source,
@@ -219,16 +190,52 @@
       sargam.line_warnings = this.line_warnings;
       return sargam;
     },
+    assign_lyrics2: function(sargam, syls) {
+      var item, slurring_state, _i, _len, _ref, _results;
+      console.log("entering assign_lyrics2-syls is", syls);
+      console.log("entering assign_lyrics2-sargam is", sargam);
+      if (!syls) {
+        return;
+      }
+      if (syls === "") {
+        return;
+      }
+      slurring_state = false;
+      _ref = this.all_items(sargam);
+      _results = [];
+      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+        item = _ref[_i];
+        _results.push(__bind(function(item) {
+          if (item.my_type !== "pitch") {
+            return;
+          }
+          if (syls.length === 0) {
+            return;
+          }
+          if (!slurring_state) {
+            item.syllable = syls.shift();
+          }
+          if (item_has_attribute(item, 'begin_slur')) {
+            slurring_state = true;
+          }
+          if (item_has_attribute(item, 'end_slur')) {
+            return slurring_state = false;
+          }
+        }, this)(item));
+      }
+      return _results;
+    },
     assign_syllables_from_lyrics_sections: function(composition) {
       var line, syls, _i, _len, _ref, _results;
-      console.log("assign_syllables_from_lyrics_sections");
+      console.log("entering assign_syllables_from_lyrics_sections");
       syls = [];
       _ref = composition.lines;
       _results = [];
       for (_i = 0, _len = _ref.length; _i < _len; _i++) {
         line = _ref[_i];
+        console.log("in for loop, line is", line.my_type);
         if (line.my_type === "lyrics_section") {
-          syls.concat(line.all_syllables);
+          syls = syls.concat(line.hyphenated_words);
         }
         _results.push(line.my_type === "sargam_line" ? this.assign_lyrics2(line, syls) : void 0);
       }
@@ -328,6 +335,11 @@
         this.composition_data.staff_notation_url = x;
       }
       x = get_composition_attribute(this.composition_data, "ApplyHyphenatedLyrics");
+      if (x === "true") {
+        x = true;
+      } else {
+        x = false;
+      }
       this.composition_data.apply_hyphenated_lyrics = x || false;
       this.mark_partial_measures();
       if (this.composition_data.apply_hyphenated_lyrics) {
