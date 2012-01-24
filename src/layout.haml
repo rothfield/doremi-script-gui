@@ -7,7 +7,7 @@
     %link{:href => "css/styles.css", :rel => "stylesheet", :type => "text/css"}
     %link{:href => "css/doremi.css", :rel => "stylesheet", :type => "text/css"}
 
-  %body{"data-bind" => "event: {resize: composition_handle_resize}"}
+  %body
     = render_file('body.haml')
     <span class="note testing_utf_support" id="utf_left_repeat" style="display: none; ">&#x1d106;</span>
     <span id="utf_single_barline" class="note testing_utf_support" style="display: none; ">&#x1d100;</span>

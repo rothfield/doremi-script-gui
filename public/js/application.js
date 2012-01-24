@@ -1,11 +1,17 @@
 var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; };
 $(document).ready(function() {
-  var EMPTY_LINE_SOURCE, LineViewModel, Logger, NONE_URL, handleFileSelect, id, initialData, message_box;
+  var EMPTY_LINE_SOURCE, LineViewModel, Logger, NONE_URL, debug, full_url_helper, handleFileSelect, id, initialData, message_box;
+  debug = false;
   NONE_URL = "images/none.png";
   id = 1000;
   EMPTY_LINE_SOURCE = "| ";
   message_box = function(str) {
     return alert(str);
+  };
+  full_url_helper = function(fname) {
+    var loc;
+    loc = document.location;
+    return "" + loc.protocol + "//" + loc.host + fname;
   };
   LineViewModel = function(line_param) {
     if (line_param == null) {
@@ -17,7 +23,9 @@ $(document).ready(function() {
     ({
       id: "" + (id++)
     });
-    console.log("LineViewModel");
+    if (debug) {
+      console.log("LineViewModel");
+    }
     return {
       /* TODO: make computed with throttle? */
       line_parsed_doremi_script: ko.observable(null),
@@ -36,6 +44,9 @@ $(document).ready(function() {
       rendered_in_html: ko.observable(line_param.rendered_in_html),
       line_wrapper_click: function(my_model, event) {
         var current_target, text_area;
+        if (debug) {
+          console.log("line_wrapper_click", event);
+        }
         if (!this.editing()) {
           this.editing(true);
           this.not_editing(false);
@@ -46,10 +57,15 @@ $(document).ready(function() {
         return true;
       },
       insert_line: function(my_model, event) {
+        if (debug) {
+          console.log("insert_line");
+        }
         return true;
       },
       close_edit: function(my_model, event) {
-        console.log("close_edit");
+        if (debug) {
+          console.log("close_edit");
+        }
         this.editing(false);
         this.not_editing(true);
         return true;
@@ -63,7 +79,7 @@ $(document).ready(function() {
       },
       handle_blur: function(event) {},
       edit: function(my_model, event) {
-        var current_target, height, line, text_area, _i, _len, _ref;
+        var current_target, line, text_area, _i, _len, _ref;
         if (this.editing()) {
           return false;
         }
@@ -78,17 +94,9 @@ $(document).ready(function() {
         text_area = $(current_target).parent().find("textarea");
         $(text_area).focus();
         return true;
-        height = $(current_target).height();
-        text_area = $(current_target).find("textarea");
-        console.log("text_area", text_area);
-        return $(text_area).height(height);
       },
       line_wrapper_id: function() {
         return "line_wrapper_" + this.id;
-      },
-      show_parse_tree_click: function() {
-        console.log("you clicked show parse tree");
-        return false;
       },
       handle_key_press: function(current_line, event) {
         var let_default_action_proceed;
@@ -142,9 +150,6 @@ $(document).ready(function() {
     self.composition_lilypond_output_visible = ko.observable(false);
     self.composition_lilypond_output = ko.observable(false);
     self.doremi_source_visible = ko.observable(false);
-    self.composition_handle_resize = function(my_model) {
-      return console.log("handle_resize");
-    };
     self.toggle_title_visible = function(event) {
       return self.show_title(!this.show_title());
     };
@@ -237,9 +242,10 @@ $(document).ready(function() {
           if (some_data.error) {
             self.staff_notation_url(NONE_URL);
             self.composition_lilypond_output_visible(true);
+            alert("An error occurred: " + some_data.error);
             return;
           }
-          self.staff_notation_url(some_data.fname);
+          self.staff_notation_url(full_url_helper(some_data.fname));
           self.staff_notation_visible(true);
           return self.composition_lilypond_output_visible(false);
         }
@@ -251,7 +257,7 @@ $(document).ready(function() {
     self.compute_doremi_source = function() {
       var att, atts, atts_str, keys, keys_to_use, line, lines, lines_str, value;
       keys_to_use = self.attribute_keys;
-      keys = ["title", "filename", "raga", "key", "mode", "author", "source", "time_signature", "apply_hyphenated_lyrics"];
+      keys = ["title", "filename", "raga", "key", "mode", "author", "source", "time_signature", "apply_hyphenated_lyrics", "staff_notation_url"];
       atts = (function() {
         var _i, _len, _results;
         _results = [];
@@ -284,6 +290,9 @@ $(document).ready(function() {
           }
           if (att === "apply_hyphenated_lyrics") {
             att = "ApplyHyphenatedLyrics";
+          }
+          if (att === "staff_notation_url") {
+            att = "StaffNotationURL";
           }
           if (value === "") {
             continue;

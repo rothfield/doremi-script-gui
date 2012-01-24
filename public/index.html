@@ -7,7 +7,7 @@
     <link href='css/styles.css' rel='stylesheet' type='text/css' />
     <link href='css/doremi.css' rel='stylesheet' type='text/css' />
   </head>
-  <body data-bind='event: {resize: composition_handle_resize}'>
+  <body>
     <div class='liveExample'>
       <div class='controls'>
         <button data-bind='click: toggle_composition_select_visible'>
@@ -90,6 +90,12 @@
               Apply Hyphenated Lyrics:
             </label>
             <input data-bind='checked: apply_hyphenated_lyrics' type='checkbox' />
+          </p>
+          <p>
+            <label>
+              Staff Notation URL:
+            </label>
+            <span data-bind='text: staff_notation_url'></span>
           </p>
           <p>
             <label>

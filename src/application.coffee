@@ -1,13 +1,18 @@
 $(document).ready ->
+  debug=false
   NONE_URL="images/none.png"
   id=1000
   EMPTY_LINE_SOURCE ="| "  #space after barline is significant, parser fails without it
   message_box= (str) ->
     alert(str)
 
+  full_url_helper = (fname) ->
+    loc=document.location
+    "#{loc.protocol}//#{loc.host}#{fname}"
+
   LineViewModel = (line_param= {source: "",rendered_in_html:"(Empty Line)"}) ->  # parameter is PARSED line
     id: "#{id++}"
-    console.log "LineViewModel"
+    console.log "LineViewModel" if debug
     ### TODO: make computed with throttle? ###
     line_parsed_doremi_script: ko.observable(null)
 
@@ -27,7 +32,7 @@ $(document).ready ->
 
     # Behaviours
     line_wrapper_click: (my_model,event) ->
-      #console.log "line_wrapper_click",event
+      console.log "line_wrapper_click",event if debug
       if !this.editing()
         this.editing(true)
         this.not_editing(false)
@@ -36,10 +41,10 @@ $(document).ready ->
         $(text_area).focus()
       return true
     insert_line: (my_model, event) ->
-      #console.log "insert_line"
+      console.log "insert_line" if debug
       return true
     close_edit: (my_model, event) ->
-      console.log "close_edit"
+      console.log "close_edit" if debug
       this.editing(false)
       this.not_editing(true)
       return true
@@ -63,17 +68,9 @@ $(document).ready ->
       current_target=event.currentTarget
       text_area=$(current_target).parent().find("textarea")
       $(text_area).focus()
-      return true
-      height= $(current_target).height()
-      text_area=$(current_target).find("textarea")
-      console.log "text_area",text_area
-      $(text_area).height(height)
+      true
     line_wrapper_id: () ->
       "line_wrapper_#{this.id}"
-    show_parse_tree_click: () ->
-      console.log "you clicked show parse tree"
-      #this.parse_tree_visible(!this.parse_tree_visible())
-      false
     handle_key_press: (current_line,event) ->
       let_default_action_proceed=true
       let_default_action_proceed
@@ -126,8 +123,6 @@ $(document).ready ->
     self.composition_lilypond_output_visible=ko.observable(false)
     self.composition_lilypond_output=ko.observable(false)
     self.doremi_source_visible=ko.observable(false)
-    self.composition_handle_resize= (my_model) ->
-      console.log "handle_resize"
 
     self.toggle_title_visible= (event) ->
       self.show_title(!this.show_title())
@@ -218,8 +213,9 @@ $(document).ready ->
           if some_data.error
             self.staff_notation_url(NONE_URL)
             self.composition_lilypond_output_visible(true)
+            alert("An error occurred: #{some_data.error}")
             return
-          self.staff_notation_url(some_data.fname)
+          self.staff_notation_url(full_url_helper(some_data.fname))
           self.staff_notation_visible(true)
           self.composition_lilypond_output_visible(false)
       $.ajax(obj)
@@ -253,7 +249,7 @@ $(document).ready ->
       #json_object = $.parseJSON(json_str)
       # attributes don't have a blank line between them
       keys=["title","filename","raga","key","mode","author",
-        "source","time_signature","apply_hyphenated_lyrics"]
+        "source","time_signature","apply_hyphenated_lyrics","staff_notation_url"]
       atts= for att in keys
         value=self[att]()
         att="Filename" if att is "filename"
@@ -265,6 +261,7 @@ $(document).ready ->
         att="Source" if att is "source"
         att="TimeSignature" if att is "time_signature"
         att="ApplyHyphenatedLyrics" if att is "apply_hyphenated_lyrics"
+        att="StaffNotationURL" if att is "staff_notation_url"
         continue if value is ""
         continue if !value
         "#{att}: #{value}"
