@@ -16,7 +16,7 @@
     Hypher = window.Hypher;
   }
   hypher = new Hypher(english, {
-    minLength: 2
+    minLength: 1
   });
   root.ParserHelper = {
     hypher: hypher,
@@ -75,7 +75,6 @@
     },
     parse_lyrics_section: function(lyrics_lines) {
       var all_words, hy_ary, hyphenated_words, hyphenated_words_str, item, line, regex, result, soft_hyphen, source, word;
-      console.log("parse_lyrics_section");
       if (lyrics_lines === "") {
         source = "";
       } else {
@@ -127,7 +126,6 @@
       regex = new RegExp(/([^ -]+)/);
       regex = /([^- ]+[- ]?)/g;
       hyphenated_words = hyphenated_words_str.match(regex);
-      console.log(hyphenated_words);
       return {
         my_type: "lyrics_section",
         source: source,
@@ -192,8 +190,6 @@
     },
     assign_lyrics2: function(sargam, syls) {
       var item, slurring_state, _i, _len, _ref, _results;
-      console.log("entering assign_lyrics2-syls is", syls);
-      console.log("entering assign_lyrics2-sargam is", sargam);
       if (!syls) {
         return;
       }
@@ -227,13 +223,11 @@
     },
     assign_syllables_from_lyrics_sections: function(composition) {
       var line, syls, _i, _len, _ref, _results;
-      console.log("entering assign_syllables_from_lyrics_sections");
       syls = [];
       _ref = composition.lines;
       _results = [];
       for (_i = 0, _len = _ref.length; _i < _len; _i++) {
         line = _ref[_i];
-        console.log("in for loop, line is", line.my_type);
         if (line.my_type === "lyrics_section") {
           syls = syls.concat(line.hyphenated_words);
         }

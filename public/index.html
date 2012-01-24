@@ -98,10 +98,10 @@
             <span data-bind='text: id'></span>
           </p>
           <div>
-            <button data-bind='css: {button_on:doremi_script_source_visible},click: toggle_doremi_script_source_visible'>
+            <button data-bind='css: {button_on:doremi_source_visible},click: toggle_doremi_source_visible'>
               DoremiScript Source
             </button>
-            <div class='doremi_script_source_div like_pre' data-bind='text:doremi_script_source,visible: doremi_script_source_visible,event:{dblclick:toggle_doremi_script_source_visible}'></div>
+            <div class='doremi_source_div like_pre' data-bind='text:doremi_source,visible: doremi_source_visible,event:{dblclick:toggle_doremi_source_visible}, css: {composition_parse_failed: composition_parse_failed}'></div>
           </div>
           <div>
             <button data-bind='css: {button_on:parsed_doremi_script_visible},click: toggle_parsed_doremi_script_visible'>
@@ -133,6 +133,9 @@
             <button data-bind='css: {button_on:staff_notation_visible},click: toggle_staff_notation_visible'>
               Show Staff Notation
             </button>
+            <button data-bind='css: {button_on:show_title},click: toggle_title_visible'>
+              Show Title
+            </button>
           </div>
           <img alt='spinner' class='spinner' data-bind='visible: generating_staff_notation' src='images/musical-notes-animated.gif' width='50' />
         </div>
@@ -140,35 +143,33 @@
           <img alt='staff notation' class='staff_notation' data-bind='attr: {src:staff_notation_url_with_time_stamp}' src='images/none.jpg' />
         </div>
         <br />
-        <br />
+        <div class='composition_headers' data-bind='visible: show_title'>
+          <h1 class='composition_title' data-bind='text:title'></h1>
+          <h2 class='composition_author' data-bind='text:author'></h2>
+        </div>
         <div class='composition_body' data-bind='foreach: lines'>
-          <div class='line_wrapper' data-bind='attr: { id: line_wrapper_id()},click: line_wrapper_click ' tabindex='0'>
-            <div class='rendered_html' data-bind='css:{editing:editing,not_editing: not_editing},html: rendered_in_html, click: edit,clickBubble:false'></div>
-            <div class='edit_line_wrapper' data-bind='visible:editing,css: {line_has_warnings: line_has_warnings,line_parse_failed: line_parse_failed}'>
-              <button data-bind='click: close_edit,clickBubble:false'>
-                Close
-              </button>
-              <button data-bind='click: $parent.composition_insert_line,clickBubble:false'>
-                Insert
-              </button>
-              <button data-bind='click: $parent.composition_append_line,clickBubble:false'>
-                Append
-              </button>
-              <button data-bind='click: toggle_line_warnings_visible,clickBubble:false'>
-                Warnings
-              </button>
-              <button class='toggle_line_parse_tree' data-bind='css: {button_on:parse_tree_visible},click: toggle_parse_tree_visible'>
-                Show/Hide Parse Tree
-              </button>
-              <br />
-              <div class='line_warnings_div' data-bind='visible: line_warnings_visible'>
-                <pre data-bind='text: line_warnings,event:{dblclick:toggle_line_warnings_visible}'></pre>
-              </div>
-              <div class='parse_tree_div' data-bind='visible: parse_tree_visible'>
-                <pre data-bind='text: parse_tree_text,event:{dblclick:toggle_parse_tree_visible}'></pre>
-              </div>
-              <textarea class='entry_area' cols='33' data-bind="style: {width: $parent.composition_stave_width},css: {'line_has_warnings': $data.line_has_warnings,'parse_failed': $data.parse_failed},visible: editing(), value: source, event: { keypress: handle_key_press, blur: handle_blur}, valueUpdate: 'afterkeydown'" rows='6' spellcheck='false'></textarea>
+          <div class='rendered_html' data-bind='html: rendered_in_html, click: edit,clickBubble:false, css: {editing:editing,not_editing:not_editing,line_has_warnings: line_has_warnings,line_parse_failed: line_parse_failed}'></div>
+          <div class='edit_line_wrapper controls' data-bind='visible:editing, css: {line_has_warnings: line_has_warnings,line_parse_failed: line_parse_failed}'>
+            <button data-bind='click: close_edit,clickBubble:false'>
+              Close
+            </button>
+            <button data-bind='click: $parent.composition_insert_line,clickBubble:false'>
+              Insert
+            </button>
+            <button data-bind='click: $parent.composition_append_line,clickBubble:false'>
+              Append
+            </button>
+            <button data-bind='click: toggle_line_warnings_visible,clickBubble:false'>
+              Warnings
+            </button>
+            <br />
+            <div class='line_warnings_div' data-bind="visible: 'line_warnings.length &gt; 0'">
+              <pre data-bind='text: line_warnings,event:{dblclick:toggle_line_warnings_visible}'></pre>
             </div>
+            <div class='parse_tree_div' data-bind='visible: parse_tree_visible'>
+              <pre data-bind='text: parse_tree_text,event:{dblclick:toggle_parse_tree_visible}'></pre>
+            </div>
+            <textarea class='entry_area' cols='33' data-bind="style: {width: $parent.composition_stave_width},css: {'line_has_warnings': line_has_warnings,'parse_failed': $data.parse_failed},visible: editing(), value: source, event: { keypress: handle_key_press, blur: handle_blur}, valueUpdate: 'afterkeydown'" rows='6' spellcheck='false'></textarea>
           </div>
         </div>
       </div>

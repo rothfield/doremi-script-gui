@@ -619,7 +619,7 @@
   exports.test_apply_hyphenated_lyrics_attribute = function(test) {
     var composition, str, x;
     debug = true;
-    str = 'ApplyHyphenatedLyrics: true\n\nHello john\n\n| SRG';
+    str = 'ApplyHyphenatedLyrics: true\n\nHello john many zany egos\n\n| SRG';
     composition = test_parses(str, test);
     test.equal(composition.lines[0].my_type, "lyrics_section", "First 'line' should be lyrics_section");
     test.equal(composition[x = "apply_hyphenated_lyrics"], true, "" + x + " attribute of composition should have been set true");

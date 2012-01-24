@@ -60,9 +60,9 @@
           ID#:
         %span{"data-bind" => "text: id"} 
       %div
-        %button{"data-bind" => "css: {button_on:doremi_script_source_visible},click: toggle_doremi_script_source_visible"} 
+        %button{"data-bind" => "css: {button_on:doremi_source_visible},click: toggle_doremi_source_visible"} 
           DoremiScript Source
-        %div.doremi_script_source_div.like_pre{"data-bind" => "text:doremi_script_source,visible: doremi_script_source_visible,event:{dblclick:toggle_doremi_script_source_visible}"}
+        %div.doremi_source_div.like_pre{"data-bind" => "text:doremi_source,visible: doremi_source_visible,event:{dblclick:toggle_doremi_source_visible}, css: {composition_parse_failed: composition_parse_failed}"}
       %div
         %button{"data-bind" => "css: {button_on:parsed_doremi_script_visible},click: toggle_parsed_doremi_script_visible"} 
           Parsed DoremiScript
@@ -83,32 +83,32 @@
           Generate staff notation
         %button{"data-bind" => "css: {button_on:staff_notation_visible},click: toggle_staff_notation_visible"} 
           Show Staff Notation
+        %button{"data-bind" => "css: {button_on:show_title},click: toggle_title_visible"} 
+          Show Title
       %img.spinner{"alt" => 'spinner', "data-bind" => "visible: generating_staff_notation", "src" => "images/musical-notes-animated.gif", "width" => '50'}
     %div.staff_notation_div{"data-bind" => "visible: staff_notation_visible"}
       %img.staff_notation{"alt" => 'staff notation', "src" => 'images/none.jpg', "data-bind" => "attr: {src:staff_notation_url_with_time_stamp}"}
     %br
-    %br
+    %div.composition_headers{"data-bind" => "visible: show_title"}
+      %h1.composition_title{"data-bind" => "text:title"}
+      %h2.composition_author{"data-bind" => "text:author"}
     .composition_body{"data-bind" => "foreach: lines"}
-      %div.line_wrapper{"tabindex" => "0", "data-bind" => "attr: { id: line_wrapper_id()},click: line_wrapper_click "}
-
-        %div.rendered_html{"data-bind" => "css:{editing:editing,not_editing: not_editing},html: rendered_in_html, click: edit,clickBubble:false"}
-        %div.edit_line_wrapper{"data-bind"=> "visible:editing,css: {line_has_warnings: line_has_warnings,line_parse_failed: line_parse_failed}"}
-          %button{"data-bind" => "click: close_edit,clickBubble:false"} 
-            Close
-          %button{"data-bind" => "click: $parent.composition_insert_line,clickBubble:false"} 
-            Insert
-          %button{"data-bind" => "click: $parent.composition_append_line,clickBubble:false"} 
-            Append
-          %button{"data-bind" => "click: toggle_line_warnings_visible,clickBubble:false"} 
-            Warnings
-          %button.toggle_line_parse_tree{"data-bind" => "css: {button_on:parse_tree_visible},click: toggle_parse_tree_visible"} 
-            Show/Hide Parse Tree
-          %br
-          %div.line_warnings_div{"data-bind" => "visible: line_warnings_visible"}
-            %pre{"data-bind" => "text: line_warnings,event:{dblclick:toggle_line_warnings_visible}"}
-          %div.parse_tree_div{"data-bind" => "visible: parse_tree_visible"}
-            %pre{"data-bind" => "text: parse_tree_text,event:{dblclick:toggle_parse_tree_visible}"}
-          %textarea.entry_area{:spellcheck => "false",:rows => "6", :cols => "33", "data-bind" => "style: {width: $parent.composition_stave_width},css: {'line_has_warnings': $data.line_has_warnings,'parse_failed': $data.parse_failed},visible: editing(), value: source, event: { keypress: handle_key_press, blur: handle_blur}, valueUpdate: 'afterkeydown'"}
+      %div.rendered_html{"data-bind" => "html: rendered_in_html, click: edit,clickBubble:false, css: {editing:editing,not_editing:not_editing,line_has_warnings: line_has_warnings,line_parse_failed: line_parse_failed}"}
+      %div.edit_line_wrapper.controls{"data-bind"=> "visible:editing, css: {line_has_warnings: line_has_warnings,line_parse_failed: line_parse_failed}"}
+        %button{"data-bind" => "click: close_edit,clickBubble:false"} 
+          Close
+        %button{"data-bind" => "click: $parent.composition_insert_line,clickBubble:false"} 
+          Insert
+        %button{"data-bind" => "click: $parent.composition_append_line,clickBubble:false"} 
+          Append
+        %button{"data-bind" => "click: toggle_line_warnings_visible,clickBubble:false"} 
+          Warnings
+        %br
+        %div.line_warnings_div{"data-bind" => "visible: 'line_warnings.length > 0'"}
+          %pre{"data-bind" => "text: line_warnings,event:{dblclick:toggle_line_warnings_visible}"}
+        %div.parse_tree_div{"data-bind" => "visible: parse_tree_visible"}
+          %pre{"data-bind" => "text: parse_tree_text,event:{dblclick:toggle_parse_tree_visible}"}
+        %textarea.entry_area{:spellcheck => "false",:rows => "6", :cols => "33", "data-bind" => "style: {width: $parent.composition_stave_width},css: {'line_has_warnings': line_has_warnings,'parse_failed': $data.parse_failed},visible: editing(), value: source, event: { keypress: handle_key_press, blur: handle_blur}, valueUpdate: 'afterkeydown'"}
   %br
   %br
   %button.controls{"data-bind" => "click: add_line, enable: title() !=='' "} New Line
