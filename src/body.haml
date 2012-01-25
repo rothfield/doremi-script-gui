@@ -1,22 +1,27 @@
-.liveExample
+.bodyArea
   %div.controls
     %button{"data-bind" => "click: toggle_composition_select_visible"}
       Open locally saved 
     %select{"size" => "4", "data-bind" => "visible: composition_select_visible, options: compositions_in_local_storage, optionsText: 'title', value: selected_composition,click: composition_select"}
-    %button{"data-bind" => "click: save_locally, enable: saveable"} 
+    %button{"data-bind" => "visible: editing_composition,click: save_locally, enable: saveable"} 
       Save locally
     %button{"data-bind" => "click: new_composition"}
       New Composition
-    %button{"data-bind" => "click: print_composition"}
+    %button{"data-bind" => "visible: editing_composition,click: print_composition"}
       Print 
     %button{"data-bind" => "css: {button_on:open_file_visible},click: toggle_open_file_visible"} 
       Open File     
     %div.open_file_div{"data-bind" => 'visible:open_file_visible'}
       %label Open:
       %input#file{:name => "files[]", :type => "file"}
-    %a{"href" => 'http://github.com/rothfield/doremi-script-gui'}
-      Documentation/github home page
-  %fieldset.controls#composition_info
+    %button{"data-bind" => "visible: editing_composition,click: close"}
+      Close 
+    %button{"id" => "help_button", "data-bind" => "css: {button_on:help_visible},click: toggle_help_visible"} 
+      Help 
+    %a{:target => "_blank","href" => 'http://github.com/rothfield/doremi-script-gui'}
+      Development
+  = render_file('readme.haml')
+  %fieldset.controls#composition_info{"data-bind" => 'visible: editing_composition'}
     %legend#composition_info_legend{"data-bind" => "click: toggle_composition_info_visible"}
       %span{"data-bind" => "text: title"}
       (Click to hide/show composition info such as title and key)
@@ -25,7 +30,7 @@
         %label
           Title:
         %input#composition_title{"data-bind" => "valueUpdate: 'afterkeydown',value: title"}/
-        %span.required
+        %span.requiredz
           Required
       %p
         %label
@@ -94,7 +99,7 @@
         %li
           %a#download_mid.generated_by_lilypond{"data-bind" => "enable: links_enabled,attr: {href: midi_url }",:href => "", :target => "_blank", :title => "Play midi file"} midi
   %br
-  .composition
+  .composition{"data-bind" => "visible:editing_composition"}
     %div.controls
       %div.composition_controls
         %button{"data-bind" => "disable: disable_generate_staff_notation,click: generate_staff_notation"}
@@ -129,6 +134,6 @@
         %div.parse_tree_div{"data-bind" => "visible: parse_tree_visible"}
           %pre{"data-bind" => "text: parse_tree_text,event:{dblclick:toggle_parse_tree_visible}"}
       %div.rendered_html{"data-bind" => "html: rendered_in_html, event: { dblclick: close_edit},click: edit,clickBubble:false, css: {editing:editing,not_editing:not_editing,line_has_warnings: line_has_warnings,line_parse_failed: line_parse_failed}"}
+    %button.controls{"data-bind" => "click: add_line, enable: title() !=='' "} New Line
   %br
   %br
-  %button.controls{"data-bind" => "click: add_line, enable: title() !=='' "} New Line

@@ -38,11 +38,11 @@ body {
   font-family: arial;
   font-size: 14px; }
 
-.liveExample input { font-family: Arial; }
-.liveExample b { font-weight: bold; }
-.liveExample p { margin-top: 0.9em; margin-bottom: 0.9em; }
-.liveExample select[multiple] { width: 100%; height: 8em; }
-.liveExample h2 { margin-top: 0.4em; }
+.bodyArea input { font-family: Arial; }
+.bodyArea b { font-weight: bold; }
+.bodyArea p { margin-top: 0.9em; margin-bottom: 0.9em; }
+.bodyArea select[multiple] { width: 100%; height: 8em; }
+.bodyArea h2 { margin-top: 0.4em; }
 
 
 

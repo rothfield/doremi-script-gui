@@ -6,7 +6,9 @@ h4 {
   -webkit-margin-start: 0px;
   -webkit-margin-end: 0px;
 }
-
+div#help {
+  margin-left: 3em;
+}
 span.required {
   color: red;  
 }

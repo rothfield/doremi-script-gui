@@ -123,8 +123,24 @@ $(document).ready(function() {
   }, this);
   document.getElementById('file').addEventListener('change', handleFileSelect, false);
   window.CompositionViewModel = function(my_doremi_source) {
-    var links_enabled, self;
+    var help_visible_fun, links_enabled, self;
     self = this;
+    self.help_visible = ko.observable(false);
+    self.toggle_help_visible = function(event) {
+      return self.help_visible(!this.help_visible());
+    };
+    self.help_visible_action = ko.computed(help_visible_fun = function() {
+      console.log("help_visible_action");
+      if (self.document != null) {
+        return;
+      }
+      if (self.help_visible()) {
+        return $("#help_button").text("Hide Help");
+      } else {
+        return $("#help_button").text("Help");
+      }
+    });
+    self.editing_composition = ko.observable(false);
     self.last_doremi_source = "";
     self.lines = ko.observableArray([]);
     self.selected_composition = ko.observable();
@@ -496,6 +512,29 @@ $(document).ready(function() {
     self.saveable = ko.computed(function() {
       return (self.lines().length > 0) && self.title !== "";
     });
+    self.ask_user_if_they_want_to_save = function() {
+      if (self.editing_composition()) {
+        if (self.saveable()) {
+          if (confirm("Save current composition in localStorage before continuing?")) {
+            return self.save_locally();
+          }
+        }
+      }
+    };
+    self.destroy_from_local_storage = function() {
+      var key, x;
+      x = prompt("Enter yes to remove this document from local storage. This operation cannot be undone.");
+      if (!(x != null)) {
+        return;
+      }
+      key = "composition_" + (self.the_composition.id());
+      delete localStorage[key];
+      return self.editing_composition(false);
+    };
+    self.close = function() {
+      self.ask_user_if_they_want_to_save();
+      return self.editing_composition(false);
+    };
     self.print_composition = function() {
       var line, _i, _len, _ref;
       _ref = self.lines();
@@ -506,15 +545,12 @@ $(document).ready(function() {
       return window.print();
     };
     self.new_composition = function() {
-      if (self.saveable()) {
-        if (confirm("Save current composition in localStorage?")) {
-          self.save_locally();
-        }
-      }
+      self.ask_user_if_they_want_to_save();
       initialData = "";
       window.the_composition.my_init(initialData);
       message_box("An untitled composition was created with a new id. Please enter a title");
       self.composition_info_visible(true);
+      self.editing_composition(true);
       return $('#composition_title').focus();
     };
     self.refresh_compositions_in_local_storage = function() {
@@ -531,6 +567,7 @@ $(document).ready(function() {
       if (localStorage.length > 0) {
         while (ctr < localStorage.length) {
           key = localStorage.key(ctr);
+          console.log("key is", key);
           if (key.indexOf("composition_") === 0) {
             items.push(new Item(key, localStorage[key]));
           }
@@ -549,20 +586,20 @@ $(document).ready(function() {
       if (debug) {
         console.log("load_locally");
       }
-      if (key === ("composition_" + (window.the_composition.id()))) {
-        self.composition_select_visible(false);
-        message_box("This is the file you are currently editing");
-        return;
-      }
-      if (self.saveable()) {
-        if (confirm("Save current composition in localStorage before continuing?")) {
-          self.save_locally();
+      if (self.editing_composition()) {
+        if (key === ("composition_" + (window.the_composition.id()))) {
+          self.composition_select_visible(false);
+          message_box("This is the file you are currently editing");
+          return;
         }
       }
+      self.ask_user_if_they_want_to_save();
       source = localStorage[key];
       window.the_composition.my_init(source);
       self.composition_select_visible(false);
-      return message_box("" + (self.title()) + " was loaded from your browser's localStorage");
+      self.editing_composition(true);
+      message_box("" + (self.title()) + " was loaded from your browser's localStorage");
+      return $('#composition_title').focus();
     };
     self.get_musicxml_source = function() {
       return window.to_musicxml(self.composition_parsed_doremi_script());
@@ -593,6 +630,7 @@ $(document).ready(function() {
     return self;
   };
   window.the_composition = new CompositionViewModel();
+  window.the_composition.help_visible(true);
   window.the_composition.my_init(initialData);
   ko.applyBindings(window.the_composition, $('html')[0]);
   window.timed_count = __bind(function() {

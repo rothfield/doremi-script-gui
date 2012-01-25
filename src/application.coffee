@@ -94,9 +94,20 @@ $(document).ready ->
 
   document.getElementById('file').addEventListener('change', handleFileSelect, false)
 
-
   window.CompositionViewModel = (my_doremi_source) ->
     self = this
+    self.help_visible=ko.observable(false)
+    self.toggle_help_visible= (event) ->
+      self.help_visible(!this.help_visible())
+    self.help_visible_action = ko.computed( help_visible_fun= () ->
+      console.log "help_visible_action"
+      return if self.document?
+      if self.help_visible()
+        $("#help_button").text("Hide Help")
+      else
+        $("#help_button").text("Help")
+      )
+    self.editing_composition=ko.observable(false)
     self.last_doremi_source = ""
     self.lines = ko.observableArray([])
     self.selected_composition = ko.observable() # nothing selected by default
@@ -106,6 +117,7 @@ $(document).ready ->
     self.open_file_visible=ko.observable(false)
     self.composition_info_visible=ko.observable(true)
     self.show_title=ko.observable(true)
+    
     self.composition_parse_failed=ko.observable(false)
     self.calculate_stave_width=() ->
       width=$('div.composition_body').width()
@@ -357,7 +369,6 @@ $(document).ready ->
     self.add_line = () ->
       self.lines.push(x=new LineViewModel())
       x.parse()
-      #ko.applyBindings(x)
 
     self.composition_insert_line= (line_model, event) ->
       #console.log "insert_line"
@@ -398,17 +409,31 @@ $(document).ready ->
         self.loading_locally=false
     self.saveable = ko.computed () ->
       (self.lines().length > 0) and self.title isnt ""
+    self.ask_user_if_they_want_to_save = () ->
+      # returning false means user
+      if self.editing_composition()
+        if self.saveable()
+          if confirm("Save current composition in localStorage before continuing?")
+            self.save_locally()
+    self.destroy_from_local_storage = () ->
+      x=prompt("Enter yes to remove this document from local storage. This operation cannot be undone.")
+      return if !x?
+      key= "composition_#{self.the_composition.id()}"
+      delete localStorage[key]
+      self.editing_composition(false)
+    self.close = () ->
+      self.ask_user_if_they_want_to_save()
+      self.editing_composition(false)
     self.print_composition = () ->
       line.editing(false) for line in self.lines()
       window.print()
     self.new_composition = () ->
-      if self.saveable()
-        if confirm("Save current composition in localStorage?")
-          self.save_locally()
+      self.ask_user_if_they_want_to_save()
       initialData = ""
       window.the_composition.my_init(initialData)
       message_box("An untitled composition was created with a new id. Please enter a title")
       self.composition_info_visible(true)
+      self.editing_composition(true)
       $('#composition_title').focus()
 
     self.refresh_compositions_in_local_storage  = () ->
@@ -424,6 +449,7 @@ $(document).ready ->
       if localStorage.length > 0
         while ctr < localStorage.length
           key=localStorage.key(ctr)
+          console.log "key is",key
           if key.indexOf("composition_") is 0  # key starts with composition_
              items.push new Item(key,localStorage[key])
           ctr++
@@ -436,17 +462,18 @@ $(document).ready ->
       # TODO: use try/finally
       return if self.loading_locally # avoid calling more than once
       console.log "load_locally" if debug
-      if key is "composition_#{window.the_composition.id()}"
-        self.composition_select_visible(false)
-        message_box("This is the file you are currently editing")
-        return
-      if self.saveable() # TODO:dry
-        if confirm("Save current composition in localStorage before continuing?")
-          self.save_locally()
+      if self.editing_composition()
+        if key is "composition_#{window.the_composition.id()}"
+          self.composition_select_visible(false)
+          message_box("This is the file you are currently editing")
+          return
+      self.ask_user_if_they_want_to_save()
       source=localStorage[key]
       window.the_composition.my_init(source)
       self.composition_select_visible(false)
+      self.editing_composition(true)
       message_box("#{self.title()} was loaded from your browser's localStorage")
+      $('#composition_title').focus()
     self.get_musicxml_source = () ->
       window.to_musicxml(self.composition_parsed_doremi_script())
 
@@ -466,6 +493,7 @@ $(document).ready ->
     self
 
   window.the_composition=new CompositionViewModel()
+  window.the_composition.help_visible(true)
   window.the_composition.my_init(initialData)
   ko.applyBindings(window.the_composition,$('html')[0])
   
