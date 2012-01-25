@@ -125,8 +125,30 @@
             <button data-bind='css: {button_on:composition_musicxml_source_visible},click: toggle_composition_musicxml_source_visible'>
               MusicXML Source
             </button>
-            <div class='composition_musicxml_source_div like_pre' data-bind='visible: composition_musicxml_source_visible,text: composition_musicxml_source,event:{dblclick:toggle_composition_musicxml_source_visible}'></div>
           </div>
+          <div class='composition_musicxml_source_div like_pre' data-bind='visible: composition_musicxml_source_visible,text: composition_musicxml_source,event:{dblclick:toggle_composition_musicxml_source_visible}'></div>
+          <ul class='server_links' data-bind='visible: links_enabled'>
+            <li>
+              <a class='saved_to_server' data-bind='enable: links_enabled,attr: {href: lilypond_url }' href='' id='download_ly' target='_blank'>
+                Lilypond
+              </a>
+            </li>
+            <li>
+              <a class='saved_to_server' data-bind='enable: links_enabled,attr: {href: music_xml_url }' href='/#' id='download_xml' target='_blank'>MusicXML</a>
+            </li>
+            <li>
+              <a class='saved_to_server' data-bind='enable: links_enabled,attr: {href: html_url }' href='/#' id='download_html' target='_blank'>HTML Page</a>
+            </li>
+            <li>
+              <a class='generated_by_lilypond' data-bind='enable: links_enabled,attr: {href: staff_notation_url }' href='/#' id='download_jpeg' target='_blank'>jpeg</a>
+            </li>
+            <li>
+              <a class='generated_by_lilypond' data-bind='enable: links_enabled,attr: {href: pdf_url }' href='/#' id='download_pdf' target='_blank'>pdf</a>
+            </li>
+            <li>
+              <a class='generated_by_lilypond' data-bind='enable: links_enabled,attr: {href: midi_url }' href='' id='download_mid' target='_blank' title='Play midi file'>midi</a>
+            </li>
+          </ul>
         </div>
       </fieldset>
       <br />
@@ -154,7 +176,7 @@
           <h2 class='composition_author' data-bind='text:author'></h2>
         </div>
         <div class='composition_body' data-bind='foreach: lines'>
-          <div class='rendered_html' data-bind='html: rendered_in_html, click: edit,clickBubble:false, css: {editing:editing,not_editing:not_editing,line_has_warnings: line_has_warnings,line_parse_failed: line_parse_failed}'></div>
+          <div class='rendered_html' data-bind='html: rendered_in_html, event: { dblclick: close_edit},click: edit,clickBubble:false, css: {editing:editing,not_editing:not_editing,line_has_warnings: line_has_warnings,line_parse_failed: line_parse_failed}'></div>
           <div class='edit_line_wrapper controls' data-bind='visible:editing, css: {line_has_warnings: line_has_warnings,line_parse_failed: line_parse_failed}'>
             <button data-bind='click: close_edit,clickBubble:false'>
               Close
@@ -175,7 +197,7 @@
             <div class='parse_tree_div' data-bind='visible: parse_tree_visible'>
               <pre data-bind='text: parse_tree_text,event:{dblclick:toggle_parse_tree_visible}'></pre>
             </div>
-            <textarea class='entry_area' cols='33' data-bind="style: {width: $parent.composition_stave_width},css: {'line_has_warnings': line_has_warnings,'parse_failed': $data.parse_failed},visible: editing(), value: source, event: { keypress: handle_key_press, blur: handle_blur}, valueUpdate: 'afterkeydown'" rows='6' spellcheck='false'></textarea>
+            <textarea class='entry_area' cols='33' data-bind="style: {width: $parent.composition_stave_width},css: {'line_has_warnings': line_has_warnings,'parse_failed': $data.parse_failed},visible: editing(), value: source, event: { keypress: handle_key_press}, valueUpdate: 'afterkeydown'" rows='6' spellcheck='false'></textarea>
           </div>
         </div>
       </div>

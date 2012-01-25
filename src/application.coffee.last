@@ -1,10 +1,8 @@
 $(document).ready ->
-  initialData = "Title: testing\nAuthor: anon\nApplyHyphenatedLyrics: true\nmany words aren't hyphenated\n\n| SRG- m-m-\n. \n\n|PDNS"
   debug=false
   NONE_URL="images/none.png"
   id=1000
-  # NOTE: space after barline is significant, parser fails without it
-  EMPTY_LINE_SOURCE ="| "
+  EMPTY_LINE_SOURCE ="| "  #space after barline is significant, parser fails without it
   message_box= (str) ->
     alert(str)
 
@@ -45,7 +43,6 @@ $(document).ready ->
       console.log "insert_line" if debug
       return true
     close_edit: (my_model, event) ->
-      return true if !this.editing()
       console.log "close_edit" if debug
       this.editing(false)
       this.not_editing(true)
@@ -81,6 +78,7 @@ $(document).ready ->
   _console.level  = Logger.WARN
   _.mixin(_console.toObject())
   
+  initialData = "Title: testing\nAuthor: anon\nApplyHyphenatedLyrics: true\nmany words aren't hyphenated\n\n| SRG- m-m-\n. \n\n|PDNS"
  
   handleFileSelect = (evt) =>
 
@@ -100,7 +98,6 @@ $(document).ready ->
     self.last_doremi_source = ""
     self.lines = ko.observableArray([])
     self.selected_composition = ko.observable() # nothing selected by default
-    self.staff_notation_url=ko.observable(NONE_URL)
     self.apply_hyphenated_lyrics=ko.observable(false)
     self.composition_parse_tree_text=ko.observable("")
     self.open_file_visible=ko.observable(false)
@@ -116,44 +113,6 @@ $(document).ready ->
 
     self.composition_stave_width= ko.observable(self.calculate_stave_width())
     self.composition_textarea_width= ko.observable(self.calculate_textarea_width())
-    self.base_url=ko.observable(null)
-    self.links_enabled=ko.computed( links_enabled= () ->
-      console.log "links_enabled"
-      url=self.base_url()
-      url? and url isnt ""
-    )
-
-
-    self.lilypond_url=ko.computed(()->
-      base_url=self.base_url()
-      return "/#" if  !base_url
-      "#{base_url}.ly"
-    )
-    self.music_xml_url=ko.computed(()->
-      base_url=self.base_url()
-      return "/#" if  !base_url
-      "#{base_url}.xml"
-    )
-    self.html_url=ko.computed(()->
-      base_url=self.base_url()
-      return "/#" if  !base_url
-      "#{base_url}.html"
-    )
-    self.jpg_url=ko.computed(()->
-      base_url=self.base_url()
-      return "/#" if  !base_url
-      "#{base_url}.jpg"
-    )
-    self.pdf_url=ko.computed(()->
-      base_url=self.base_url()
-      return "/#" if  !base_url
-      "#{base_url}.pdf"
-    )
-    self.midi_url=ko.computed(()->
-      base_url=self.base_url()
-      return "/#" if  !base_url
-      "#{base_url}.mid"
-    )
 
     self.composition_lilypond_source_visible=ko.observable(false)
     self.composition_musicxml_source_visible=ko.observable(false)
@@ -253,10 +212,6 @@ $(document).ready ->
             self.composition_lilypond_output_visible(true)
             alert("An error occurred: #{some_data.error}")
             return
-          fname=some_data.fname
-          base_url=fname.slice(0,fname.lastIndexOf('.'))
-          console.log base_url
-          self.base_url(base_url)
           self.staff_notation_url(full_url_helper(some_data.fname))
           self.staff_notation_visible(true)
           self.composition_lilypond_output_visible(false)
@@ -283,7 +238,13 @@ $(document).ready ->
       ]
 
     self.compute_doremi_source = () ->
+      #return "hi"
+      # console.log "entering compute_doremi_source"
+      #return "" if self.lines().length is 0
       keys_to_use=self.attribute_keys
+      #json_str=JSON.stringify(ko.toJS(self), null, 2)
+      #json_object = $.parseJSON(json_str)
+      # attributes don't have a blank line between them
       keys=["title","filename","raga","key","mode","author",
         "source","time_signature","apply_hyphenated_lyrics","staff_notation_url"]
       atts= for att in keys
@@ -359,6 +320,10 @@ $(document).ready ->
       x.parse()
       #ko.applyBindings(x)
 
+    self.re_index_lines = () ->
+      ctr=0
+      line.index(ctr++) for line in self.lines()
+      
     self.composition_insert_line= (line_model, event) ->
       #console.log "insert_line"
       index=line_model.index()
@@ -385,8 +350,11 @@ $(document).ready ->
     self.composition_select_visible= ko.observable(false)
 
     self.composition_select= (my_model,event) ->
+      #console.log "composition_select"
       # User clicked on the locally saved compositions select list
       # Load from local storage
+      #
+      # Loads the composition selected from the local storage select list
       return if !this.selected_composition()
       key=this.selected_composition().key
       
@@ -397,7 +365,7 @@ $(document).ready ->
       finally
         self.loading_locally=false
     self.saveable = ko.computed () ->
-      (self.lines().length > 0) and self.title isnt ""
+      self.lines().length > 0 and self.title isnt ""
     self.print_composition = () ->
       line.editing(false) for line in self.lines()
       window.print()
@@ -412,6 +380,7 @@ $(document).ready ->
       $('#composition_title').focus()
 
     self.refresh_compositions_in_local_storage  = () ->
+      #console.log "refresh_compositions_in_local_storage"
       Item = (key, doremi_script) ->
         # For list of compositions in local storage, grab the key and title
         @key = key
@@ -433,9 +402,8 @@ $(document).ready ->
     self.compositions_in_local_storage = ko.observable([])
       
     self.load_locally = (key) ->
-      # TODO: use try/finally
       return if self.loading_locally # avoid calling more than once
-      console.log "load_locally" if debug
+      #console.log "load_locally"
       if key is "composition_#{window.the_composition.id()}"
         self.composition_select_visible(false)
         message_box("This is the file you are currently editing")
@@ -463,63 +431,59 @@ $(document).ready ->
     self
 
   window.the_composition=new CompositionViewModel()
+  #fun =  (new_value) ->
+  #  alert("New value is #{new_value}")
+  #window.the_composition.selected_composition.subscribe(fun)
   window.the_composition.my_init(initialData)
   ko.applyBindings(window.the_composition,$('html')[0])
   
   window.timed_count = () =>
-    # Timer that runs every second or so and refreshes the
-    # html rendering
     composition=window.the_composition
     which_line=(line for line in composition.lines() when line.editing() is true)[0]
     which_line=null if !which_line?
-    console.log "which_line is",which_line if debug
+    console.log "which_line is",which_line
     if composition.last_doremi_source isnt composition.doremi_source() # the source changed
       composition.last_doremi_source = composition.doremi_source()
       parsed=composition.composition_parse()
       if !parsed?
-        # Didn't parse
         composition.composition_parse_failed(true)
-        console.log "Parse failed" if debug
-        if which_line?
-          which_line.line_has_warnings(false)
-          which_line.line_warnings([])
-          which_line.line_parse_failed(true)
+        console.log "Parse failed"
+        which_line.line_has_warnings(false) if which_line?
+        which_line.line_warnings([])
+        which_line.line_parse_failed(true) if which_line?
       else
-        if which_line?
-          which_line.line_parse_failed(false) 
+        which_line.line_parse_failed(false) if which_line?
         composition.composition_parse_failed(false)
+        #which_line.rendered_in_html("<div>Didn't parse</div>")
         composition.composition_parsed_doremi_script(parsed)
+        if composition.composition_lilypond_source_visible()
+          true
+          #composition.composition_lilypond_source(to_lilypond(parsed))
         if composition.composition_musicxml_source_visible()
           composition.composition_musicxml_source(to_musicxml(parsed))
         parsed_lines=parsed.lines
         view_lines=composition.lines()
         ctr=0
         if parsed_lines.length isnt view_lines.length
-          console.log "Info:assertion failed parsed_lines.length isnt view_lines.length"
+          console.log "Error:assertion failed parsed_lines.length isnt view_lines.length"
         for parsed_line in parsed_lines
-          # TODO: add parsed_line as an attribute of LineView ?
-          # Note that the parsed_line has all the information
-          # needed to render it.
           html=line_to_html(parsed_line)
           view_line=view_lines[ctr]
           view_line.rendered_in_html(html)
+          view_line.line_warnings(parsed_line.line_warnings)
           warnings=parsed_line.line_warnings
           view_line.line_warnings(warnings)
           view_line.line_has_warnings(warnings.length > 0)
           ctr++
         dom_fixes()
     else
-      # If we didn't run the renderer, run dom_fixes in case something
-      # has changed
       dom_fixes()
-    # At the end of the task, re-start the timer
-    t=setTimeout("timed_count()",1000)  # TODO: use try catch to make sure timer always gets re-run
+    t=setTimeout("timed_count()",1000)
   
   $(window).resize(() ->
-    console.log("info:resize")
     window.the_composition.composition_stave_width(window.the_composition.calculate_stave_width())
   )
   
-  window.timed_count() # start the timer
+  window.timed_count()
   $('#composition_title').focus()
 

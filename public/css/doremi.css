@@ -35,7 +35,7 @@ button.button_on {
   background-color: black;
   color: white;
 }
-#controls li
+.controls li
 {
         display: inline;
         list-style-type: none;

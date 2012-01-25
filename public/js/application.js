@@ -1,6 +1,7 @@
 var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; };
 $(document).ready(function() {
   var EMPTY_LINE_SOURCE, LineViewModel, Logger, NONE_URL, debug, full_url_helper, handleFileSelect, id, initialData, message_box;
+  initialData = "Title: testing\nAuthor: anon\nApplyHyphenatedLyrics: true\nmany words aren't hyphenated\n\n| SRG- m-m-\n. \n\n|PDNS";
   debug = false;
   NONE_URL = "images/none.png";
   id = 1000;
@@ -63,6 +64,9 @@ $(document).ready(function() {
         return true;
       },
       close_edit: function(my_model, event) {
+        if (!this.editing()) {
+          return true;
+        }
         if (debug) {
           console.log("close_edit");
         }
@@ -77,7 +81,6 @@ $(document).ready(function() {
         this.parse_tree_visible(!this.parse_tree_visible());
         return true;
       },
-      handle_blur: function(event) {},
       edit: function(my_model, event) {
         var current_target, line, text_area, _i, _len, _ref;
         if (this.editing()) {
@@ -108,7 +111,6 @@ $(document).ready(function() {
   Logger = _console.constructor;
   _console.level = Logger.WARN;
   _.mixin(_console.toObject());
-  initialData = "Title: testing\nAuthor: anon\nApplyHyphenatedLyrics: true\nmany words aren't hyphenated\n\n| SRG- m-m-\n. \n\n|PDNS";
   handleFileSelect = __bind(function(evt) {
     var file, reader;
     file = document.getElementById('file').files[0];
@@ -121,11 +123,12 @@ $(document).ready(function() {
   }, this);
   document.getElementById('file').addEventListener('change', handleFileSelect, false);
   window.CompositionViewModel = function(my_doremi_source) {
-    var self;
+    var links_enabled, self;
     self = this;
     self.last_doremi_source = "";
     self.lines = ko.observableArray([]);
     self.selected_composition = ko.observable();
+    self.staff_notation_url = ko.observable(NONE_URL);
     self.apply_hyphenated_lyrics = ko.observable(false);
     self.composition_parse_tree_text = ko.observable("");
     self.open_file_visible = ko.observable(false);
@@ -144,6 +147,61 @@ $(document).ready(function() {
     };
     self.composition_stave_width = ko.observable(self.calculate_stave_width());
     self.composition_textarea_width = ko.observable(self.calculate_textarea_width());
+    self.base_url = ko.observable(null);
+    self.links_enabled = ko.computed(links_enabled = function() {
+      var url;
+      console.log("links_enabled");
+      url = self.base_url();
+      return (url != null) && url !== "";
+    });
+    self.lilypond_url = ko.computed(function() {
+      var base_url;
+      base_url = self.base_url();
+      if (!base_url) {
+        return "/#";
+      }
+      return "" + base_url + ".ly";
+    });
+    self.music_xml_url = ko.computed(function() {
+      var base_url;
+      base_url = self.base_url();
+      if (!base_url) {
+        return "/#";
+      }
+      return "" + base_url + ".xml";
+    });
+    self.html_url = ko.computed(function() {
+      var base_url;
+      base_url = self.base_url();
+      if (!base_url) {
+        return "/#";
+      }
+      return "" + base_url + ".html";
+    });
+    self.jpg_url = ko.computed(function() {
+      var base_url;
+      base_url = self.base_url();
+      if (!base_url) {
+        return "/#";
+      }
+      return "" + base_url + ".jpg";
+    });
+    self.pdf_url = ko.computed(function() {
+      var base_url;
+      base_url = self.base_url();
+      if (!base_url) {
+        return "/#";
+      }
+      return "" + base_url + ".pdf";
+    });
+    self.midi_url = ko.computed(function() {
+      var base_url;
+      base_url = self.base_url();
+      if (!base_url) {
+        return "/#";
+      }
+      return "" + base_url + ".mid";
+    });
     self.composition_lilypond_source_visible = ko.observable(false);
     self.composition_musicxml_source_visible = ko.observable(false);
     self.parsed_doremi_script_visible = ko.observable(false);
@@ -237,6 +295,7 @@ $(document).ready(function() {
           return alert("Couldn't connect to staff notation generator server at " + url);
         },
         success: function(some_data, text_status) {
+          var base_url, fname;
           self.generating_staff_notation(false);
           self.composition_lilypond_output(some_data.lilypond_output);
           if (some_data.error) {
@@ -245,6 +304,10 @@ $(document).ready(function() {
             alert("An error occurred: " + some_data.error);
             return;
           }
+          fname = some_data.fname;
+          base_url = fname.slice(0, fname.lastIndexOf('.'));
+          console.log(base_url);
+          self.base_url(base_url);
           self.staff_notation_url(full_url_helper(some_data.fname));
           self.staff_notation_visible(true);
           return self.composition_lilypond_output_visible(false);
@@ -384,17 +447,6 @@ $(document).ready(function() {
       self.lines.push(x = new LineViewModel());
       return x.parse();
     };
-    self.re_index_lines = function() {
-      var ctr, line, _i, _len, _ref, _results;
-      ctr = 0;
-      _ref = self.lines();
-      _results = [];
-      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-        line = _ref[_i];
-        _results.push(line.index(ctr++));
-      }
-      return _results;
-    };
     self.composition_insert_line = function(line_model, event) {
       var index, new_source, number_of_elements_to_remove;
       index = line_model.index();
@@ -442,7 +494,7 @@ $(document).ready(function() {
       }
     };
     self.saveable = ko.computed(function() {
-      return self.lines().length > 0 && self.title !== "";
+      return (self.lines().length > 0) && self.title !== "";
     });
     self.print_composition = function() {
       var line, _i, _len, _ref;
@@ -493,6 +545,9 @@ $(document).ready(function() {
       var source;
       if (self.loading_locally) {
         return;
+      }
+      if (debug) {
+        console.log("load_locally");
       }
       if (key === ("composition_" + (window.the_composition.id()))) {
         self.composition_select_visible(false);
@@ -554,18 +609,20 @@ $(document).ready(function() {
     if (!(which_line != null)) {
       which_line = null;
     }
-    console.log("which_line is", which_line);
+    if (debug) {
+      console.log("which_line is", which_line);
+    }
     if (composition.last_doremi_source !== composition.doremi_source()) {
       composition.last_doremi_source = composition.doremi_source();
       parsed = composition.composition_parse();
       if (!(parsed != null)) {
         composition.composition_parse_failed(true);
-        console.log("Parse failed");
+        if (debug) {
+          console.log("Parse failed");
+        }
         if (which_line != null) {
           which_line.line_has_warnings(false);
-        }
-        which_line.line_warnings([]);
-        if (which_line != null) {
+          which_line.line_warnings([]);
           which_line.line_parse_failed(true);
         }
       } else {
@@ -574,9 +631,6 @@ $(document).ready(function() {
         }
         composition.composition_parse_failed(false);
         composition.composition_parsed_doremi_script(parsed);
-        if (composition.composition_lilypond_source_visible()) {
-          true;
-        }
         if (composition.composition_musicxml_source_visible()) {
           composition.composition_musicxml_source(to_musicxml(parsed));
         }
@@ -584,14 +638,13 @@ $(document).ready(function() {
         view_lines = composition.lines();
         ctr = 0;
         if (parsed_lines.length !== view_lines.length) {
-          console.log("Error:assertion failed parsed_lines.length isnt view_lines.length");
+          console.log("Info:assertion failed parsed_lines.length isnt view_lines.length");
         }
         for (_i = 0, _len = parsed_lines.length; _i < _len; _i++) {
           parsed_line = parsed_lines[_i];
           html = line_to_html(parsed_line);
           view_line = view_lines[ctr];
           view_line.rendered_in_html(html);
-          view_line.line_warnings(parsed_line.line_warnings);
           warnings = parsed_line.line_warnings;
           view_line.line_warnings(warnings);
           view_line.line_has_warnings(warnings.length > 0);
@@ -605,6 +658,7 @@ $(document).ready(function() {
     return t = setTimeout("timed_count()", 1000);
   }, this);
   $(window).resize(function() {
+    console.log("info:resize");
     return window.the_composition.composition_stave_width(window.the_composition.calculate_stave_width());
   });
   window.timed_count();
