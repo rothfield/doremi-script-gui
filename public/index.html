@@ -176,29 +176,32 @@
           <h2 class='composition_author' data-bind='text:author'></h2>
         </div>
         <div class='composition_body' data-bind='foreach: lines'>
-          <div class='rendered_html' data-bind='html: rendered_in_html, event: { dblclick: close_edit},click: edit,clickBubble:false, css: {editing:editing,not_editing:not_editing,line_has_warnings: line_has_warnings,line_parse_failed: line_parse_failed}'></div>
+          <!--  Each line consists of a textarea, some controls, and the rendered html. The textarea and controls are hidden unless the user is editting the line -->
           <div class='edit_line_wrapper controls' data-bind='visible:editing, css: {line_has_warnings: line_has_warnings,line_parse_failed: line_parse_failed}'>
-            <button data-bind='click: close_edit,clickBubble:false'>
-              Close
-            </button>
-            <button data-bind='click: $parent.composition_insert_line,clickBubble:false'>
-              Insert
-            </button>
-            <button data-bind='click: $parent.composition_append_line,clickBubble:false'>
-              Append
-            </button>
-            <button data-bind='click: toggle_line_warnings_visible,clickBubble:false'>
-              Warnings
-            </button>
-            <br />
+            <textarea class='entry_area' cols='33' data-bind="style: {width: $parent.composition_stave_width},css: {'line_has_warnings': line_has_warnings,'parse_failed': $data.parse_failed},visible: editing(), value: source, event: { keypress: handle_key_press}, valueUpdate: 'afterkeydown'" rows='6' spellcheck='false'></textarea>
+            <div class='line_controls controls'>
+              <button data-bind='click: close_edit,clickBubble:false'>
+                Close
+              </button>
+              <button data-bind='click: $parent.composition_insert_line,clickBubble:false'>
+                Insert
+              </button>
+              <button data-bind='click: $parent.composition_append_line,clickBubble:false'>
+                Append
+              </button>
+              <button data-bind='click: toggle_line_warnings_visible,clickBubble:false'>
+                Warnings
+              </button>
+            </div>
             <div class='line_warnings_div' data-bind="visible: 'line_warnings.length &gt; 0'">
-              <pre data-bind='text: line_warnings,event:{dblclick:toggle_line_warnings_visible}'></pre>
+              <h4>Warnings:</h4>
+              <div class='like_pre' data-bind='text: line_warnings,event:{dblclick:toggle_line_warnings_visible}'></div>
             </div>
             <div class='parse_tree_div' data-bind='visible: parse_tree_visible'>
               <pre data-bind='text: parse_tree_text,event:{dblclick:toggle_parse_tree_visible}'></pre>
             </div>
-            <textarea class='entry_area' cols='33' data-bind="style: {width: $parent.composition_stave_width},css: {'line_has_warnings': line_has_warnings,'parse_failed': $data.parse_failed},visible: editing(), value: source, event: { keypress: handle_key_press}, valueUpdate: 'afterkeydown'" rows='6' spellcheck='false'></textarea>
           </div>
+          <div class='rendered_html' data-bind='html: rendered_in_html, event: { dblclick: close_edit},click: edit,clickBubble:false, css: {editing:editing,not_editing:not_editing,line_has_warnings: line_has_warnings,line_parse_failed: line_parse_failed}'></div>
         </div>
       </div>
       <br />

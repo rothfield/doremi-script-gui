@@ -580,6 +580,10 @@ $(document).ready(function() {
       return false;
     });
     self.save_locally = function() {
+      if (self.composition_parse_failed() === true) {
+        alert("Can't save because there are syntax errors. Please fix the lines outlined in red first");
+        return true;
+      }
       localStorage.setItem("composition_" + (self.id()), self.doremi_source());
       return message_box("" + (self.title()) + " was saved in your browser's localStorage");
     };
@@ -592,58 +596,49 @@ $(document).ready(function() {
   window.the_composition.my_init(initialData);
   ko.applyBindings(window.the_composition, $('html')[0]);
   window.timed_count = __bind(function() {
-    var composition, ctr, html, line, parsed, parsed_line, parsed_lines, t, view_line, view_lines, warnings, which_line, _i, _len;
-    composition = window.the_composition;
-    which_line = ((function() {
-      var _i, _len, _ref, _results;
-      _ref = composition.lines();
-      _results = [];
-      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-        line = _ref[_i];
-        if (line.editing() === true) {
-          _results.push(line);
-        }
-      }
-      return _results;
-    })())[0];
-    if (!(which_line != null)) {
-      which_line = null;
-    }
-    if (debug) {
-      console.log("which_line is", which_line);
-    }
-    if (composition.last_doremi_source !== composition.doremi_source()) {
-      composition.last_doremi_source = composition.doremi_source();
-      parsed = composition.composition_parse();
+    var composition_view, ctr, html, parsed, parsed_line, parsed_lines, ret_val, source, t, view_line, view_lines, warnings, _i, _j, _len, _len2, _ref;
+    debug = true;
+    composition_view = window.the_composition;
+    if (composition_view.last_doremi_source !== composition_view.doremi_source()) {
+      composition_view.last_doremi_source = composition_view.doremi_source();
+      parsed = composition_view.composition_parse();
       if (!(parsed != null)) {
-        composition.composition_parse_failed(true);
         if (debug) {
           console.log("Parse failed");
         }
-        if (which_line != null) {
-          which_line.line_has_warnings(false);
-          which_line.line_warnings([]);
-          which_line.line_parse_failed(true);
+        composition_view.composition_parse_failed(true);
+        _ref = composition_view.lines();
+        for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+          view_line = _ref[_i];
+          console.log("composition parse failed, checking " + (view_line.source()));
+          try {
+            source = view_line.source();
+            ret_val = DoremiScriptLineParser.parse(source);
+            view_line.line_parse_failed(false);
+          } catch (err) {
+            view_line.line_parse_failed(true);
+            view_line.line_has_warnings(false);
+            view_line.line_warnings([]);
+            view_line.rendered_in_html("<pre>Didn't parse\n" + (view_line.source()) + "</pre>");
+          }
         }
       } else {
-        if (which_line != null) {
-          which_line.line_parse_failed(false);
-        }
-        composition.composition_parse_failed(false);
-        composition.composition_parsed_doremi_script(parsed);
-        if (composition.composition_musicxml_source_visible()) {
-          composition.composition_musicxml_source(to_musicxml(parsed));
+        composition_view.composition_parse_failed(false);
+        composition_view.composition_parsed_doremi_script(parsed);
+        if (composition_view.composition_musicxml_source_visible()) {
+          composition_view.composition_musicxml_source(to_musicxml(parsed));
         }
         parsed_lines = parsed.lines;
-        view_lines = composition.lines();
+        view_lines = composition_view.lines();
         ctr = 0;
         if (parsed_lines.length !== view_lines.length) {
           console.log("Info:assertion failed parsed_lines.length isnt view_lines.length");
         }
-        for (_i = 0, _len = parsed_lines.length; _i < _len; _i++) {
-          parsed_line = parsed_lines[_i];
+        for (_j = 0, _len2 = parsed_lines.length; _j < _len2; _j++) {
+          parsed_line = parsed_lines[_j];
           html = line_to_html(parsed_line);
           view_line = view_lines[ctr];
+          view_line.line_parse_failed(false);
           view_line.rendered_in_html(html);
           warnings = parsed_line.line_warnings;
           view_line.line_warnings(warnings);
@@ -655,6 +650,7 @@ $(document).ready(function() {
     } else {
       dom_fixes();
     }
+    debug = false;
     return t = setTimeout("timed_count()", 1000);
   }, this);
   $(window).resize(function() {

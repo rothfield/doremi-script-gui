@@ -457,6 +457,9 @@ $(document).ready ->
       false
 
     self.save_locally = () ->
+      if self.composition_parse_failed() is true
+        alert("Can't save because there are syntax errors. Please fix the lines outlined in red first")
+        return true
       localStorage.setItem("composition_#{self.id()}",self.doremi_source())
       message_box("#{self.title()} was saved in your browser's localStorage")
     self.my_init(my_doremi_source) if my_doremi_source?
@@ -467,41 +470,52 @@ $(document).ready ->
   ko.applyBindings(window.the_composition,$('html')[0])
   
   window.timed_count = () =>
-    # Timer that runs every second or so and refreshes the
-    # html rendering
-    composition=window.the_composition
-    which_line=(line for line in composition.lines() when line.editing() is true)[0]
-    which_line=null if !which_line?
-    console.log "which_line is",which_line if debug
-    if composition.last_doremi_source isnt composition.doremi_source() # the source changed
-      composition.last_doremi_source = composition.doremi_source()
-      parsed=composition.composition_parse()
-      if !parsed?
-        # Didn't parse
-        composition.composition_parse_failed(true)
+    debug=true
+    # Timer that runs every second or so.
+    # It refreshes the whole page
+    # TODO: avoid refreshing parts that didn't change
+    composition_view=window.the_composition 
+    if composition_view.last_doremi_source isnt composition_view.doremi_source() # the source changed
+      composition_view.last_doremi_source = composition_view.doremi_source()
+      parsed=composition_view.composition_parse()
+      if !parsed?  # Didn't parse
         console.log "Parse failed" if debug
-        if which_line?
-          which_line.line_has_warnings(false)
-          which_line.line_warnings([])
-          which_line.line_parse_failed(true)
-      else
-        if which_line?
-          which_line.line_parse_failed(false) 
-        composition.composition_parse_failed(false)
-        composition.composition_parsed_doremi_script(parsed)
-        if composition.composition_musicxml_source_visible()
-          composition.composition_musicxml_source(to_musicxml(parsed))
+        composition_view.composition_parse_failed(true)
+        # sadly, run the line parser on each line in the view 
+        # to find which line or lines
+        # didn't parse.
+        for view_line in composition_view.lines()
+          console.log "composition parse failed, checking #{view_line.source()}"
+          try
+            source=view_line.source()
+            ret_val=DoremiScriptLineParser.parse(source)
+            view_line.line_parse_failed(false)
+          catch err # line didn't parse
+            view_line.line_parse_failed(true)
+            view_line.line_has_warnings(false)
+            view_line.line_warnings([])
+            view_line.rendered_in_html("<pre>Didn't parse\n#{view_line.source()}</pre>")
+      else # parse succeeded.
+        composition_view.composition_parse_failed(false)
+        composition_view.composition_parsed_doremi_script(parsed)
+        if composition_view.composition_musicxml_source_visible()
+          composition_view.composition_musicxml_source(to_musicxml(parsed))
         parsed_lines=parsed.lines
-        view_lines=composition.lines()
+        view_lines=composition_view.lines()
         ctr=0
         if parsed_lines.length isnt view_lines.length
           console.log "Info:assertion failed parsed_lines.length isnt view_lines.length"
         for parsed_line in parsed_lines
+          # Update the view
+          # TODO: should I be calling init on the line?
           # TODO: add parsed_line as an attribute of LineView ?
           # Note that the parsed_line has all the information
           # needed to render it.
+
+          # render line as html-see html_renderer.coffee
           html=line_to_html(parsed_line)
           view_line=view_lines[ctr]
+          view_line.line_parse_failed(false)
           view_line.rendered_in_html(html)
           warnings=parsed_line.line_warnings
           view_line.line_warnings(warnings)
@@ -513,6 +527,7 @@ $(document).ready ->
       # has changed
       dom_fixes()
     # At the end of the task, re-start the timer
+    debug=false
     t=setTimeout("timed_count()",1000)  # TODO: use try catch to make sure timer always gets re-run
   
   $(window).resize(() ->
