@@ -250,7 +250,7 @@ $(document).ready ->
       ts= new Date().getTime()
       url='/lilypond_server/lilypond_to_jpg'
       timeout_in_seconds=60
-      src=self.compute_doremi_source() #TODO: make doremi_source not computed
+      src=self.doremi_source()
       my_data =
         fname: "#{self.title()}_#{self.author()}_#{self.id()}"
         lilypond: lilypond_source
@@ -303,9 +303,24 @@ $(document).ready ->
       ]
 
     self.compute_doremi_source = () ->
+      # list dependencies
+      self.id()
+      self.title()
+      self.filename()
+      self.raga()
+      self.key()
+      self.mode()
+      self.author()
+      self.source()
+      self.time_signature()
+      self.apply_hyphenated_lyrics()
+      self.staff_notation_url()
+      self.lines()
       keys_to_use=self.attribute_keys
-      keys=["id","title","filename","raga","key","mode","author",
-        "source","time_signature","apply_hyphenated_lyrics","staff_notation_url"]
+      keys=["id","title","filename","raga","key",
+            "mode","author",
+            "source","time_signature","apply_hyphenated_lyrics",
+            "staff_notation_url"]
       atts= for att in keys
         value=self[att]()
         att="Filename" if att is "filename"
@@ -532,6 +547,13 @@ $(document).ready ->
     # It refreshes the whole page
     # TODO: avoid refreshing parts that didn't change
     composition_view=window.the_composition
+    for view_line in composition_view.lines() # hack
+      if view_line.source() is ""
+         view_line.rendered_in_html('(empty line)')
+         view_line.line_parse_failed(false)
+         view_line.line_has_warnings(false)
+         view_line.line_warnings([])
+
     if composition_view.last_doremi_source isnt composition_view.doremi_source() # the source changed
       composition_view.last_doremi_source = composition_view.doremi_source()
       parsed=composition_view.composition_parse()
@@ -546,6 +568,7 @@ $(document).ready ->
           try
             source=view_line.source()
             ret_val=DoremiScriptLineParser.parse(source)
+            view_line.rendered_in_html('')
             view_line.line_parse_failed(false)
           catch err # line didn't parse
             view_line.line_parse_failed(true)

@@ -294,7 +294,7 @@ $(document).ready(function() {
       ts = new Date().getTime();
       url = '/lilypond_server/lilypond_to_jpg';
       timeout_in_seconds = 60;
-      src = self.compute_doremi_source();
+      src = self.doremi_source();
       my_data = {
         fname: "" + (self.title()) + "_" + (self.author()) + "_" + (self.id()),
         lilypond: lilypond_source,
@@ -336,6 +336,18 @@ $(document).ready(function() {
     self.attribute_keys = ["id", "filename", "raga", "author", "source", "time_signature", "notes_used", "title", "key", "mode", "staff_notation_url", "apply_hyphenated_lyrics"];
     self.compute_doremi_source = function() {
       var att, atts, atts_str, keys, keys_to_use, line, lines, lines_str, value;
+      self.id();
+      self.title();
+      self.filename();
+      self.raga();
+      self.key();
+      self.mode();
+      self.author();
+      self.source();
+      self.time_signature();
+      self.apply_hyphenated_lyrics();
+      self.staff_notation_url();
+      self.lines();
       keys_to_use = self.attribute_keys;
       keys = ["id", "title", "filename", "raga", "key", "mode", "author", "source", "time_signature", "apply_hyphenated_lyrics", "staff_notation_url"];
       atts = (function() {
@@ -661,9 +673,19 @@ $(document).ready(function() {
   window.the_composition.my_init(initialData);
   ko.applyBindings(window.the_composition, $('html')[0]);
   window.timed_count = __bind(function() {
-    var composition_view, ctr, html, parsed, parsed_line, parsed_lines, ret_val, source, t, view_line, view_lines, warnings, _i, _j, _len, _len2, _ref;
+    var composition_view, ctr, html, parsed, parsed_line, parsed_lines, ret_val, source, t, view_line, view_lines, warnings, _i, _j, _k, _len, _len2, _len3, _ref, _ref2;
     debug = true;
     composition_view = window.the_composition;
+    _ref = composition_view.lines();
+    for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+      view_line = _ref[_i];
+      if (view_line.source() === "") {
+        view_line.rendered_in_html('(empty line)');
+        view_line.line_parse_failed(false);
+        view_line.line_has_warnings(false);
+        view_line.line_warnings([]);
+      }
+    }
     if (composition_view.last_doremi_source !== composition_view.doremi_source()) {
       composition_view.last_doremi_source = composition_view.doremi_source();
       parsed = composition_view.composition_parse();
@@ -672,13 +694,14 @@ $(document).ready(function() {
           console.log("Parse failed");
         }
         composition_view.composition_parse_failed(true);
-        _ref = composition_view.lines();
-        for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-          view_line = _ref[_i];
+        _ref2 = composition_view.lines();
+        for (_j = 0, _len2 = _ref2.length; _j < _len2; _j++) {
+          view_line = _ref2[_j];
           console.log("composition parse failed, checking " + (view_line.source()));
           try {
             source = view_line.source();
             ret_val = DoremiScriptLineParser.parse(source);
+            view_line.rendered_in_html('');
             view_line.line_parse_failed(false);
           } catch (err) {
             view_line.line_parse_failed(true);
@@ -699,8 +722,8 @@ $(document).ready(function() {
         if (parsed_lines.length !== view_lines.length) {
           console.log("Info:assertion failed parsed_lines.length isnt view_lines.length");
         }
-        for (_j = 0, _len2 = parsed_lines.length; _j < _len2; _j++) {
-          parsed_line = parsed_lines[_j];
+        for (_k = 0, _len3 = parsed_lines.length; _k < _len3; _k++) {
+          parsed_line = parsed_lines[_k];
           html = line_to_html(parsed_line);
           view_line = view_lines[ctr];
           view_line.line_parse_failed(false);
