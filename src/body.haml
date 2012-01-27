@@ -2,9 +2,11 @@
   %div.controls
     %button{"data-bind" => "click: toggle_composition_select_visible"}
       Open locally saved 
-    %select{"size" => "4", "data-bind" => "visible: composition_select_visible, options: compositions_in_local_storage, optionsText: 'title', value: selected_composition,click: composition_select"}
+    %select{"id" => "composition_select", "size" => "4", "data-bind" => "event: {change: composition_select}, visible: composition_select_visible, options: compositions_in_local_storage, optionsText: 'title', value: selected_composition"}
     %button{"data-bind" => "visible: editing_composition,click: save_locally, enable: saveable"} 
       Save locally
+    %button{"data-bind" => "visible: editing_composition,click: destroy_locally, enable: saveable"} 
+      Delete locally 
     %button{"data-bind" => "click: new_composition"}
       New Composition
     %button{"data-bind" => "visible: editing_composition,click: print_composition"}
@@ -14,7 +16,7 @@
     %div.open_file_div{"data-bind" => 'visible:open_file_visible'}
       %label Open:
       %input#file{:name => "files[]", :type => "file"}
-    %button{"data-bind" => "visible: editing_composition,click: close"}
+    %button{"data-bind" => "visible: editing_composition,click: gui_close"}
       Close 
     %button{"id" => "help_button", "data-bind" => "css: {button_on:help_visible},click: toggle_help_visible"} 
       Help 
@@ -80,24 +82,28 @@
         %button{"data-bind" => "css: {button_on:composition_lilypond_source_visible},click: toggle_composition_lilypond_source_visible"} 
           Lilypond source
         %div.composition_lilypond_source_div.like_pre{"data-bind" => "visible: composition_lilypond_source_visible,text: composition_lilypond_source,event:{dblclick:toggle_composition_lilypond_source_visible}"}
+       
       %div
         %button{"data-bind" => "css: {button_on:composition_musicxml_source_visible},click: toggle_composition_musicxml_source_visible"} 
           MusicXML Source 
       %div.composition_musicxml_source_div.like_pre{"data-bind" => "visible: composition_musicxml_source_visible,text: composition_musicxml_source,event:{dblclick:toggle_composition_musicxml_source_visible}"}
-      %ul.server_links{"data-bind" => "visible: links_enabled"}
-        %li
-          %a#download_ly.saved_to_server{:href => "", :target => "_blank", "data-bind" => "enable: links_enabled,attr: {href: lilypond_url }"}
-            Lilypond
-        %li
-          %a#download_xml.saved_to_server{"data-bind" => "enable: links_enabled,attr: {href: music_xml_url }", :href => "/#", :target => "_blank"} MusicXML
-        %li
-          %a#download_html.saved_to_server{"data-bind" => "enable: links_enabled,attr: {href: html_url }",:href => "/#", :target => "_blank"} HTML Page
-        %li
-          %a#download_jpeg.generated_by_lilypond{"data-bind" => "enable: links_enabled,attr: {href: staff_notation_url }",:href => "/#", :target => "_blank"} jpeg 
-        %li
-          %a#download_pdf.generated_by_lilypond{"data-bind" => "enable: links_enabled,attr: {href: pdf_url }",:href => "/#", :target => "_blank"} pdf
-        %li
-          %a#download_mid.generated_by_lilypond{"data-bind" => "enable: links_enabled,attr: {href: midi_url }",:href => "", :target => "_blank", :title => "Play midi file"} midi
+      %div.server_links{"data-bind" => "visible: links_enabled"}
+        %h4
+          Links: Right click and select 'Save As' to save on your computer
+        %ul.server_links{"data-bind" => "visible: links_enabled"}
+          %li
+            %a#download_ly.saved_to_server{:href => "", :target => "_blank", "data-bind" => "enable: links_enabled,attr: {href: lilypond_url }"}
+              Lilypond
+          %li.commented_out
+            %a#download_xml.saved_to_server{"data-bind" => "enable: links_enabled,attr: {href: music_xml_url }", :href => "/#", :target => "_blank"} MusicXML
+          %li.commented_out
+            %a#download_html.saved_to_server{"data-bind" => "enable: links_enabled,attr: {href: html_url }",:href => "/#", :target => "_blank"} HTML Page
+          %li
+            %a#download_jpeg.generated_by_lilypond{"data-bind" => "enable: links_enabled,attr: {href: staff_notation_url }",:href => "/#", :target => "_blank"} jpeg 
+          %li
+            %a#download_pdf.generated_by_lilypond{"data-bind" => "enable: links_enabled,attr: {href: pdf_url }",:href => "/#", :target => "_blank"} pdf
+          %li
+            %a#download_mid.generated_by_lilypond{"data-bind" => "enable: links_enabled,attr: {href: midi_url }",:href => "", :target => "_blank", :title => "Play midi file"} midi
   %br
   .composition{"data-bind" => "visible:editing_composition"}
     %div.controls
@@ -118,7 +124,7 @@
     .composition_body{"data-bind" => "foreach: lines"}
       <!--  Each line consists of a textarea, some controls, and the rendered html. The textarea and controls are hidden unless the user is editting the line -->
       %div.edit_line_wrapper.controls{"data-bind"=> "visible:editing, css: {line_has_warnings: line_has_warnings,line_parse_failed: line_parse_failed}"}
-        %textarea.entry_area{:spellcheck => "false",:rows => "6", :cols => "33", "data-bind" => "style: {width: $parent.composition_stave_width},css: {'line_has_warnings': line_has_warnings,'parse_failed': $data.parse_failed},visible: editing(), value: source, event: { keypress: handle_key_press}, valueUpdate: 'afterkeydown'"}
+        %textarea.entry_area{:spellcheck => "false",:rows => "6", :cols => "33", "data-bind" => "attr: {id: entry_area_id()},style: {width: $parent.composition_stave_width},css: {'line_has_warnings': line_has_warnings,'parse_failed': $data.parse_failed},visible: editing(), value: source, event: { keypress: handle_key_press}, valueUpdate: 'afterkeydown'"}
         %div.line_controls.controls
           %button{"data-bind" => "click: close_edit,clickBubble:false"} 
             Close
@@ -128,7 +134,7 @@
             Append
           %button{"data-bind" => "click: toggle_line_warnings_visible,clickBubble:false"} 
             Warnings
-        %div.line_warnings_div{"data-bind" => "visible: 'line_warnings.length > 0'"}
+        %div.line_warnings_div{"data-bind" => "visible: line_warnings_visible"}
           %h4 Warnings:
           %div.like_pre{"data-bind" => "text: line_warnings,event:{dblclick:toggle_line_warnings_visible}"}
         %div.parse_tree_div{"data-bind" => "visible: parse_tree_visible"}

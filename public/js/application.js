@@ -1,10 +1,10 @@
 var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; };
 $(document).ready(function() {
-  var EMPTY_LINE_SOURCE, LineViewModel, Logger, NONE_URL, debug, full_url_helper, handleFileSelect, id, initialData, message_box;
+  var EMPTY_LINE_SOURCE, Logger, NONE_URL, debug, full_url_helper, handleFileSelect, initialData, message_box, unique_id;
   initialData = "Title: testing\nAuthor: anon\nApplyHyphenatedLyrics: true\nmany words aren't hyphenated\n\n| SRG- m-m-\n. \n\n|PDNS";
   debug = false;
   NONE_URL = "images/none.png";
-  id = 1000;
+  unique_id = 1000;
   EMPTY_LINE_SOURCE = "| ";
   message_box = function(str) {
     return alert(str);
@@ -14,15 +14,15 @@ $(document).ready(function() {
     loc = document.location;
     return "" + loc.protocol + "//" + loc.host + fname;
   };
-  LineViewModel = function(line_param) {
+  window.LineViewModel = function(line_param) {
     if (line_param == null) {
       line_param = {
-        source: "",
+        source: EMPTY_LINE_SOURCE,
         rendered_in_html: "(Empty Line)"
       };
     }
     ({
-      id: "" + (id++)
+      line_id: ko.observable(unique_id++)
     });
     if (debug) {
       console.log("LineViewModel");
@@ -98,9 +98,7 @@ $(document).ready(function() {
         $(text_area).focus();
         return true;
       },
-      line_wrapper_id: function() {
-        return "line_wrapper_" + this.id;
-      },
+      entry_area_id: ko.observable("entry_area_" + unique_id),
       handle_key_press: function(current_line, event) {
         var let_default_action_proceed;
         let_default_action_proceed = true;
@@ -117,7 +115,10 @@ $(document).ready(function() {
     reader = new FileReader();
     reader.onload = function(evt) {
       window.the_composition.my_init(evt.target.result);
-      return window.the_composition.open_file_visible(false);
+      window.the_composition.editing_composition(true);
+      window.the_composition.open_file_visible(false);
+      window.the_composition.help_visible(false);
+      return window.the_composition.composition_info_visible(false);
     };
     return reader.readAsText(file, "");
   }, this);
@@ -287,17 +288,17 @@ $(document).ready(function() {
     self.modes = ["Ionian", "Dorian", "Phrygian", "Lydian", "Mixolydian", "Aeolian", "Locrian"];
     self.mode = ko.observable("");
     self.generate_staff_notation = function(my_model) {
-      var lilypond_source, my_data, obj, timeout_in_seconds, ts, url;
+      var lilypond_source, my_data, obj, src, timeout_in_seconds, ts, url;
       self.generating_staff_notation(true);
-      self.staff_notation_url(NONE_URL);
       lilypond_source = self.composition_lilypond_source();
       ts = new Date().getTime();
       url = '/lilypond_server/lilypond_to_jpg';
       timeout_in_seconds = 60;
+      src = self.compute_doremi_source();
       my_data = {
         fname: "" + (self.title()) + "_" + (self.author()) + "_" + (self.id()),
         lilypond: lilypond_source,
-        doremi_source: self.doremi_source()
+        doremi_source: src
       };
       obj = {
         dataType: "json",
@@ -336,7 +337,7 @@ $(document).ready(function() {
     self.compute_doremi_source = function() {
       var att, atts, atts_str, keys, keys_to_use, line, lines, lines_str, value;
       keys_to_use = self.attribute_keys;
-      keys = ["title", "filename", "raga", "key", "mode", "author", "source", "time_signature", "apply_hyphenated_lyrics", "staff_notation_url"];
+      keys = ["id", "title", "filename", "raga", "key", "mode", "author", "source", "time_signature", "apply_hyphenated_lyrics", "staff_notation_url"];
       atts = (function() {
         var _i, _len, _results;
         _results = [];
@@ -460,8 +461,11 @@ $(document).ready(function() {
     };
     self.add_line = function() {
       var x;
-      self.lines.push(x = new LineViewModel());
-      return x.parse();
+      console.log("add_line");
+      self.lines.push(x = new LineViewModel({
+        source: EMPTY_LINE_SOURCE
+      }));
+      return x.edit();
     };
     self.composition_insert_line = function(line_model, event) {
       var index, new_source, number_of_elements_to_remove;
@@ -495,19 +499,51 @@ $(document).ready(function() {
       return self.lines.remove(line);
     };
     self.composition_select_visible = ko.observable(false);
+    self.load_locally = function(key) {
+      var source;
+      debug = true;
+      console.log("entering load_locally, key is" + key);
+      if (debug) {
+        console.log("load_locally");
+      }
+      if (self.editing_composition()) {
+        if (key === ("composition_" + (window.the_composition.id()))) {
+          self.composition_select_visible(false);
+          message_box("This is the file you are currently editing");
+          return;
+        }
+      }
+      self.ask_user_if_they_want_to_save();
+      source = localStorage[key];
+      if (debug) {
+        console.log("source is " + source);
+      }
+      self.my_init(source);
+      self.editing_composition(true);
+      message_box("" + (self.title()) + " was loaded from your browser's localStorage");
+      self.help_visible(false);
+      return $('#composition_title').focus();
+    };
     self.composition_select = function(my_model, event) {
       var key;
+      if (self.loading_locally) {
+        return;
+      }
+      self.composition_select_visible(false);
       if (!this.selected_composition()) {
         return;
       }
       key = this.selected_composition().key;
-      self.composition_info_visible(true);
-      self.loading_localy = true;
       try {
-        return self.load_locally(key);
+        self.loading_locally = true;
+        self.load_locally(key);
+      } catch (err) {
+        alert("An error occurred loading the file. Source was\n");
       } finally {
         self.loading_locally = false;
+        $('#composition_select')[0].selectedIndex = -1;
       }
+      return self.composition_info_visible(false);
     };
     self.saveable = ko.computed(function() {
       return (self.lines().length > 0) && self.title !== "";
@@ -521,19 +557,32 @@ $(document).ready(function() {
         }
       }
     };
-    self.destroy_from_local_storage = function() {
+    self.initial_help_display = ko.observable(true);
+    self.destroy_locally = function() {
       var key, x;
       x = prompt("Enter yes to remove this document from local storage. This operation cannot be undone.");
       if (!(x != null)) {
         return;
       }
-      key = "composition_" + (self.the_composition.id());
+      if (x !== "yes") {
+        return;
+      }
+      key = "composition_" + (self.id());
       delete localStorage[key];
-      return self.editing_composition(false);
+      return self.close();
     };
     self.close = function() {
+      self.editing_composition(false);
+      console.log("in close");
+      self.last_doremi_source = "";
+      self.lines.remove(function() {
+        return true;
+      });
+      return console.log("after close, lines are", self.lines());
+    };
+    self.gui_close = function() {
       self.ask_user_if_they_want_to_save();
-      return self.editing_composition(false);
+      return self.close();
     };
     self.print_composition = function() {
       var line, _i, _len, _ref;
@@ -551,6 +600,7 @@ $(document).ready(function() {
       message_box("An untitled composition was created with a new id. Please enter a title");
       self.composition_info_visible(true);
       self.editing_composition(true);
+      self.help_visible(false);
       return $('#composition_title').focus();
     };
     self.refresh_compositions_in_local_storage = function() {
@@ -578,29 +628,6 @@ $(document).ready(function() {
       return self.compositions_in_local_storage(items);
     };
     self.compositions_in_local_storage = ko.observable([]);
-    self.load_locally = function(key) {
-      var source;
-      if (self.loading_locally) {
-        return;
-      }
-      if (debug) {
-        console.log("load_locally");
-      }
-      if (self.editing_composition()) {
-        if (key === ("composition_" + (window.the_composition.id()))) {
-          self.composition_select_visible(false);
-          message_box("This is the file you are currently editing");
-          return;
-        }
-      }
-      self.ask_user_if_they_want_to_save();
-      source = localStorage[key];
-      window.the_composition.my_init(source);
-      self.composition_select_visible(false);
-      self.editing_composition(true);
-      message_box("" + (self.title()) + " was loaded from your browser's localStorage");
-      return $('#composition_title').focus();
-    };
     self.get_musicxml_source = function() {
       return window.to_musicxml(self.composition_parsed_doremi_script());
     };

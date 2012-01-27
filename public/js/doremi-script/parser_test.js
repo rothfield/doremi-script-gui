@@ -627,6 +627,16 @@
     debug = false;
     return test.done();
   };
+  exports.test_id = function(test) {
+    var composition, id, str;
+    debug = true;
+    id = 1234;
+    str = "Title: Happy Birthday to You \nid: " + id + "\n  \n| S |";
+    composition = test_parses(str, test);
+    test.equal(composition.id, id, "expected id to be " + id);
+    debug = false;
+    return test.done();
+  };
   exports.test_lyrics_section = function(test) {
     var composition, str, str1;
     debug = true;

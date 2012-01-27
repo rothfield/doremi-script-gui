@@ -2,7 +2,7 @@ $(document).ready ->
   initialData = "Title: testing\nAuthor: anon\nApplyHyphenatedLyrics: true\nmany words aren't hyphenated\n\n| SRG- m-m-\n. \n\n|PDNS"
   debug=false
   NONE_URL="images/none.png"
-  id=1000
+  unique_id=1000
   # NOTE: space after barline is significant, parser fails without it
   EMPTY_LINE_SOURCE ="| "
   message_box= (str) ->
@@ -12,8 +12,9 @@ $(document).ready ->
     loc=document.location
     "#{loc.protocol}//#{loc.host}#{fname}"
 
-  LineViewModel = (line_param= {source: "",rendered_in_html:"(Empty Line)"}) ->  # parameter is PARSED line
-    id: "#{id++}"
+  window.LineViewModel = (line_param= {source: EMPTY_LINE_SOURCE,rendered_in_html:"(Empty Line)"}) ->  # parameter is PARSED line
+    line_id: ko.observable(unique_id++)
+    
     console.log "LineViewModel" if debug
     ### TODO: make computed with throttle? ###
     line_parsed_doremi_script: ko.observable(null)
@@ -69,8 +70,11 @@ $(document).ready ->
       text_area=$(current_target).parent().find("textarea")
       $(text_area).focus()
       true
-    line_wrapper_id: () ->
-      "line_wrapper_#{this.id}"
+    #line_wrapper_id: () ->
+    #  return if this.document
+    #  "line_wrapper_#{this.line_id()}"
+    
+    entry_area_id: ko.observable("entry_area_#{unique_id}")
     handle_key_press: (current_line,event) ->
       let_default_action_proceed=true
       let_default_action_proceed
@@ -88,8 +92,12 @@ $(document).ready ->
     file = document.getElementById('file').files[0]
     reader=new FileReader()
     reader.onload =  (evt) ->
+      # TODO: DRY and move into composition
       window.the_composition.my_init(evt.target.result)
+      window.the_composition.editing_composition(true)
       window.the_composition.open_file_visible(false)
+      window.the_composition.help_visible(false)
+      window.the_composition.composition_info_visible(false)
     reader.readAsText(file, "")
 
   document.getElementById('file').addEventListener('change', handleFileSelect, false)
@@ -237,16 +245,16 @@ $(document).ready ->
       # to lilypond and call a web service
       #console.log "entering generate_staff_notation"
       self.generating_staff_notation(true)
-      self.staff_notation_url(NONE_URL)
       lilypond_source=self.composition_lilypond_source()
       #console.log "lilypond_source",lilypond_source
       ts= new Date().getTime()
       url='/lilypond_server/lilypond_to_jpg'
       timeout_in_seconds=60
+      src=self.compute_doremi_source() #TODO: make doremi_source not computed
       my_data =
         fname: "#{self.title()}_#{self.author()}_#{self.id()}"
         lilypond: lilypond_source
-        doremi_source: self.doremi_source()
+        doremi_source: src
       obj=
         dataType : "json",
         timeout : timeout_in_seconds * 1000  # milliseconds
@@ -296,7 +304,7 @@ $(document).ready ->
 
     self.compute_doremi_source = () ->
       keys_to_use=self.attribute_keys
-      keys=["title","filename","raga","key","mode","author",
+      keys=["id","title","filename","raga","key","mode","author",
         "source","time_signature","apply_hyphenated_lyrics","staff_notation_url"]
       atts= for att in keys
         value=self[att]()
@@ -364,11 +372,13 @@ $(document).ready ->
       if !parsed.id?
         parsed.id=new Date().getTime()
       self[key](parsed[key]) for key in self.attribute_keys
+
       self.lines(ko.utils.arrayMap(parsed.lines, LineViewModel))
 
     self.add_line = () ->
-      self.lines.push(x=new LineViewModel())
-      x.parse()
+      console.log "add_line"
+      self.lines.push(x=new LineViewModel(source: EMPTY_LINE_SOURCE))
+      x.edit()
 
     self.composition_insert_line= (line_model, event) ->
       #console.log "insert_line"
@@ -395,18 +405,42 @@ $(document).ready ->
 
     self.composition_select_visible= ko.observable(false)
 
+    self.load_locally = (key) ->
+      debug=true
+      console.log "entering load_locally, key is#{key}"
+      # TODO: use try/finally
+      console.log "load_locally" if debug
+      if self.editing_composition()
+        if key is "composition_#{window.the_composition.id()}"
+          self.composition_select_visible(false)
+          message_box("This is the file you are currently editing")
+          return
+      self.ask_user_if_they_want_to_save()
+      source=localStorage[key]
+      console.log "source is #{source}" if debug
+      self.my_init(source)
+      self.editing_composition(true)
+      message_box("#{self.title()} was loaded from your browser's localStorage")
+      self.help_visible(false)
+      $('#composition_title').focus()
+
     self.composition_select= (my_model,event) ->
+      return if self.loading_locally # avoid calling more than once
+      self.composition_select_visible(false)
       # User clicked on the locally saved compositions select list
       # Load from local storage
       return if !this.selected_composition()
       key=this.selected_composition().key
-      
-      self.composition_info_visible(true)
-      self.loading_localy=true
       try
+        self.loading_locally=true
         self.load_locally(key)
+      catch err
+        alert("An error occurred loading the file. Source was\n")
       finally
         self.loading_locally=false
+        $('#composition_select')[0].selectedIndex=-1
+      self.composition_info_visible(false)
+
     self.saveable = ko.computed () ->
       (self.lines().length > 0) and self.title isnt ""
     self.ask_user_if_they_want_to_save = () ->
@@ -415,15 +449,25 @@ $(document).ready ->
         if self.saveable()
           if confirm("Save current composition in localStorage before continuing?")
             self.save_locally()
-    self.destroy_from_local_storage = () ->
+
+    self.initial_help_display=ko.observable(true)
+
+    self.destroy_locally = () ->
       x=prompt("Enter yes to remove this document from local storage. This operation cannot be undone.")
       return if !x?
-      key= "composition_#{self.the_composition.id()}"
+      return if x isnt "yes"
+      key= "composition_#{self.id()}"
       delete localStorage[key]
-      self.editing_composition(false)
+      self.close()
     self.close = () ->
-      self.ask_user_if_they_want_to_save()
       self.editing_composition(false)
+      console.log "in close"
+      self.last_doremi_source=""
+      self.lines.remove( ()-> true)
+      console.log "after close, lines are",self.lines()
+    self.gui_close = () ->
+      self.ask_user_if_they_want_to_save()
+      self.close()
     self.print_composition = () ->
       line.editing(false) for line in self.lines()
       window.print()
@@ -434,6 +478,7 @@ $(document).ready ->
       message_box("An untitled composition was created with a new id. Please enter a title")
       self.composition_info_visible(true)
       self.editing_composition(true)
+      self.help_visible(false)
       $('#composition_title').focus()
 
     self.refresh_compositions_in_local_storage  = () ->
@@ -458,22 +503,6 @@ $(document).ready ->
 
     self.compositions_in_local_storage = ko.observable([])
       
-    self.load_locally = (key) ->
-      # TODO: use try/finally
-      return if self.loading_locally # avoid calling more than once
-      console.log "load_locally" if debug
-      if self.editing_composition()
-        if key is "composition_#{window.the_composition.id()}"
-          self.composition_select_visible(false)
-          message_box("This is the file you are currently editing")
-          return
-      self.ask_user_if_they_want_to_save()
-      source=localStorage[key]
-      window.the_composition.my_init(source)
-      self.composition_select_visible(false)
-      self.editing_composition(true)
-      message_box("#{self.title()} was loaded from your browser's localStorage")
-      $('#composition_title').focus()
     self.get_musicxml_source = () ->
       window.to_musicxml(self.composition_parsed_doremi_script())
 
@@ -502,7 +531,7 @@ $(document).ready ->
     # Timer that runs every second or so.
     # It refreshes the whole page
     # TODO: avoid refreshing parts that didn't change
-    composition_view=window.the_composition 
+    composition_view=window.the_composition
     if composition_view.last_doremi_source isnt composition_view.doremi_source() # the source changed
       composition_view.last_doremi_source = composition_view.doremi_source()
       parsed=composition_view.composition_parse()

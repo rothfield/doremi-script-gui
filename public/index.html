@@ -13,9 +13,12 @@
         <button data-bind='click: toggle_composition_select_visible'>
           Open locally saved
         </button>
-        <select data-bind="visible: composition_select_visible, options: compositions_in_local_storage, optionsText: 'title', value: selected_composition,click: composition_select" size='4'></select>
+        <select data-bind="event: {change: composition_select}, visible: composition_select_visible, options: compositions_in_local_storage, optionsText: 'title', value: selected_composition" id='composition_select' size='4'></select>
         <button data-bind='visible: editing_composition,click: save_locally, enable: saveable'>
           Save locally
+        </button>
+        <button data-bind='visible: editing_composition,click: destroy_locally, enable: saveable'>
+          Delete locally
         </button>
         <button data-bind='click: new_composition'>
           New Composition
@@ -30,7 +33,7 @@
           <label>Open:</label>
           <input id='file' name='files[]' type='file' />
         </div>
-        <button data-bind='visible: editing_composition,click: close'>
+        <button data-bind='visible: editing_composition,click: gui_close'>
           Close
         </button>
         <button data-bind='css: {button_on:help_visible},click: toggle_help_visible' id='help_button'>
@@ -40,7 +43,7 @@
           Development
         </a>
       </div>
-      <div data-bind='{visible: help_visible}' id='help'>
+      <div data-bind='visible: help_visible,event:{dblclick:toggle_help_visible}' id='help'>
         <h1>DoremiScript</h1>
         <p>
           <strong>DoremiScript</strong>
@@ -320,28 +323,33 @@
             </button>
           </div>
           <div class='composition_musicxml_source_div like_pre' data-bind='visible: composition_musicxml_source_visible,text: composition_musicxml_source,event:{dblclick:toggle_composition_musicxml_source_visible}'></div>
-          <ul class='server_links' data-bind='visible: links_enabled'>
-            <li>
-              <a class='saved_to_server' data-bind='enable: links_enabled,attr: {href: lilypond_url }' href='' id='download_ly' target='_blank'>
-                Lilypond
-              </a>
-            </li>
-            <li>
-              <a class='saved_to_server' data-bind='enable: links_enabled,attr: {href: music_xml_url }' href='/#' id='download_xml' target='_blank'>MusicXML</a>
-            </li>
-            <li>
-              <a class='saved_to_server' data-bind='enable: links_enabled,attr: {href: html_url }' href='/#' id='download_html' target='_blank'>HTML Page</a>
-            </li>
-            <li>
-              <a class='generated_by_lilypond' data-bind='enable: links_enabled,attr: {href: staff_notation_url }' href='/#' id='download_jpeg' target='_blank'>jpeg</a>
-            </li>
-            <li>
-              <a class='generated_by_lilypond' data-bind='enable: links_enabled,attr: {href: pdf_url }' href='/#' id='download_pdf' target='_blank'>pdf</a>
-            </li>
-            <li>
-              <a class='generated_by_lilypond' data-bind='enable: links_enabled,attr: {href: midi_url }' href='' id='download_mid' target='_blank' title='Play midi file'>midi</a>
-            </li>
-          </ul>
+          <div class='server_links' data-bind='visible: links_enabled'>
+            <h4>
+              Links: Right click and select 'Save As' to save on your computer
+            </h4>
+            <ul class='server_links' data-bind='visible: links_enabled'>
+              <li>
+                <a class='saved_to_server' data-bind='enable: links_enabled,attr: {href: lilypond_url }' href='' id='download_ly' target='_blank'>
+                  Lilypond
+                </a>
+              </li>
+              <li class='commented_out'>
+                <a class='saved_to_server' data-bind='enable: links_enabled,attr: {href: music_xml_url }' href='/#' id='download_xml' target='_blank'>MusicXML</a>
+              </li>
+              <li class='commented_out'>
+                <a class='saved_to_server' data-bind='enable: links_enabled,attr: {href: html_url }' href='/#' id='download_html' target='_blank'>HTML Page</a>
+              </li>
+              <li>
+                <a class='generated_by_lilypond' data-bind='enable: links_enabled,attr: {href: staff_notation_url }' href='/#' id='download_jpeg' target='_blank'>jpeg</a>
+              </li>
+              <li>
+                <a class='generated_by_lilypond' data-bind='enable: links_enabled,attr: {href: pdf_url }' href='/#' id='download_pdf' target='_blank'>pdf</a>
+              </li>
+              <li>
+                <a class='generated_by_lilypond' data-bind='enable: links_enabled,attr: {href: midi_url }' href='' id='download_mid' target='_blank' title='Play midi file'>midi</a>
+              </li>
+            </ul>
+          </div>
         </div>
       </fieldset>
       <br />
@@ -371,7 +379,7 @@
         <div class='composition_body' data-bind='foreach: lines'>
           <!--  Each line consists of a textarea, some controls, and the rendered html. The textarea and controls are hidden unless the user is editting the line -->
           <div class='edit_line_wrapper controls' data-bind='visible:editing, css: {line_has_warnings: line_has_warnings,line_parse_failed: line_parse_failed}'>
-            <textarea class='entry_area' cols='33' data-bind="style: {width: $parent.composition_stave_width},css: {'line_has_warnings': line_has_warnings,'parse_failed': $data.parse_failed},visible: editing(), value: source, event: { keypress: handle_key_press}, valueUpdate: 'afterkeydown'" rows='6' spellcheck='false'></textarea>
+            <textarea class='entry_area' cols='33' data-bind="attr: {id: entry_area_id()},style: {width: $parent.composition_stave_width},css: {'line_has_warnings': line_has_warnings,'parse_failed': $data.parse_failed},visible: editing(), value: source, event: { keypress: handle_key_press}, valueUpdate: 'afterkeydown'" rows='6' spellcheck='false'></textarea>
             <div class='line_controls controls'>
               <button data-bind='click: close_edit,clickBubble:false'>
                 Close
@@ -386,7 +394,7 @@
                 Warnings
               </button>
             </div>
-            <div class='line_warnings_div' data-bind="visible: 'line_warnings.length &gt; 0'">
+            <div class='line_warnings_div' data-bind='visible: line_warnings_visible'>
               <h4>Warnings:</h4>
               <div class='like_pre' data-bind='text: line_warnings,event:{dblclick:toggle_line_warnings_visible}'></div>
             </div>

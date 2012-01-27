@@ -1,4 +1,4 @@
-h4 {
+h4,ul,menu,dir {
   margin:0px;  
   padding:0px;  
   -webkit-margin-before: 0em;
@@ -8,6 +8,9 @@ h4 {
 }
 div#help {
   margin-left: 3em;
+}
+div.commented_out {
+  display:none;
 }
 span.required {
   color: red;  

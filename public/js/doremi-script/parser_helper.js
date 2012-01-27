@@ -264,7 +264,8 @@
         lines: _.flatten(lines),
         warnings: this.warnings,
         source: "",
-        toString: to_string
+        toString: to_string,
+        id: null
       };
       x = get_composition_attribute(this.composition_data, "NotesUsed");
       valid = true;
@@ -290,8 +291,9 @@
       x = get_composition_attribute(this.composition_data, "TimeSignature");
       this.composition_data.time_signature = x || "4/4";
       x = get_composition_attribute(this.composition_data, "id");
+      console.log("x is " + x);
       if (x != null) {
-        this.composition_data.id = x;
+        this.composition_data.id = parseInt(x);
       } else {
         this.composition_data.id = new Date().getTime();
       }
