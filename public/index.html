@@ -11,7 +11,11 @@
     <div class='bodyArea'>
       <div class='controls'>
         <!-- downloadify save button -->
-        <span data-bind='visible: saveable' id='download_doremi_source'></span>
+        <div id='save_wrapper'>
+          <span data-bind='visible: saveable' id='save'>
+            Save(requires Flash)
+          </span>
+        </div>
         <button data-bind='click: new_composition'>
           New Composition
         </button>

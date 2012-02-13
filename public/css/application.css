@@ -3,6 +3,12 @@ input[type="radio"]:checked+label{
   background-color:gainsboro;
 }
 
+div#save_wrapper {
+  margin-top: -5px;
+  display:inline-block;
+  position:relative;
+  top:5px;
+}
 
 table.linesEditor th {
   text-align:left;

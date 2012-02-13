@@ -1,7 +1,9 @@
 .bodyArea
   %div.controls
     / downloadify save button
-    %span#download_doremi_source{"data-bind" => "visible: saveable"}
+    %div#save_wrapper
+      %span#save{"data-bind" => "visible: saveable"}
+        Save(requires Flash)
     %button{"data-bind" => "click: new_composition"}
       New Composition
     %button{"data-bind" => "visible: editing_composition,click: print_composition"}

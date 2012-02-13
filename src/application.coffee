@@ -16,7 +16,7 @@ $(document).ready ->
         console.log 'Your File Has Been Saved!' if debug
 
       swf: './js/doremi-script/third_party/downloadify/downloadify.swf'
-      downloadImage: './images/download.png'
+      downloadImage: './images/save.png'
       height:19
       width:76
       transparent:true
@@ -29,7 +29,7 @@ $(document).ready ->
     app.params_for_download_sargam.filename = () ->
       "#{app.sanitize(app.the_composition.title())}.doremi_script.txt"
     $("#download_lilypond").downloadify(app.params_for_download_lilypond)
-    $("#download_doremi_source").downloadify(app.params_for_download_sargam)
+    $("#save").downloadify(app.params_for_download_sargam)
     #   $("#download_musicxml_source").downloadify(params_for_download_musicxml)
   
   initialData = "Title: testing\nAuthor: anon\nApplyHyphenatedLyrics: true\nmany words aren't hyphenated\n\n| SRG- m-m-\n. \n\n|PDNS"
@@ -38,7 +38,7 @@ $(document).ready ->
   NONE_URL="images/none.png"
   unique_id=1000
   # NOTE: space after barline is significant, parser fails without it
-  EMPTY_LINE_SOURCE ="| "
+  EMPTY_LINE_SOURCE =""
   message_box= (str) ->
     alert(str)
 
@@ -100,9 +100,8 @@ $(document).ready ->
         line.editing(false)
       this.editing(true)
       this.not_editing(false)
-      current_target=event.currentTarget
-      text_area=$(current_target).parent().find("textarea")
-      $(text_area).focus()
+      dom_id=this.entry_area_id()
+      $("textarea#"+dom_id).focus()
       true
     #line_wrapper_id: () ->
     #  return if this.document
@@ -295,34 +294,6 @@ $(document).ready ->
 
     self.mode= ko.observable("")
 
-    self.zdownload_doremi_source_file = (my_model) ->
-      # Use an "echo" server to provide file download
-      # Post to server and server will send the file
-      # An alternative is to use flash via downloadify
-      console.log "save_file"
-      url='/doremi_script_server/download_doremi_source_file'
-      timeout_in_seconds=60
-      src=self.doremi_source()
-      my_data =
-        dataType : "json",
-        title: sanitize(self.title())
-        author: sanitize(self.author())
-        id: self.id()
-        fname: self.title()
-        #"#{self.title()}_#{self.author()}_#{self.id()}"
-        doremi_source:self.doremi_source()
-      obj=
-        timeout : timeout_in_seconds * 1000  # milliseconds
-        type:'POST'
-        url: url
-        data: my_data
-        error: (some_data) ->
-          alert("An error occurred.")
-        success: (some_data,text_status) ->
-          if some_data.error
-            alert("An error occurred: #{some_data.error}")
-      $.ajax(obj)
-      return true
 
     self.download_doremi_source_file = (my_model) ->
       # First save file to server
@@ -589,11 +560,12 @@ $(document).ready ->
       self.title() isnt ""
       #(self.lines().length > 0) and self.title isnt ""
     self.ask_user_if_they_want_to_save = () ->
-      # returning false means user
+      # returning true means user wants to save
       if self.editing_composition()
         if self.saveable()
-          if confirm("Save current composition in localStorage before continuing?")
-            self.save_locally()
+          if confirm("Save current composition before continuing?")
+            alert("Click the Save button to save your composition")
+            return true
 
     self.initial_help_display=ko.observable(false)
 
@@ -611,13 +583,16 @@ $(document).ready ->
       self.lines.remove( ()-> true)
       console.log "after close, lines are",self.lines()
     self.gui_close = () ->
-      self.ask_user_if_they_want_to_save()
+      if self.ask_user_if_they_want_to_save()
+        return
       self.close()
     self.print_composition = () ->
       line.editing(false) for line in self.lines()
       window.print()
     self.new_composition = () ->
       self.ask_user_if_they_want_to_save()
+      if self.ask_user_if_they_want_to_save()
+        return
       initialData = ""
       window.the_composition.my_init(initialData)
       message_box("An untitled composition was created with a new id. Please enter a title")

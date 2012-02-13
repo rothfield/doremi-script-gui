@@ -21,7 +21,7 @@ $(document).ready(function() {
         }
       },
       swf: './js/doremi-script/third_party/downloadify/downloadify.swf',
-      downloadImage: './images/download.png',
+      downloadImage: './images/save.png',
       height: 19,
       width: 76,
       transparent: true,
@@ -38,14 +38,14 @@ $(document).ready(function() {
       return "" + (app.sanitize(app.the_composition.title())) + ".doremi_script.txt";
     };
     $("#download_lilypond").downloadify(app.params_for_download_lilypond);
-    return $("#download_doremi_source").downloadify(app.params_for_download_sargam);
+    return $("#save").downloadify(app.params_for_download_sargam);
   };
   initialData = "Title: testing\nAuthor: anon\nApplyHyphenatedLyrics: true\nmany words aren't hyphenated\n\n| SRG- m-m-\n. \n\n|PDNS";
   initialData = "";
   debug = false;
   NONE_URL = "images/none.png";
   unique_id = 1000;
-  EMPTY_LINE_SOURCE = "| ";
+  EMPTY_LINE_SOURCE = "";
   message_box = function(str) {
     return alert(str);
   };
@@ -122,7 +122,7 @@ $(document).ready(function() {
         return true;
       },
       edit: function(my_model, event) {
-        var current_target, line, text_area, _i, _len, _ref;
+        var dom_id, line, _i, _len, _ref;
         if (this.editing()) {
           return false;
         }
@@ -133,9 +133,8 @@ $(document).ready(function() {
         }
         this.editing(true);
         this.not_editing(false);
-        current_target = event.currentTarget;
-        text_area = $(current_target).parent().find("textarea");
-        $(text_area).focus();
+        dom_id = this.entry_area_id();
+        $("textarea#" + dom_id).focus();
         return true;
       },
       entry_area_id: ko.observable("entry_area_" + unique_id),
@@ -351,37 +350,6 @@ $(document).ready(function() {
     };
     self.modes = ["ionian", "dorian", "phrygian", "lydian", "mixolydian", "aeolian", "locrian"];
     self.mode = ko.observable("");
-    self.zdownload_doremi_source_file = function(my_model) {
-      var my_data, obj, src, timeout_in_seconds, url;
-      console.log("save_file");
-      url = '/doremi_script_server/download_doremi_source_file';
-      timeout_in_seconds = 60;
-      src = self.doremi_source();
-      my_data = {
-        dataType: "json",
-        title: sanitize(self.title()),
-        author: sanitize(self.author()),
-        id: self.id(),
-        fname: self.title(),
-        doremi_source: self.doremi_source()
-      };
-      obj = {
-        timeout: timeout_in_seconds * 1000,
-        type: 'POST',
-        url: url,
-        data: my_data,
-        error: function(some_data) {
-          return alert("An error occurred.");
-        },
-        success: function(some_data, text_status) {
-          if (some_data.error) {
-            return alert("An error occurred: " + some_data.error);
-          }
-        }
-      };
-      $.ajax(obj);
-      return true;
-    };
     self.download_doremi_source_file = function(my_model) {
       var lilypond_source, my_data, obj, src, timeout_in_seconds, url;
       url = '/doremi_script_server/save_to_server';
@@ -705,8 +673,9 @@ $(document).ready(function() {
     self.ask_user_if_they_want_to_save = function() {
       if (self.editing_composition()) {
         if (self.saveable()) {
-          if (confirm("Save current composition in localStorage before continuing?")) {
-            return self.save_locally();
+          if (confirm("Save current composition before continuing?")) {
+            alert("Click the Save button to save your composition");
+            return true;
           }
         }
       }
@@ -735,7 +704,9 @@ $(document).ready(function() {
       return console.log("after close, lines are", self.lines());
     };
     self.gui_close = function() {
-      self.ask_user_if_they_want_to_save();
+      if (self.ask_user_if_they_want_to_save()) {
+        return;
+      }
       return self.close();
     };
     self.print_composition = function() {
@@ -749,6 +720,9 @@ $(document).ready(function() {
     };
     self.new_composition = function() {
       self.ask_user_if_they_want_to_save();
+      if (self.ask_user_if_they_want_to_save()) {
+        return;
+      }
       initialData = "";
       window.the_composition.my_init(initialData);
       message_box("An untitled composition was created with a new id. Please enter a title");
