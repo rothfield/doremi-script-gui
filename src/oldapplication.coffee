@@ -1,60 +1,222 @@
-#  $ = jQuery
-#
-# functions follow:
+$ = jQuery
+
 root = exports ? this
 
 $(document).ready ->
-  if document.cookie? and document.cookie.indexOf('user') > -1
-    $('#sign_in').hide() 
-  #####################
-  # Functions
-  ####################
 
-  redirect_helper = (fname) ->
-    loc=document.location
-    document.location="#{loc.protocol}//#{loc.host}#{fname}"
-  console.log("redirect_helper" , redirect_helper)
-  window.timed_count = () =>
-    cur_val= $('#entry_area').val()
-    if window.last_val != cur_val
-      $('#run_parser').trigger('click')
-      window.last_val= cur_val
-    t=setTimeout("timed_count()",1000)
+
+  handleFileSelect = (evt) =>
+    console.log "in handleFileSelect" if debug
+    file = document.getElementById('file').files[0]
+    console.log "in handleFileSelect,file is",file if debug
+    reader=new FileReader()
+    reader.onload =  (evt) ->
+      $('#entry_area').val evt.target.result
+      $('#lilypond_png').attr('src',"")
+
+    reader.readAsText(file, "")
+
+
+  document.getElementById('file').addEventListener('change', handleFileSelect, false)
+
+
+  root.debug=false
+  debug=false
+  # TODO: don't use window. Use an application object
+  window.timer_is_on=0
+  window.last_val=str
   
+  window.timed_count = () =>
+    console.log("entering timed_count") if debug
+    cur_val= $('#entry_area').val()
+    console.log "Entering timed_count, cur_val = #{cur_val}" if debug
+    if window.last_val != cur_val
+      console.log("timed_count- runnng parser since val changed") if debug
+      $('#run_parser').trigger('click')
+    t=setTimeout("timed_count()",1000)
+
   window.do_timer  =  () =>
+    console.log("entering do_timer") if debug
     if !window.timer_is_on
+      console.log("window.timer wasnt on") if debug
       window.timer_is_on=1
       window.timed_count()
+  long_composition = '''
+Rag:Bhairavi
+Tal:Tintal
+Title:Bansuri
+Source:AAK
+Mode: phrygian
+           . .
+[| Srgm PdnS SndP mgrS |]
+
+           I  IV            V   V7 ii    iii7 
+               3                  +            2          .
+1)|: S S S (Sr | n) S   (gm Pd) | P - P  P   | P - D  <(nDSn)>) |
+                 .
+            ban-    su-  ri       ba- ja ra-   hi  dhu- na
+
+  0  ~                3               ~       +  .     *  *   
+| P  d   P       d    |  (Pm   PmnP) (g m) | (PdnS) -- g  S |
+     ma- dhu-ra  kan-     nai-        ya      khe-     la-ta
+
+    2              0     
+                   ~
+| (d-Pm  g) P  m | r - S :|
+   ga-      wa-ta  ho- ri
+
+  '''
+  str="S"
+  str1 = '''
+                            I   IV       V   V7 ii  iii7 
+         3                  +            2          .
+  |: (Sr | n) S   (gm Pd) | P - P  P   | P - D  (<nDSn>) |
+           .
+      ban-    su-  ri       ba- ja ra-   hi  dhu- na
   
-  run_parser = () ->
+    0  ~                3           ~       +  .     *  .
+  | P  d   P   d    |  (Pm   PmnP) (g m) | (PdnS) -- g  S |
+    ma-dhu-ra  kan-     nai-        ya      khe-     la-ta
+  '''
+  str= '''
+      I                       IV             V
+                   .  .   .    . ..
+  |: (SNRSNS) N    S--S --S- | SNRS N D P || mm GG RR S-SS :|  
+      .   .   .
+      he-     llo
+  '''
+  str = '''
+  Rag:Bhairavi
+  Tal:Tintal
+  Title:Bansuri
+  Source:AAK
+
+            3             ~    +            2         .
+  1) |: (Sr | n) S   (gm Pd)|| P - P  P   | P - D  (<nDSn>) |
+              .
+         ban-    su-  ri       ba- ja ra-   hi  dhu- na
+
+  0                 3                    +     .    *  .
+  | P  d   P   d    | <(Pm>   PmnP) (g m)|| PdnS -- g  S |
+    ma-dhu-ra  kan-     nai-         ya     khe-    la-ta
+
+  2              0     ~
+  |  d-Pm g P  m | r - S :|
+     ga-    wa-ta  ho- ri
+
+        I                     IV
+                . .                   . .
+  2)  [| Srgm PdnS SndP mgrS | Srgm PdnS SndP mgrS | % | % |]
+  '''
+  str_simple = '''
+     + 
+     .
+  |<(S--  r)>  (r---  g-m) | S
+     test-ing
+  '''
+  str=str1
+  str="S--R --G- | -m-- P"
+  $('#entry_area').val(str)
+  # window.last_val=$('#entry_area').val()
+  parser=SargamParser
+  # uses coffeescripts classes
+  renderer=new SargamHtmlRenderer
+  #staff_renderer=new VexflowRenderer
+  window.parse_errors=""
+
+  params_for_download_lilypond =
+  	filename: () ->
+      "#{window.the_composition.filename}.ly"
+    data: () ->
+      window.the_composition.lilypond
+	  onComplete: () ->
+      console.log 'Your File Has Been Saved!' if debug
+    swf: 'js/third_party/downloadify/media/downloadify.swf'
+    downloadImage: 'images/download.png'
+    height:30
+    width:100
+    transparent:true
+    append:false
+    onComplete: () ->
+      alert("Your file was saved")
+  params_for_download_sargam= _.clone(params_for_download_lilypond)
+  params_for_download_sargam.data = () ->
+    $('#entry_area').val()
+  params_for_download_sargam.filename = () ->
+    "#{window.the_composition.filename}.txt"
+  ###
+	  onComplete: () ->
+      console.log 'Your File Has Been Saved!'
+    swf: 'js/third_party/downloadify/swfobject.js'
+    downloadImage: 'images/download.png'
+    height:30
+    width:100
+    transparent:true
+    append:false
+  Downloadify 'download_lilypond',params_for_downloadify
+  ###
+  $("#download_lilypond").downloadify(params_for_download_lilypond)
+  $("#download_sargam_source").downloadify(params_for_download_sargam)
+  $('#load_long_composition').click ->
+    $('#entry_area').val(long_composition)
+  $('#load_sample_composition').click ->
+    $('#entry_area').val(str)
+  $('#show_parse_tree').click ->
+      $('#parse_tree').toggle()
+  my_url="lilypond.txt"
+ # url="hlilypond"
+
+  $('.generate_staff_notation').click =>
+    console.log  "my_url is #{my_url}" if debug
+    my_response_func= (resp) ->
+      console.log "resp is #{resp}" if debug
+    obj=
+      type:'POST'
+      url:my_url
+      data:{data:window.the_composition.lilypond}
+      error: ->
+        alert "Generating staff notation failed"
+        $('#lilypond_png').attr('src','none.jpg')
+      success: (some_data,text_status) ->
+        console.log "in success,data.length is",some_data.length if debug
+        $('#lilypond_png').attr('src',some_data)
+        window.location.hash="staff_notation";
+        $('#staff_notation_link').trigger('click')
+      dataType: "text"
+    $.ajax(obj)
+
+  $('#show_lilypond_source').click ->
+    $('#lilypond_source').show()
+    $('#lilypond_source').text(window.the_composition.lilypond)
+  $('#run_parser').click ->
     return if parser.is_parsing
+
     window.parse_errors=""
     $('#parse_tree').text('parsing...')
     try
       parser.is_parsing=true
-      $('#warnings_div').hide()
-      $('#warnings_div').html("")
-      src= $('#entry_area').val()
-      composition_data= parser.parse(src)
-      composition_data.source=src
-      # TODO: not really necessary on every keystroke!!
-      # TODO: think when to run these.
-      composition_data.lilypond=to_lilypond(composition_data)
-      composition_data.musicxml=to_musicxml(composition_data)
-      window.the_composition=composition_data
-      $('#parse_tree').text("Parsing completed with no errors \n"+JSON.stringify(composition_data,null,"  "))
-      if composition_data.warnings.length > 0
-        $('#warnings_div').html "The following warnings were reported:<br/>"+composition_data.warnings.join('<br/>')
-        $('#warnings_div').show()
+      obj= parser.parse $('#entry_area').val()
+      window.the_composition=obj
+      console.log("result of parser.parse(str)",obj) if debug
+      $('#parse_tree').text("Parsing completed with no errors \n"+JSON.stringify(obj,null,"  "))
       $('#parse_tree').hide()
-      $('#rendered_doremi_script').html(to_html(composition_data))
-      $('#lilypond_source').text(composition_data.lilypond)
-      $('#musicxml_source').text(composition_data.musicxml)
-      # TODO: combine with the above line..
-      dom_fixes()
+      $('#rendered_sargam').html(renderer.to_html(obj))
+      $('span[data-begin-slur-id]').each  (index) ->
+        console.log("this is",$(this).text()) if debug
+        pos2=$(this).offset()
+        console.log("pos2",pos2) if debug
+        attr=$(this).attr("data-begin-slur-id")
+        console.log("attr",attr) if debug
+        slur=$("##{attr}")
+        console.log("slur",slur) if debug
+        pos1=$(slur).offset()
+        console.log("pos1",pos1) if debug
+        $(slur).css({width: pos2.left- pos1.left + $(this).width()})
       canvas = $("#rendered_in_staff_notation")[0]
+      console.log("canvas is",canvas) if debug
     catch err
-      #console.log "err parsing, err is",err
+      console.log err
+      #staff_renderer.render(canvas,obj)
       window.parse_errors= window.parse_errors + "\n"+ err
       $('#parse_tree').text(window.parse_errors)
       $('#parse_tree').show()
@@ -62,292 +224,13 @@ $(document).ready ->
       window.last_val=$('#entry_area').val()
       parser.is_parsing=false
 
-  get_current_line_of_text_area = (obj) ->
-    get_current_line_of(obj.value,obj.selectionStart,obj.selectionEnd)
-
-  get_current_line_of = (val,sel_start,sel_end) ->
-    # doesn't use dom
-    # extract current line from some text given start and
-    # end positions representing current section
-    to_left_of_cursor=val.slice(0,sel_start)
-    to_right_of_cursor=val.slice(sel_end)
-    pos_of_start_of_line=to_left_of_cursor.lastIndexOf('\n')
-    if pos_of_start_of_line is -1
-      start_of_line_to_end=val
-    else
-      start_of_line_to_end=val.slice(pos_of_start_of_line+1)
-    index_of_end_of_line=start_of_line_to_end.indexOf('\n')
-    if index_of_end_of_line is -1
-      line=start_of_line_to_end
-    else
-      line=start_of_line_to_end.slice(0,index_of_end_of_line)
-    line
-  
-  handle_key_stroke = (event) ->
-    # The purpose of this code is to filter the characters as the
-    # user types to make it easier to enter notes. For example, if the
-    # user is entering the main line of sargam, then it is nice to automatically convert a "s" or "p" that the user types into uppercase "S" or "P".
-    # For now use a primitive test to see if the user is "in" a sargam line.
-    # In the future, can add feature to constrain to notes in mode or a "NotesUsed" attribute
-    el=this
-    val=el.value
-    sel_start=el.selectionStart
-    sel_end=el.selectionEnd
-    to_left_of_cursor=val.slice(0,sel_start)
-    to_right_of_cursor=val.slice(sel_end)
-    pos_of_start_of_line=to_left_of_cursor.lastIndexOf('\n')
-    if pos_of_start_of_line is -1
-      start_of_line_to_end=val
-    else
-      start_of_line_to_end=val.slice(pos_of_start_of_line+1)
-    index_of_end_of_line=start_of_line_to_end.indexOf('\n')
-    if index_of_end_of_line is -1
-      line=start_of_line_to_end
-    else
-      line=start_of_line_to_end.slice(0,index_of_end_of_line)
-    line=get_current_line_of_text_area(el)
-    if event.which in [115,112]
-       if (line.indexOf('|') > -1)
-         hash=
-           112:"P"
-           115:"S"
-         char=hash[event.which]
-         event.preventDefault()
-         el.value="#{to_left_of_cursor}#{char}#{to_right_of_cursor}"
-         #window.last_val=el.value
-         el.setSelectionRange(sel_start+1,sel_start+1)
-         el.focus()
-         #$('#run_parser').click
-  get_dom_fixer = () ->
-    params=
-      type:'GET'
-      url:'/js/dom_fixer.js'
-      dataType:'text'
-      success: (data) ->
-        $('#dom_fixer_for_html_doc').html(data)
-        window.generate_html_doc_ctr--
-    $.ajax(params)
-  
-  get_zepto = () ->
-    params=
-      type:'GET'
-      url:'/js/third_party/zepto.unminified.js'
-      dataType:'text'
-      success: (data) ->
-        $('#zepto_for_html_doc').html(data)
-        window.generate_html_doc_ctr--
-    $.ajax(params)
-   
-  get_css = () ->
-    params=
-      type:'GET'
-      url:'/css/application.css'
-      dataType:'text'
-      success: (data) ->
-        $('#css_for_html_doc').html(data)
-        window.generate_html_doc_ctr--
-    $.ajax(params)
-  console.log("get_css is",get_css) 
-  setup_samples_dropdown= () ->
-    params=
-      type:'GET'
-      url:'/list_samples'
-      dataType:'json'
-      success: (data) ->
-        str= "<option value='#{item}'>#{item}</option>" 
-        str=(for item in data
-          short=item.slice(item.lastIndexOf('/')+1)
-          "<option value='#{item}'>#{short}</option>").join('')
-        $('#sample_compositions').append(str)
-    $.ajax(params)
-  
-  
-  setup_links= (filename) ->
-    console.log "setup_links"
-    without_suffix=filename.substr(0, filename.lastIndexOf('.txt')) || filename
-    for typ in ["jpeg","pdf","mid","ly","txt","xml","html"]
-      snip = """
-      window.open('#{without_suffix}.#{typ}'); return false; 
-      """
-      $("#download_#{typ}").attr('href',full_path="#{without_suffix}.#{typ}")
-      if typ is 'jpeg'
-        $('#lilypond_jpeg').attr('src',full_path)
-      $("#download_#{typ}").attr('onclick',snip)
-  
-  setup_links_after_save= (filename) ->
-    without_suffix=filename.substr(0, filename.lastIndexOf('.txt')) || filename
-    $('#url_to_reopen').val(x=window.location.href)
-    $('#reopen_link').text(x)
-    $('#reopen_link').attr('href',x)
-    for typ in ["ly","txt","xml"]
-      snip = """
-      window.open('#{without_suffix}.#{typ}'); return false; 
-      """
-      $("#download_#{typ}").attr('href',full_path="#{without_suffix}.#{typ}")
-      $("#download_#{typ}").attr('onclick',snip)
-  
-  load_filepath= (filepath) ->
-    # Gets called if url is like http://ragapedia.com/compositions/yesterday
-    params=
-      type:'GET'
-      url:"#{filepath}.txt"
-      dataType:'text'
-      success: (data) =>
-        console.log "load_filepath"
-        $('#entry_area').val(data)
-        $('#entry_area').trigger('change') # causes auto-resize
-        $('#sample_compositions').val("Load sample compositions")
-        setup_links_after_save(filepath)
-        setup_links(filepath)
-        $('.generated_by_lilypond').show()
-        run_parser()
-    $.ajax(params)
-
-  save_to_server = (save_to_samples=false)  ->
-    my_data =
-      doremi_script_source: $('#entry_area').val()
-      lilypond: to_lilypond(window.the_composition)
-      musicxml:to_musicxml(window.the_composition)
-      html_page: generate_html_page_aux(window.the_composition)
-      fname:window.the_composition.filename
-      save_to_samples: save_to_samples
-    obj=
-      type:'POST'
-      url:'/save'
-      dataType: "json"
-      data: my_data
-      error: (some_data) ->
-        alert "Saving to server failed"
-      success: (some_data,text_status) ->
-        redirect_helper(some_data.fname)
-    $.ajax(obj)
-
-  # Handler for samples dropdown
-  sample_compositions_click = ->
-    return if this.selectedIndex is 0
-    redirect_helper(this.value)
-  
-  handleFileSelect = (evt) =>
-    # Handler for file upload button(HTML5)
-    file = document.getElementById('file').files[0]
-    reader=new FileReader()
-    reader.onload =  (evt) ->
-      $('#entry_area').val evt.target.result
-      $('#lilypond_jpeg').attr('src',"")
-      $('#open_div').hide()
-    reader.readAsText(file, "")
-
-  ########################
-  #
-  # Code starts here
-  #
-  #######################
-  console.log("code starts here")
-  ###
-  $("#menubar").superfish(pathClass : 'current'
-                          animation : { height:"show" }
-                          onBeforeShow : () -> $(this).hide()
-                          onHide : ()-> $(this).show())
-  ###
-  $('#entry_area').autogrow()
-  parser=DoremiScriptParser
-  parser.is_parsing=false
-  window.parse_errors=""
-
-  window.generate_html_doc_ctr=3
-  get_css()
-  get_zepto()
-  get_dom_fixer()
-  $('.generated_by_lilypond').hide()
-  Logger=_console.constructor
-  # _console.level  = Logger.DEBUG
-  _console.level  = Logger.WARN
-  _.mixin(_console.toObject())
-  if Zepto?
-    _.debug("***Using zepto.js instead of jQuery***")
-  debug=false
-  setup_samples_dropdown()
-  if window.location.host.indexOf('localhost') is -1
-   $("#add_to_samples").hide()
-
-  $('#sample_compositions').change(sample_compositions_click)
-
-
-  document.getElementById('file').addEventListener('change', handleFileSelect, false)
-  window.timer_is_on=0
-  # "/samples/happy_birthday" in URL
-  if window.location.pathname.indexOf("/samples/") > -1
-    load_filepath window.location.pathname
-  if window.location.pathname.indexOf("/compositions/") > -1
-    load_filepath window.location.pathname
-  str=""
-  $('#entry_area').val(str)
-  parser=DoremiScriptParser
-  parser.is_parsing=false
-  window.parse_errors=""
-  $('#show_parse_tree').click ->
-      $('#parse_tree').toggle()
-  $('a#show_open').click ->
-      $('#open_div').show()
-      $('#file').focus()
-  $('#save_to_server').click =>
-    save_to_server()
-          #composition_data.lilypond=to_lilypond(composition_data)
-          #composition_data.musicxml=to_musicxml(composition_data)
-
-
-  $('#generate_staff_notation').click =>
-    $('#lilypond_jpeg').attr('src',"")
-    $('.generated_by_lilypond').hide()
-    my_data =
-      as_html:true
-      fname:window.the_composition.filename
-      lilypond: window.the_composition.lilypond
-      doremi_script_source: $('#entry_area').val()
-      musicxml:window.the_composition.musicxml
-      save_to_samples: false
-    obj=
-      type:'POST'
-      url:'/lilypond.txt'
-      dataType: "json"
-      data: my_data
-      error: (some_data) ->
-        alert "Generating staff notation failed"
-        $('#lilypond_jpeg').attr('src','none.jpg')
-      success: (some_data,text_status) ->
-        redirect_helper(some_data.fname)
-    $.ajax(obj)
-
-  generate_html_page_aux = () ->
-    console.log "generate_html_page_aux"
-    return if window.generate_html_doc_ctr > 0
-    css=$('#css_for_html_doc').html()
-    js=$('#zepto_for_html_doc').html()
-    js2=$('#dom_fixer_for_html_doc').html()
-    composition=window.the_composition
-    full_url="http://ragapedia.com"
-    to_html_doc(composition,full_url,css,js+js2)
-
-  $('#generate_html_page').click =>
-    generate_html_page_aux()
-
-  $('#show_lilypond_output').click ->
-    $('#lilypond_output').toggle()
-  $('#show_musicxml_source').click ->
-    $('#musicxml_source').toggle()
-
-  $('#show_lilypond_source').click ->
-    $('#lilypond_source').toggle()
-  $('#save_to_samples').click ->
-    save_to_server(true)
-  $('#run_parser').click ->
-      run_parser()
-  $('#entry_area').keypress(handle_key_stroke)
-
+  # $('#load_sample_composition').trigger('click')
+  $('#run_parser').trigger('click')
   $('#parse_tree').hide()
-  $('#lilypond_output').hide()
-  $('#lilypond_source').hide()
-  $('#musicxml_source').hide()
+
+
+
+
   window.do_timer()
-  run_parser if $('#entry_area').val() isnt ""
+
 

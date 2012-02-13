@@ -1,13 +1,16 @@
 .bodyArea
   %div.controls
-    / downloadify save button
-    %span#download_doremi_source{"data-bind" => "visible: saveable"}
+    %p#download_doremi_source
+      You must have flash installed...
+    %button{"alt" => "Save current composition as a file","zzzzdata-bind" => "visible: editing_composition,click: download_doremi_source_file, enable: saveable"} 
+      Save
     %button{"data-bind" => "click: new_composition"}
       New Composition
     %button{"data-bind" => "visible: editing_composition,click: print_composition"}
       Print 
-    %span.open_file_div
-      / uses html5 open file
+    %button{"data-bind" => "css: {button_on:open_file_visible},click: toggle_open_file_visible"} 
+      Open File     
+    %div.open_file_div{"data-bind" => 'visible:open_file_visible'}
       %label Open:
       %input#file{:name => "files[]", :type => "file"}
     %button{"data-bind" => "visible: editing_composition,click: gui_close"}
@@ -120,7 +123,7 @@
     .composition_body{"data-bind" => "foreach: lines"}
       <!--  Each line consists of a textarea, some controls, and the rendered html. The textarea and controls are hidden unless the user is editting the line -->
       %div.edit_line_wrapper.controls{"data-bind"=> "visible:editing, css: {line_has_warnings: line_has_warnings,line_parse_failed: line_parse_failed}"}
-        %textarea.entry_area{:spellcheck => "false",:rows => "6", :cols => "33", "data-bind" => "attr: {id: entry_area_id()},style: {width: $parent.composition_stave_width},css: {'line_has_warnings': line_has_warnings,'parse_failed': $data.parse_failed},visible: editing(), value: source "}
+        %textarea.entry_area{:spellcheck => "false",:rows => "6", :cols => "33", "data-bind" => "attr: {id: entry_area_id()},style: {width: $parent.composition_stave_width},css: {'line_has_warnings': line_has_warnings,'parse_failed': $data.parse_failed},visible: editing(), value: source, event: { keypress: handle_key_press}, valueUpdate: 'afterkeydown'"}
         %div.line_controls.controls
           %button{"data-bind" => "click: close_edit,clickBubble:false"} 
             Close
@@ -130,8 +133,6 @@
             Append
           %button{"data-bind" => "click: toggle_line_warnings_visible,clickBubble:false"} 
             Warnings
-          %button{"onclick" => 'return false'} 
-            Redraw
         %div.line_warnings_div{"data-bind" => "visible: line_warnings_visible"}
           %h4 Warnings:
           %div.like_pre{"data-bind" => "text: line_warnings,event:{dblclick:toggle_line_warnings_visible}"}

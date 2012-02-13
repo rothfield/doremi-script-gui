@@ -1,5 +1,39 @@
 $(document).ready ->
+  window.doremi_script_gui_app={}
+  app=window.doremi_script_gui_app
+
+  app.sanitize= (name)->
+     name.replace(/[^0-9A-Za-z.\-]/g, '_').toLowerCase()
+
+  setup_downloadify = () ->
+    console.log "entering setup_downloadify"
+    app.params_for_download_lilypond =
+    	filename: () ->
+        "#{app.the_composition.filename()}.ly"
+      data: () ->
+        app.the_composition.composition_lilypond_source()
+  	  onComplete: () ->
+        console.log 'Your File Has Been Saved!' if debug
+
+      swf: './js/doremi-script/third_party/downloadify/downloadify.swf'
+      downloadImage: './images/download.png'
+      height:19
+      width:76
+      transparent:true
+      append:false
+      onComplete: () ->
+        alert("Your file was saved")
+    app.params_for_download_sargam= _.clone(app.params_for_download_lilypond)
+    app.params_for_download_sargam.data = () ->
+        app.the_composition.doremi_source()
+    app.params_for_download_sargam.filename = () ->
+      "#{app.sanitize(app.the_composition.title())}.doremi_script.txt"
+    $("#download_lilypond").downloadify(app.params_for_download_lilypond)
+    $("#download_doremi_source").downloadify(app.params_for_download_sargam)
+    #   $("#download_musicxml_source").downloadify(params_for_download_musicxml)
+  
   initialData = "Title: testing\nAuthor: anon\nApplyHyphenatedLyrics: true\nmany words aren't hyphenated\n\n| SRG- m-m-\n. \n\n|PDNS"
+  initialData = ""
   debug=false
   NONE_URL="images/none.png"
   unique_id=1000
@@ -87,17 +121,29 @@ $(document).ready ->
   
  
   handleFileSelect = (evt) =>
-
+    console.log "handle_file_select"
+    if window.the_composition.editing_composition()
+      x=confirm("Save current composition?")
+      if x
+        $('#file').val('')
+        alert("use save button")
+        return
     # Handler for file upload button(HTML5)
     file = document.getElementById('file').files[0]
     reader=new FileReader()
     reader.onload =  (evt) ->
+      val=$('#file').val()
+      $('#file').val('')
+      console.log "onload"
       # TODO: DRY and move into composition
+      $('#file').val('')
+      window.the_composition.last_doremi_source= new Date().getTime()
       window.the_composition.my_init(evt.target.result)
       window.the_composition.editing_composition(true)
       window.the_composition.open_file_visible(false)
       window.the_composition.help_visible(false)
       window.the_composition.composition_info_visible(false)
+
     reader.readAsText(file, "")
 
   document.getElementById('file').addEventListener('change', handleFileSelect, false)
@@ -174,6 +220,11 @@ $(document).ready ->
       return "/#" if  !base_url
       "#{base_url}.mid"
     )
+    self.doremi_source_url=ko.computed(()->
+      base_url=self.base_url()
+      return "/#" if  !base_url
+      "#{base_url}.doremi_script.txt"
+    )
 
     self.composition_lilypond_source_visible=ko.observable(false)
     self.composition_musicxml_source_visible=ko.observable(false)
@@ -232,13 +283,79 @@ $(document).ready ->
     
     self.keys=["C","C#","D","D#","E","F","F#","G","G#","A","A#","B","Db","Eb","Gb","Ab","Bb"]
     self.key= ko.observable("")
-    self.staff_notation_url_with_time_stamp = ko.computed () ->
+
+    self.staff_notation_url_with_time_stamp = ko.observable()
+
+    self.calculate_staff_notation_url_with_time_stamp = () ->
       if self.staff_notation_url() is NONE_URL
         return self.staff_notation_url()
       time_stamp=new Date().getTime()
       "#{self.staff_notation_url()}?ts=#{time_stamp}"
-    self.modes=["Ionian","Dorian","Phrygian","Lydian","Mixolydian","Aeolian","Locrian"]
+    self.modes=["ionian","dorian","phrygian","lydian","mixolydian","aeolian","locrian"]
+
     self.mode= ko.observable("")
+
+    self.zdownload_doremi_source_file = (my_model) ->
+      # Use an "echo" server to provide file download
+      # Post to server and server will send the file
+      # An alternative is to use flash via downloadify
+      console.log "save_file"
+      url='/doremi_script_server/download_doremi_source_file'
+      timeout_in_seconds=60
+      src=self.doremi_source()
+      my_data =
+        dataType : "json",
+        title: sanitize(self.title())
+        author: sanitize(self.author())
+        id: self.id()
+        fname: self.title()
+        #"#{self.title()}_#{self.author()}_#{self.id()}"
+        doremi_source:self.doremi_source()
+      obj=
+        timeout : timeout_in_seconds * 1000  # milliseconds
+        type:'POST'
+        url: url
+        data: my_data
+        error: (some_data) ->
+          alert("An error occurred.")
+        success: (some_data,text_status) ->
+          if some_data.error
+            alert("An error occurred: #{some_data.error}")
+      $.ajax(obj)
+      return true
+
+    self.download_doremi_source_file = (my_model) ->
+      # First save file to server
+      url='/doremi_script_server/save_to_server'
+      lilypond_source=self.composition_lilypond_source()
+      timeout_in_seconds=60
+      src=self.doremi_source()
+      my_data =
+        lilypond:self.composition_lilypond_source()
+        fname: "#{self.title()}_#{self.author()}_#{self.id()}"
+        doremi_source: src
+      obj=
+        dataType : "json",
+        timeout : timeout_in_seconds * 1000  # milliseconds
+        type:'POST'
+        url: url
+        data: my_data
+        error: (some_data) ->
+          self.generating_staff_notation(false)
+          self.staff_notation_url(NONE_URL)
+          alert("Couldn't connect to staff notation generator server at #{url}")
+        success: (some_data,text_status) ->
+          if some_data.error
+            alert("An error occurred: #{some_data.error}")
+            return
+          fname=some_data.fname
+          base_url=fname.slice(0,fname.lastIndexOf('.'))
+          console.log base_url
+          self.base_url(base_url)
+          self.staff_notation_url(full_url_helper(some_data.fname))
+          self.staff_notation_visible(true)
+          self.composition_lilypond_output_visible(false)
+      $.ajax(obj)
 
     self.generate_staff_notation = (my_model) ->
       # generate staff notation by converting doremi_script
@@ -252,7 +369,8 @@ $(document).ready ->
       timeout_in_seconds=60
       src=self.doremi_source()
       my_data =
-        fname: "#{self.title()}_#{self.author()}_#{self.id()}"
+        fname: app.sanitize(self.title())
+        #"#{self.title()}_#{self.author()}_#{self.id()}"
         lilypond: lilypond_source
         doremi_source: src
       obj=
@@ -278,6 +396,8 @@ $(document).ready ->
           console.log base_url
           self.base_url(base_url)
           self.staff_notation_url(full_url_helper(some_data.fname))
+          x= self.calculate_staff_notation_url_with_time_stamp()
+          self.staff_notation_url_with_time_stamp(x)
           self.staff_notation_visible(true)
           self.composition_lilypond_output_visible(false)
       $.ajax(obj)
@@ -303,6 +423,9 @@ $(document).ready ->
       ]
 
     self.compute_doremi_source = () ->
+      # Turn the data on the web page into a doremi_script format
+      #
+      console.log "compute_doremi_source"
       # list dependencies
       self.id()
       self.title()
@@ -378,7 +501,8 @@ $(document).ready ->
       parse_tree.warnings.length > 0
 
     self.my_init = (doremi_source_param) ->
-      #console.log("my_init",doremi_source_param)
+      # Initialize composition with doremi_script_source
+      console.log("composition.my_init",doremi_source_param)
       parsed=DoremiScriptParser.parse(doremi_source_param)
       self.composition_parsed_doremi_script(parsed)
       if !parsed
@@ -386,8 +510,12 @@ $(document).ready ->
         return
       if !parsed.id?
         parsed.id=new Date().getTime()
-      self[key](parsed[key]) for key in self.attribute_keys
-
+      for key in self.attribute_keys
+        val=parsed[key]
+        fct=self[key]
+        fct(val)
+        #self[key](parsed[key])
+      console.log "check mode here"
       self.lines(ko.utils.arrayMap(parsed.lines, LineViewModel))
 
     self.add_line = () ->
@@ -457,7 +585,9 @@ $(document).ready ->
       self.composition_info_visible(false)
 
     self.saveable = ko.computed () ->
-      (self.lines().length > 0) and self.title isnt ""
+      console.log "in saveable"
+      self.title() isnt ""
+      #(self.lines().length > 0) and self.title isnt ""
     self.ask_user_if_they_want_to_save = () ->
       # returning false means user
       if self.editing_composition()
@@ -465,7 +595,7 @@ $(document).ready ->
           if confirm("Save current composition in localStorage before continuing?")
             self.save_locally()
 
-    self.initial_help_display=ko.observable(true)
+    self.initial_help_display=ko.observable(false)
 
     self.destroy_locally = () ->
       x=prompt("Enter yes to remove this document from local storage. This operation cannot be undone.")
@@ -536,9 +666,10 @@ $(document).ready ->
     self.my_init(my_doremi_source) if my_doremi_source?
     self
 
-  window.the_composition=new CompositionViewModel()
-  window.the_composition.help_visible(true)
-  window.the_composition.my_init(initialData)
+  window.the_composition=new CompositionViewModel() # TOODO: move away from window.the_composition
+  app.the_composition=window.the_composition
+  window.the_composition.help_visible(false)
+  #window.the_composition.my_init(initialData)
   ko.applyBindings(window.the_composition,$('html')[0])
   
   window.timed_count = () =>
@@ -608,12 +739,13 @@ $(document).ready ->
       dom_fixes()
     # At the end of the task, re-start the timer
     debug=false
-    t=setTimeout("timed_count()",1000)  # TODO: use try catch to make sure timer always gets re-run
+    t=setTimeout("timed_count()",500)  # TODO: use try catch to make sure timer always gets re-run
   
   $(window).resize(() ->
     console.log("info:resize")
     window.the_composition.composition_stave_width(window.the_composition.calculate_stave_width())
   )
+  setup_downloadify()
   
   window.timed_count() # start the timer
   $('#composition_title').focus()

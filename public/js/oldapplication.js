@@ -1,34 +1,161 @@
-var root;
+var $, root;
 var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; };
+$ = jQuery;
 root = typeof exports !== "undefined" && exports !== null ? exports : this;
 $(document).ready(function() {
-  var Logger, debug, generate_html_page_aux, get_css, get_current_line_of, get_current_line_of_text_area, get_dom_fixer, get_zepto, handleFileSelect, handle_key_stroke, load_filepath, parser, redirect_helper, run_parser, sample_compositions_click, save_to_server, setup_links, setup_links_after_save, setup_samples_dropdown, str;
-  if ((document.cookie != null) && document.cookie.indexOf('user') > -1) {
-    $('#sign_in').hide();
-  }
-  redirect_helper = function(fname) {
-    var loc;
-    loc = document.location;
-    return document.location = "" + loc.protocol + "//" + loc.host + fname;
-  };
-  console.log("redirect_helper", redirect_helper);
+  var debug, handleFileSelect, long_composition, my_url, params_for_download_lilypond, params_for_download_sargam, parser, renderer, str, str1, str_simple;
+  handleFileSelect = __bind(function(evt) {
+    var file, reader;
+    if (debug) {
+      console.log("in handleFileSelect");
+    }
+    file = document.getElementById('file').files[0];
+    if (debug) {
+      console.log("in handleFileSelect,file is", file);
+    }
+    reader = new FileReader();
+    reader.onload = function(evt) {
+      $('#entry_area').val(evt.target.result);
+      return $('#lilypond_png').attr('src', "");
+    };
+    return reader.readAsText(file, "");
+  }, this);
+  document.getElementById('file').addEventListener('change', handleFileSelect, false);
+  root.debug = false;
+  debug = false;
+  window.timer_is_on = 0;
+  window.last_val = str;
   window.timed_count = __bind(function() {
     var cur_val, t;
+    if (debug) {
+      console.log("entering timed_count");
+    }
     cur_val = $('#entry_area').val();
+    if (debug) {
+      console.log("Entering timed_count, cur_val = " + cur_val);
+    }
     if (window.last_val !== cur_val) {
+      if (debug) {
+        console.log("timed_count- runnng parser since val changed");
+      }
       $('#run_parser').trigger('click');
-      window.last_val = cur_val;
     }
     return t = setTimeout("timed_count()", 1000);
   }, this);
   window.do_timer = __bind(function() {
+    if (debug) {
+      console.log("entering do_timer");
+    }
     if (!window.timer_is_on) {
+      if (debug) {
+        console.log("window.timer wasnt on");
+      }
       window.timer_is_on = 1;
       return window.timed_count();
     }
   }, this);
-  run_parser = function() {
-    var canvas, composition_data, src;
+  long_composition = 'Rag:Bhairavi\nTal:Tintal\nTitle:Bansuri\nSource:AAK\nMode: phrygian\n           . .\n[| Srgm PdnS SndP mgrS |]\n\n           I  IV            V   V7 ii    iii7 \n               3                  +            2          .\n1)|: S S S (Sr | n) S   (gm Pd) | P - P  P   | P - D  <(nDSn)>) |\n                 .\n            ban-    su-  ri       ba- ja ra-   hi  dhu- na\n\n  0  ~                3               ~       +  .     *  *   \n| P  d   P       d    |  (Pm   PmnP) (g m) | (PdnS) -- g  S |\n     ma- dhu-ra  kan-     nai-        ya      khe-     la-ta\n\n    2              0     \n                   ~\n| (d-Pm  g) P  m | r - S :|\n   ga-      wa-ta  ho- ri\n';
+  str = "S";
+  str1 = '                          I   IV       V   V7 ii  iii7 \n       3                  +            2          .\n|: (Sr | n) S   (gm Pd) | P - P  P   | P - D  (<nDSn>) |\n         .\n    ban-    su-  ri       ba- ja ra-   hi  dhu- na\n\n  0  ~                3           ~       +  .     *  .\n| P  d   P   d    |  (Pm   PmnP) (g m) | (PdnS) -- g  S |\n  ma-dhu-ra  kan-     nai-        ya      khe-     la-ta';
+  str = '    I                       IV             V\n                 .  .   .    . ..\n|: (SNRSNS) N    S--S --S- | SNRS N D P || mm GG RR S-SS :|  \n    .   .   .\n    he-     llo';
+  str = 'Rag:Bhairavi\nTal:Tintal\nTitle:Bansuri\nSource:AAK\n\n          3             ~    +            2         .\n1) |: (Sr | n) S   (gm Pd)|| P - P  P   | P - D  (<nDSn>) |\n            .\n       ban-    su-  ri       ba- ja ra-   hi  dhu- na\n\n0                 3                    +     .    *  .\n| P  d   P   d    | <(Pm>   PmnP) (g m)|| PdnS -- g  S |\n  ma-dhu-ra  kan-     nai-         ya     khe-    la-ta\n\n2              0     ~\n|  d-Pm g P  m | r - S :|\n   ga-    wa-ta  ho- ri\n\n      I                     IV\n              . .                   . .\n2)  [| Srgm PdnS SndP mgrS | Srgm PdnS SndP mgrS | % | % |]';
+  str_simple = '   + \n   .\n|<(S--  r)>  (r---  g-m) | S\n   test-ing';
+  str = str1;
+  str = "S--R --G- | -m-- P";
+  $('#entry_area').val(str);
+  parser = SargamParser;
+  renderer = new SargamHtmlRenderer;
+  window.parse_errors = "";
+  params_for_download_lilypond = {
+    filename: function() {
+      return "" + window.the_composition.filename + ".ly";
+    },
+    data: function() {
+      return window.the_composition.lilypond;
+    },
+    onComplete: function() {
+      if (debug) {
+        return console.log('Your File Has Been Saved!');
+      }
+    },
+    swf: 'js/third_party/downloadify/media/downloadify.swf',
+    downloadImage: 'images/download.png',
+    height: 30,
+    width: 100,
+    transparent: true,
+    append: false,
+    onComplete: function() {
+      return alert("Your file was saved");
+    }
+  };
+  params_for_download_sargam = _.clone(params_for_download_lilypond);
+  params_for_download_sargam.data = function() {
+    return $('#entry_area').val();
+  };
+  params_for_download_sargam.filename = function() {
+    return "" + window.the_composition.filename + ".txt";
+  };
+  /*
+  	  onComplete: () ->
+        console.log 'Your File Has Been Saved!'
+      swf: 'js/third_party/downloadify/swfobject.js'
+      downloadImage: 'images/download.png'
+      height:30
+      width:100
+      transparent:true
+      append:false
+    Downloadify 'download_lilypond',params_for_downloadify
+    */
+  $("#download_lilypond").downloadify(params_for_download_lilypond);
+  $("#download_sargam_source").downloadify(params_for_download_sargam);
+  $('#load_long_composition').click(function() {
+    return $('#entry_area').val(long_composition);
+  });
+  $('#load_sample_composition').click(function() {
+    return $('#entry_area').val(str);
+  });
+  $('#show_parse_tree').click(function() {
+    return $('#parse_tree').toggle();
+  });
+  my_url = "lilypond.txt";
+  $('.generate_staff_notation').click(__bind(function() {
+    var my_response_func, obj;
+    if (debug) {
+      console.log("my_url is " + my_url);
+    }
+    my_response_func = function(resp) {
+      if (debug) {
+        return console.log("resp is " + resp);
+      }
+    };
+    obj = {
+      type: 'POST',
+      url: my_url,
+      data: {
+        data: window.the_composition.lilypond
+      },
+      error: function() {
+        alert("Generating staff notation failed");
+        return $('#lilypond_png').attr('src', 'none.jpg');
+      },
+      success: function(some_data, text_status) {
+        if (debug) {
+          console.log("in success,data.length is", some_data.length);
+        }
+        $('#lilypond_png').attr('src', some_data);
+        window.location.hash = "staff_notation";
+        return $('#staff_notation_link').trigger('click');
+      },
+      dataType: "text"
+    };
+    return $.ajax(obj);
+  }, this));
+  $('#show_lilypond_source').click(function() {
+    $('#lilypond_source').show();
+    return $('#lilypond_source').text(window.the_composition.lilypond);
+  });
+  $('#run_parser').click(function() {
+    var canvas, obj;
     if (parser.is_parsing) {
       return;
     }
@@ -36,26 +163,45 @@ $(document).ready(function() {
     $('#parse_tree').text('parsing...');
     try {
       parser.is_parsing = true;
-      $('#warnings_div').hide();
-      $('#warnings_div').html("");
-      src = $('#entry_area').val();
-      composition_data = parser.parse(src);
-      composition_data.source = src;
-      composition_data.lilypond = to_lilypond(composition_data);
-      composition_data.musicxml = to_musicxml(composition_data);
-      window.the_composition = composition_data;
-      $('#parse_tree').text("Parsing completed with no errors \n" + JSON.stringify(composition_data, null, "  "));
-      if (composition_data.warnings.length > 0) {
-        $('#warnings_div').html("The following warnings were reported:<br/>" + composition_data.warnings.join('<br/>'));
-        $('#warnings_div').show();
+      obj = parser.parse($('#entry_area').val());
+      window.the_composition = obj;
+      if (debug) {
+        console.log("result of parser.parse(str)", obj);
       }
+      $('#parse_tree').text("Parsing completed with no errors \n" + JSON.stringify(obj, null, "  "));
       $('#parse_tree').hide();
-      $('#rendered_doremi_script').html(to_html(composition_data));
-      $('#lilypond_source').text(composition_data.lilypond);
-      $('#musicxml_source').text(composition_data.musicxml);
-      dom_fixes();
-      return canvas = $("#rendered_in_staff_notation")[0];
+      $('#rendered_sargam').html(renderer.to_html(obj));
+      $('span[data-begin-slur-id]').each(function(index) {
+        var attr, pos1, pos2, slur;
+        if (debug) {
+          console.log("this is", $(this).text());
+        }
+        pos2 = $(this).offset();
+        if (debug) {
+          console.log("pos2", pos2);
+        }
+        attr = $(this).attr("data-begin-slur-id");
+        if (debug) {
+          console.log("attr", attr);
+        }
+        slur = $("#" + attr);
+        if (debug) {
+          console.log("slur", slur);
+        }
+        pos1 = $(slur).offset();
+        if (debug) {
+          console.log("pos1", pos1);
+        }
+        return $(slur).css({
+          width: pos2.left - pos1.left + $(this).width()
+        });
+      });
+      canvas = $("#rendered_in_staff_notation")[0];
+      if (debug) {
+        return console.log("canvas is", canvas);
+      }
     } catch (err) {
+      console.log(err);
       window.parse_errors = window.parse_errors + "\n" + err;
       $('#parse_tree').text(window.parse_errors);
       return $('#parse_tree').show();
@@ -63,339 +209,8 @@ $(document).ready(function() {
       window.last_val = $('#entry_area').val();
       parser.is_parsing = false;
     }
-  };
-  get_current_line_of_text_area = function(obj) {
-    return get_current_line_of(obj.value, obj.selectionStart, obj.selectionEnd);
-  };
-  get_current_line_of = function(val, sel_start, sel_end) {
-    var index_of_end_of_line, line, pos_of_start_of_line, start_of_line_to_end, to_left_of_cursor, to_right_of_cursor;
-    to_left_of_cursor = val.slice(0, sel_start);
-    to_right_of_cursor = val.slice(sel_end);
-    pos_of_start_of_line = to_left_of_cursor.lastIndexOf('\n');
-    if (pos_of_start_of_line === -1) {
-      start_of_line_to_end = val;
-    } else {
-      start_of_line_to_end = val.slice(pos_of_start_of_line + 1);
-    }
-    index_of_end_of_line = start_of_line_to_end.indexOf('\n');
-    if (index_of_end_of_line === -1) {
-      line = start_of_line_to_end;
-    } else {
-      line = start_of_line_to_end.slice(0, index_of_end_of_line);
-    }
-    return line;
-  };
-  handle_key_stroke = function(event) {
-    var char, el, hash, index_of_end_of_line, line, pos_of_start_of_line, sel_end, sel_start, start_of_line_to_end, to_left_of_cursor, to_right_of_cursor, val, _ref;
-    el = this;
-    val = el.value;
-    sel_start = el.selectionStart;
-    sel_end = el.selectionEnd;
-    to_left_of_cursor = val.slice(0, sel_start);
-    to_right_of_cursor = val.slice(sel_end);
-    pos_of_start_of_line = to_left_of_cursor.lastIndexOf('\n');
-    if (pos_of_start_of_line === -1) {
-      start_of_line_to_end = val;
-    } else {
-      start_of_line_to_end = val.slice(pos_of_start_of_line + 1);
-    }
-    index_of_end_of_line = start_of_line_to_end.indexOf('\n');
-    if (index_of_end_of_line === -1) {
-      line = start_of_line_to_end;
-    } else {
-      line = start_of_line_to_end.slice(0, index_of_end_of_line);
-    }
-    line = get_current_line_of_text_area(el);
-    if ((_ref = event.which) === 115 || _ref === 112) {
-      if (line.indexOf('|') > -1) {
-        hash = {
-          112: "P",
-          115: "S"
-        };
-        char = hash[event.which];
-        event.preventDefault();
-        el.value = "" + to_left_of_cursor + char + to_right_of_cursor;
-        el.setSelectionRange(sel_start + 1, sel_start + 1);
-        return el.focus();
-      }
-    }
-  };
-  get_dom_fixer = function() {
-    var params;
-    params = {
-      type: 'GET',
-      url: '/js/dom_fixer.js',
-      dataType: 'text',
-      success: function(data) {
-        $('#dom_fixer_for_html_doc').html(data);
-        return window.generate_html_doc_ctr--;
-      }
-    };
-    return $.ajax(params);
-  };
-  get_zepto = function() {
-    var params;
-    params = {
-      type: 'GET',
-      url: '/js/third_party/zepto.unminified.js',
-      dataType: 'text',
-      success: function(data) {
-        $('#zepto_for_html_doc').html(data);
-        return window.generate_html_doc_ctr--;
-      }
-    };
-    return $.ajax(params);
-  };
-  get_css = function() {
-    var params;
-    params = {
-      type: 'GET',
-      url: '/css/application.css',
-      dataType: 'text',
-      success: function(data) {
-        $('#css_for_html_doc').html(data);
-        return window.generate_html_doc_ctr--;
-      }
-    };
-    return $.ajax(params);
-  };
-  console.log("get_css is", get_css);
-  setup_samples_dropdown = function() {
-    var params;
-    params = {
-      type: 'GET',
-      url: '/list_samples',
-      dataType: 'json',
-      success: function(data) {
-        var item, short, str;
-        str = "<option value='" + item + "'>" + item + "</option>";
-        str = ((function() {
-          var _i, _len, _results;
-          _results = [];
-          for (_i = 0, _len = data.length; _i < _len; _i++) {
-            item = data[_i];
-            short = item.slice(item.lastIndexOf('/') + 1);
-            _results.push("<option value='" + item + "'>" + short + "</option>");
-          }
-          return _results;
-        })()).join('');
-        return $('#sample_compositions').append(str);
-      }
-    };
-    return $.ajax(params);
-  };
-  setup_links = function(filename) {
-    var full_path, snip, typ, without_suffix, _i, _len, _ref, _results;
-    console.log("setup_links");
-    without_suffix = filename.substr(0, filename.lastIndexOf('.txt')) || filename;
-    _ref = ["jpeg", "pdf", "mid", "ly", "txt", "xml", "html"];
-    _results = [];
-    for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-      typ = _ref[_i];
-      snip = "window.open('" + without_suffix + "." + typ + "'); return false; ";
-      $("#download_" + typ).attr('href', full_path = "" + without_suffix + "." + typ);
-      if (typ === 'jpeg') {
-        $('#lilypond_jpeg').attr('src', full_path);
-      }
-      _results.push($("#download_" + typ).attr('onclick', snip));
-    }
-    return _results;
-  };
-  setup_links_after_save = function(filename) {
-    var full_path, snip, typ, without_suffix, x, _i, _len, _ref, _results;
-    without_suffix = filename.substr(0, filename.lastIndexOf('.txt')) || filename;
-    $('#url_to_reopen').val(x = window.location.href);
-    $('#reopen_link').text(x);
-    $('#reopen_link').attr('href', x);
-    _ref = ["ly", "txt", "xml"];
-    _results = [];
-    for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-      typ = _ref[_i];
-      snip = "window.open('" + without_suffix + "." + typ + "'); return false; ";
-      $("#download_" + typ).attr('href', full_path = "" + without_suffix + "." + typ);
-      _results.push($("#download_" + typ).attr('onclick', snip));
-    }
-    return _results;
-  };
-  load_filepath = function(filepath) {
-    var params;
-    params = {
-      type: 'GET',
-      url: "" + filepath + ".txt",
-      dataType: 'text',
-      success: __bind(function(data) {
-        console.log("load_filepath");
-        $('#entry_area').val(data);
-        $('#entry_area').trigger('change');
-        $('#sample_compositions').val("Load sample compositions");
-        setup_links_after_save(filepath);
-        setup_links(filepath);
-        $('.generated_by_lilypond').show();
-        return run_parser();
-      }, this)
-    };
-    return $.ajax(params);
-  };
-  save_to_server = function(save_to_samples) {
-    var my_data, obj;
-    if (save_to_samples == null) {
-      save_to_samples = false;
-    }
-    my_data = {
-      doremi_script_source: $('#entry_area').val(),
-      lilypond: to_lilypond(window.the_composition),
-      musicxml: to_musicxml(window.the_composition),
-      html_page: generate_html_page_aux(window.the_composition),
-      fname: window.the_composition.filename,
-      save_to_samples: save_to_samples
-    };
-    obj = {
-      type: 'POST',
-      url: '/save',
-      dataType: "json",
-      data: my_data,
-      error: function(some_data) {
-        return alert("Saving to server failed");
-      },
-      success: function(some_data, text_status) {
-        return redirect_helper(some_data.fname);
-      }
-    };
-    return $.ajax(obj);
-  };
-  sample_compositions_click = function() {
-    if (this.selectedIndex === 0) {
-      return;
-    }
-    return redirect_helper(this.value);
-  };
-  handleFileSelect = __bind(function(evt) {
-    var file, reader;
-    file = document.getElementById('file').files[0];
-    reader = new FileReader();
-    reader.onload = function(evt) {
-      $('#entry_area').val(evt.target.result);
-      $('#lilypond_jpeg').attr('src', "");
-      return $('#open_div').hide();
-    };
-    return reader.readAsText(file, "");
-  }, this);
-  console.log("code starts here");
-  /*
-    $("#menubar").superfish(pathClass : 'current'
-                            animation : { height:"show" }
-                            onBeforeShow : () -> $(this).hide()
-                            onHide : ()-> $(this).show())
-    */
-  $('#entry_area').autogrow();
-  parser = DoremiScriptParser;
-  parser.is_parsing = false;
-  window.parse_errors = "";
-  window.generate_html_doc_ctr = 3;
-  get_css();
-  get_zepto();
-  get_dom_fixer();
-  $('.generated_by_lilypond').hide();
-  Logger = _console.constructor;
-  _console.level = Logger.WARN;
-  _.mixin(_console.toObject());
-  if (typeof Zepto !== "undefined" && Zepto !== null) {
-    _.debug("***Using zepto.js instead of jQuery***");
-  }
-  debug = false;
-  setup_samples_dropdown();
-  if (window.location.host.indexOf('localhost') === -1) {
-    $("#add_to_samples").hide();
-  }
-  $('#sample_compositions').change(sample_compositions_click);
-  document.getElementById('file').addEventListener('change', handleFileSelect, false);
-  window.timer_is_on = 0;
-  if (window.location.pathname.indexOf("/samples/") > -1) {
-    load_filepath(window.location.pathname);
-  }
-  if (window.location.pathname.indexOf("/compositions/") > -1) {
-    load_filepath(window.location.pathname);
-  }
-  str = "";
-  $('#entry_area').val(str);
-  parser = DoremiScriptParser;
-  parser.is_parsing = false;
-  window.parse_errors = "";
-  $('#show_parse_tree').click(function() {
-    return $('#parse_tree').toggle();
   });
-  $('a#show_open').click(function() {
-    $('#open_div').show();
-    return $('#file').focus();
-  });
-  $('#save_to_server').click(__bind(function() {
-    return save_to_server();
-  }, this));
-  $('#generate_staff_notation').click(__bind(function() {
-    var my_data, obj;
-    $('#lilypond_jpeg').attr('src', "");
-    $('.generated_by_lilypond').hide();
-    my_data = {
-      as_html: true,
-      fname: window.the_composition.filename,
-      lilypond: window.the_composition.lilypond,
-      doremi_script_source: $('#entry_area').val(),
-      musicxml: window.the_composition.musicxml,
-      save_to_samples: false
-    };
-    obj = {
-      type: 'POST',
-      url: '/lilypond.txt',
-      dataType: "json",
-      data: my_data,
-      error: function(some_data) {
-        alert("Generating staff notation failed");
-        return $('#lilypond_jpeg').attr('src', 'none.jpg');
-      },
-      success: function(some_data, text_status) {
-        return redirect_helper(some_data.fname);
-      }
-    };
-    return $.ajax(obj);
-  }, this));
-  generate_html_page_aux = function() {
-    var composition, css, full_url, js, js2;
-    console.log("generate_html_page_aux");
-    if (window.generate_html_doc_ctr > 0) {
-      return;
-    }
-    css = $('#css_for_html_doc').html();
-    js = $('#zepto_for_html_doc').html();
-    js2 = $('#dom_fixer_for_html_doc').html();
-    composition = window.the_composition;
-    full_url = "http://ragapedia.com";
-    return to_html_doc(composition, full_url, css, js + js2);
-  };
-  $('#generate_html_page').click(__bind(function() {
-    return generate_html_page_aux();
-  }, this));
-  $('#show_lilypond_output').click(function() {
-    return $('#lilypond_output').toggle();
-  });
-  $('#show_musicxml_source').click(function() {
-    return $('#musicxml_source').toggle();
-  });
-  $('#show_lilypond_source').click(function() {
-    return $('#lilypond_source').toggle();
-  });
-  $('#save_to_samples').click(function() {
-    return save_to_server(true);
-  });
-  $('#run_parser').click(function() {
-    return run_parser();
-  });
-  $('#entry_area').keypress(handle_key_stroke);
+  $('#run_parser').trigger('click');
   $('#parse_tree').hide();
-  $('#lilypond_output').hide();
-  $('#lilypond_source').hide();
-  $('#musicxml_source').hide();
-  window.do_timer();
-  if ($('#entry_area').val() !== "") {
-    return run_parser;
-  }
+  return window.do_timer();
 });

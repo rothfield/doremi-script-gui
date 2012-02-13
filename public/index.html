@@ -10,29 +10,19 @@
   <body>
     <div class='bodyArea'>
       <div class='controls'>
-        <button data-bind='click: toggle_composition_select_visible'>
-          Open locally saved
-        </button>
-        <select data-bind="event: {change: composition_select}, visible: composition_select_visible, options: compositions_in_local_storage, optionsText: 'title', value: selected_composition" id='composition_select' size='4'></select>
-        <button data-bind='visible: editing_composition,click: save_locally, enable: saveable'>
-          Save locally
-        </button>
-        <button data-bind='visible: editing_composition,click: destroy_locally, enable: saveable'>
-          Delete locally
-        </button>
+        <!-- downloadify save button -->
+        <span data-bind='visible: saveable' id='download_doremi_source'></span>
         <button data-bind='click: new_composition'>
           New Composition
         </button>
         <button data-bind='visible: editing_composition,click: print_composition'>
           Print
         </button>
-        <button data-bind='css: {button_on:open_file_visible},click: toggle_open_file_visible'>
-          Open File
-        </button>
-        <div class='open_file_div' data-bind='visible:open_file_visible'>
+        <span class='open_file_div'>
+          <!-- uses html5 open file -->
           <label>Open:</label>
           <input id='file' name='files[]' type='file' />
-        </div>
+        </span>
         <button data-bind='visible: editing_composition,click: gui_close'>
           Close
         </button>
@@ -348,6 +338,9 @@
               <li>
                 <a class='generated_by_lilypond' data-bind='enable: links_enabled,attr: {href: midi_url }' href='' id='download_mid' target='_blank' title='Play midi file'>midi</a>
               </li>
+              <li>
+                <a data-bind='enable: links_enabled,attr: {href: doremi_source_url }' href='' id='download_doremi_source' target='_blank' title=''>Doremi-Script Source</a>
+              </li>
             </ul>
           </div>
         </div>
@@ -379,7 +372,7 @@
         <div class='composition_body' data-bind='foreach: lines'>
           <!--  Each line consists of a textarea, some controls, and the rendered html. The textarea and controls are hidden unless the user is editting the line -->
           <div class='edit_line_wrapper controls' data-bind='visible:editing, css: {line_has_warnings: line_has_warnings,line_parse_failed: line_parse_failed}'>
-            <textarea class='entry_area' cols='33' data-bind="attr: {id: entry_area_id()},style: {width: $parent.composition_stave_width},css: {'line_has_warnings': line_has_warnings,'parse_failed': $data.parse_failed},visible: editing(), value: source, event: { keypress: handle_key_press}, valueUpdate: 'afterkeydown'" rows='6' spellcheck='false'></textarea>
+            <textarea class='entry_area' cols='33' data-bind="attr: {id: entry_area_id()},style: {width: $parent.composition_stave_width},css: {'line_has_warnings': line_has_warnings,'parse_failed': $data.parse_failed},visible: editing(), value: source " rows='6' spellcheck='false'></textarea>
             <div class='line_controls controls'>
               <button data-bind='click: close_edit,clickBubble:false'>
                 Close
@@ -392,6 +385,9 @@
               </button>
               <button data-bind='click: toggle_line_warnings_visible,clickBubble:false'>
                 Warnings
+              </button>
+              <button onclick='return false'>
+                Redraw
               </button>
             </div>
             <div class='line_warnings_div' data-bind='visible: line_warnings_visible'>
@@ -420,6 +416,8 @@
     <script src='js/doremi-script/all_items.js' type='text/javascript'></script>
     <script src='js/doremi-script/shared.js' type='text/javascript'></script>
     <script src='js/doremi-script/third_party/fraction.js' type='text/javascript'></script>
+    <script src='js/doremi-script/third_party/downloadify/downloadify.min.js' type='text/javascript'></script>
+    <script src='js/doremi-script/third_party/downloadify/swfobject.js' type='text/javascript'></script>
     <script type="text/javascript">
     <!-- / Hack part 1- to make Hypher.js work in the browser. -->
     window.module= {exports:[]}

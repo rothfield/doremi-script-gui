@@ -1,0 +1,18 @@
+    self.save_file = (my_model) ->
+      console.log "save_file"
+      url='/doremi_script_server/download_doremi_script'
+      timeout_in_seconds=60
+      src=self.doremi_source()
+      my_data =
+        fname: self.title #"#{self.title()}_#{self.author()}_#{self.id()}"
+        doremi_source: src
+      obj=
+        timeout : timeout_in_seconds * 1000  # milliseconds
+        type:'POST'
+        url: url
+        data: my_data
+        error: (some_data) ->
+          alert("An error occurred.")
+        success: (some_data,text_status) ->
+      $.post(obj)
+      return true

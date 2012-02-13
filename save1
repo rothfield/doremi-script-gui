@@ -1,0 +1,42 @@
+  %div.controls
+    %button{"data-bind" => "click: toggle_composition_select_visible"}
+      Open locally saved 
+    %select{"id" => "composition_select", "size" => "4", "data-bind" => "event: {change: composition_select}, visible: composition_select_visible, options: compositions_in_local_storage, optionsText: 'title', value: selected_composition"}
+    %button{"alt" => "Save current composition as a file","data-bind" => "visible: editing_composition,click: download_doremi_source_file, enable: saveable"} 
+      Save
+    %button{"data-bind" => "click: new_composition"}
+      New Composition
+    %button{"data-bind" => "visible: editing_composition,click: print_composition"}
+      Print 
+    %button{"data-bind" => "css: {button_on:open_file_visible},click: toggle_open_file_visible"} 
+      Open File     
+    %div.open_file_div{"data-bind" => 'visible:open_file_visible'}
+      %label Open:
+      %input#file{:name => "files[]", :type => "file"}
+    %button{"data-bind" => "visible: editing_composition,click: gui_close"}
+      Close 
+    %button{"id" => "help_button", "data-bind" => "css: {button_on:help_visible},click: toggle_help_visible"} 
+      Help 
+    %a{:target => "_blank","href" => 'http://github.com/rothfield/doremi-script-gui'}
+      Development
+  = render_file('readme.haml')
+  %fieldset.controls#composition_info{"data-bind" => 'visible: editing_composition'}
+    %legend#composition_info_legend{"data-bind" => "click: toggle_composition_info_visible"}
+      %span{"data-bind" => "text: title"}
+      (Click to hide/show composition info such as title and key)
+    #composition_info_content{"data-bind" => "visible: composition_info_visible", :style => ""}
+      %p
+        %label
+          Title:
+        %input#composition_title{"data-bind" => "valueUpdate: 'afterkeydown',value: title"}/
+        %span.requiredz
+          Required
+      %p
+        %label
+          Author:
+        %input{"data-bind" => "value: author, valueUpdate: 'afterkeydown'"}/
+      %p
+        %label
+          Key:
+        %select{"data-bind" => "options: keys, value: key"}
+      %p

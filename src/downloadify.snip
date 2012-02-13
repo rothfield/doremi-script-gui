@@ -1,0 +1,33 @@
+  params_for_download_lilypond =
+  	filename: () ->
+      "#{window.the_composition.filename}.ly"
+    data: () ->
+      window.the_composition.lilypond
+	  onComplete: () ->
+      console.log 'Your File Has Been Saved!' if debug
+    swf: 'js/third_party/downloadify/media/downloadify.swf'
+    downloadImage: 'images/download.png'
+    height:30
+    width:100
+    transparent:true
+    append:false
+    onComplete: () ->
+      alert("Your file was saved")
+  params_for_download_sargam= _.clone(params_for_download_lilypond)
+  params_for_download_sargam.data = () ->
+    $('#entry_area').val()
+  params_for_download_sargam.filename = () ->
+    "#{window.the_composition.filename}.txt"
+  ###
+	  onComplete: () ->
+      console.log 'Your File Has Been Saved!'
+    swf: 'js/third_party/downloadify/swfobject.js'
+    downloadImage: 'images/download.png'
+    height:30
+    width:100
+    transparent:true
+    append:false
+  Downloadify 'download_lilypond',params_for_downloadify
+  ###
+  $("#download_lilypond").downloadify(params_for_download_lilypond)
+  $("#download_sargam_source").downloadify(params_for_download_sargam)
