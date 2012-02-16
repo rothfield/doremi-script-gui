@@ -433,7 +433,7 @@
         kind: kind
       };
       if (this.parens_unbalanced(my_line)) {
-        this.log("unbalanced parens");
+        _.debug("unbalanced parens");
       }
       this.measure_dashes_at_beginning_of_beats(my_line);
       this.measure_pitch_durations(my_line);
@@ -715,7 +715,6 @@
     },
     parens_unbalanced: function(line) {
       var ary, x, y;
-      console.log("parens_unbalanced");
       this.log("entering parens_unbalanced");
       ary = this.collect_nodes(line, []);
       this.log("ary is");

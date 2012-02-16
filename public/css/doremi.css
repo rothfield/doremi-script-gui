@@ -245,12 +245,17 @@ div.composition {
   white-space:nowrap;
 }
 
+div.rendered_wrapper {
+  border:1px solid black;
+}
+span.line_number {
+  display:none;
+}
 @media print {
-    .controls {
+    .controls,span.line_number,button {
       display:none;
     }
-    
-    div.composition, div.rendered_html {
+    div.composition, div.rendered_wrapper,div.rendered_html {
       border:none;
   }
 }

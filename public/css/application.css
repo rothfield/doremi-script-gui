@@ -3,6 +3,9 @@ input[type="radio"]:checked+label{
   background-color:gainsboro;
 }
 
+div.rendered_html {
+  width: 80%
+}
 div#save_wrapper {
   margin-top: -5px;
   display:inline-block;

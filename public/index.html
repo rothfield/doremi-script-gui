@@ -374,37 +374,29 @@
           <h2 class='composition_author' data-bind='text:author'></h2>
         </div>
         <div class='composition_body' data-bind='foreach: lines'>
-          <!--  Each line consists of a textarea, some controls, and the rendered html. The textarea and controls are hidden unless the user is editting the line -->
-          <div class='edit_line_wrapper controls' data-bind='visible:editing, css: {line_has_warnings: line_has_warnings,line_parse_failed: line_parse_failed}'>
+          <!--  Each line consists of a textarea, some controls, and the rendered html. The textarea and controls are hidden unless the user is editting the line. When the user is editting the line, the rendered html is hidden -->
+          <span class='line_number' data-bind='text: index'></span>
+          <div class='edit_line_wrapper controls' data-bind='attr: {id: div_line_id}, visible:editing, css: {line_has_warnings: line_has_warnings,line_parse_failed: line_parse_failed}'>
             <textarea class='entry_area' cols='33' data-bind="attr: {id: entry_area_id()},style: {width: $parent.composition_stave_width},css: {'line_has_warnings': line_has_warnings,'parse_failed': $data.parse_failed},visible: editing(), value: source " rows='6' spellcheck='false'></textarea>
             <div class='line_controls controls'>
               <button data-bind='click: close_edit,clickBubble:false'>
                 Close
               </button>
+            </div>
+          </div>
+          <div class='rendered_wrapper'>
+            <div class='rendered_html' data-bind='visible: not_editing,html: rendered_in_html, event: { dblclick: close_edit},click: edit,clickBubble:false, css: {editing:editing,not_editing:not_editing,line_has_warnings: line_has_warnings,line_parse_failed: line_parse_failed}' style='display:inline-block'></div>
+            <div class='insert_append' data-bind='visible: $parent.no_edit_line_open' style='display:inline-block'>
               <button data-bind='click: $parent.composition_insert_line,clickBubble:false'>
                 Insert
               </button>
               <button data-bind='click: $parent.composition_append_line,clickBubble:false'>
                 Append
               </button>
-              <button data-bind='click: toggle_line_warnings_visible,clickBubble:false'>
-                Warnings
-              </button>
-              <button onclick='return false'>
-                Redraw
-              </button>
-            </div>
-            <div class='line_warnings_div' data-bind='visible: line_warnings_visible'>
-              <h4>Warnings:</h4>
-              <div class='like_pre' data-bind='text: line_warnings,event:{dblclick:toggle_line_warnings_visible}'></div>
-            </div>
-            <div class='parse_tree_div' data-bind='visible: parse_tree_visible'>
-              <pre data-bind='text: parse_tree_text,event:{dblclick:toggle_parse_tree_visible}'></pre>
             </div>
           </div>
-          <div class='rendered_html' data-bind='html: rendered_in_html, event: { dblclick: close_edit},click: edit,clickBubble:false, css: {editing:editing,not_editing:not_editing,line_has_warnings: line_has_warnings,line_parse_failed: line_parse_failed}'></div>
         </div>
-        <button class='controls' data-bind="click: add_line, enable: title() !=='' ">New Line</button>
+        <button class='controls' data-bind='click: add_line, enable: not_editing_a_line()'>New Line</button>
       </div>
       <br />
       <br />
@@ -413,6 +405,8 @@
     <span id="utf_single_barline" class="note testing_utf_support" style="display: none; ">&#x1d100;</span>
     <script src='js/knockout-2.0.0.debug.js' type='text/javascript'></script>
     <script src='js/doremi-script/third_party/jquery.js' type='text/javascript'></script>
+    <script src='js/jquery.scrollTo.js' type='text/javascript'></script>
+    <script src='js/select_range.js' type='text/javascript'></script>
     <script src='js/doremi-script/third_party/jquery.autogrow-textarea.js' type='text/javascript'></script>
     <script src='js/doremi-script/third_party/underscore.js' type='text/javascript'></script>
     <script src='js/doremi-script/underscore.logger.js' type='text/javascript'></script>
