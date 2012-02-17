@@ -238,12 +238,12 @@ $(document).ready(function() {
     self.calculate_stave_width = function() {
       var width;
       width = $('div.composition_body').width();
-      return "" + (width - 50) + "px";
+      return "" + (width - 150) + "px";
     };
     self.calculate_textarea_width = function() {
       var width;
       width = $('div.composition_body').width();
-      return "" + ((width - 50) / 2) + "px";
+      return "" + (width - 350) + "px";
     };
     self.composition_stave_width = ko.observable(self.calculate_stave_width());
     self.composition_textarea_width = ko.observable(self.calculate_textarea_width());
@@ -628,6 +628,7 @@ $(document).ready(function() {
         source: EMPTY_LINE_SOURCE
       }));
       console.log('add line x is', x);
+      self.re_index_lines();
       return self.redraw();
     };
     self.edit_line_open = ko.observable(false);
@@ -643,6 +644,7 @@ $(document).ready(function() {
       self.lines.splice(index, number_of_elements_to_remove, x = new LineViewModel({
         source: EMPTY_LINE_SOURCE
       }));
+      self.re_index_lines();
       self.redraw();
       return true;
     };
@@ -667,6 +669,7 @@ $(document).ready(function() {
       self.lines.splice(index + 1, number_of_elements_to_remove, x = new LineViewModel({
         source: EMPTY_LINE_SOURCE
       }));
+      self.re_index_lines();
       self.redraw();
       return true;
     };

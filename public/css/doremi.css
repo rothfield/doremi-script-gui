@@ -255,7 +255,7 @@ span.line_number {
     .controls,span.line_number,button {
       display:none;
     }
-    div.composition, div.rendered_wrapper,div.rendered_html {
+    div.composition, div.rendered_wrapper,div.rendered_html,div.stave_wrapper {
       border:none;
   }
 }

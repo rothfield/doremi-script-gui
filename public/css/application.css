@@ -3,6 +3,18 @@ input[type="radio"]:checked+label{
   background-color:gainsboro;
 }
 
+div.stave_wrapper.editing {
+  border:2px solid black;
+}
+div.stave_wrapper {
+  clear:both;
+  border:1px solid black;
+  margin:1px;
+}
+div.line_controls {
+  float:left;
+  width: 100px;
+}
 div.rendered_html {
   width: 80%
 }

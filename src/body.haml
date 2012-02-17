@@ -121,20 +121,20 @@
       %h2.composition_author{"data-bind" => "text:author"}
     .composition_body{"data-bind" => "foreach: lines"}
       <!--  Each line consists of a textarea, some controls, and the rendered html. The textarea and controls are hidden unless the user is editting the line. When the user is editting the line, the rendered html is hidden -->
-      %span.line_number{"data-bind" => 'text: index'}
-      %div.edit_line_wrapper.controls{"data-bind"=> "attr: {id: div_line_id}, visible:editing, css: {line_has_warnings: line_has_warnings,line_parse_failed: line_parse_failed}"}
-        %textarea.entry_area{:spellcheck => "false",:rows => "6", :cols => "33", "data-bind" => "attr: {id: entry_area_id()},style: {width: $parent.composition_stave_width},css: {'line_has_warnings': line_has_warnings,'parse_failed': $data.parse_failed},visible: editing(), value: source "}
+      %div.stave_wrapper{"data-bind" => "css:{editing:editing},style: {width: $parent.composition_stave_width}"}
+        /%div.edit_line_wrapper.controls{"data-bind"=> "attr: {id: div_line_id}, visible:editing, css: {line_has_warnings: line_has_warnings,line_parse_failed: line_parse_failed}"}
+        %textarea.entry_area{:spellcheck => "false",:rows => "6", :cols => "33", "data-bind" => "attr: {id: entry_area_id()},style: {width: $parent.composition_textarea_width},css: {'line_has_warnings': line_has_warnings,'parse_failed': $data.parse_failed},visible: editing(), value: source "}
         %div.line_controls.controls
-          %button{"data-bind" => "click: close_edit,clickBubble:false"} 
+          %button{"data-bind" => "enable:editing(),click: close_edit,clickBubble:false"} 
             Close
-      %div.rendered_wrapper
-        %div.rendered_html{"style" => "display:inline-block", "data-bind" => "visible: not_editing,html: rendered_in_html, event: { dblclick: close_edit},click: edit,clickBubble:false, css: {editing:editing,not_editing:not_editing,line_has_warnings: line_has_warnings,line_parse_failed: line_parse_failed}"}
-        %div.insert_append{"style" => "display:inline-block", "data-bind" => "visible: $parent.no_edit_line_open"}
-          %button{"data-bind" => "click: $parent.composition_insert_line,clickBubble:false"} 
+          /%br{"data-bind" => "enable:$parent.not_editing_a_line()"} 
+          %button{"data-bind" => "enable:$parent.not_editing_a_line(),click: $parent.composition_insert_line,clickBubble:false"} 
             Insert
-          %button{"data-bind" => "click: $parent.composition_append_line,clickBubble:false"} 
+          /%br{"data-bind" => "enable:$parent.not_editing_a_line()"} 
+          %button{"data-bind" => "enable:$parent.not_editing_a_line(),click: $parent.composition_append_line,clickBubble:false"} 
             Append
-  
-    %button.controls{"data-bind" => "click: add_line, enable: not_editing_a_line()"} New Line
+        %div.rendered_html{"style" => "display:inline-block", "data-bind" => "enable: not_editing,html: rendered_in_html, event: { dblclick: close_edit},click: edit,clickBubble:false, css: {editing:editing,not_editing:not_editing,line_has_warnings: line_has_warnings,line_parse_failed: line_parse_failed}"}
   %br
   %br
+  %button.controls{"data-bind" => "click: add_line, enable: not_editing_a_line()"} New Line
+

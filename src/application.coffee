@@ -196,10 +196,10 @@ $(document).ready ->
     self.composition_parse_failed=ko.observable(false)
     self.calculate_stave_width=() ->
       width=$('div.composition_body').width()
-      "#{width-50}px"
+      "#{width-150}px"
     self.calculate_textarea_width=() ->
       width=$('div.composition_body').width()
-      "#{(width-50)/2}px"
+      "#{(width-350)}px"
 
     self.composition_stave_width= ko.observable(self.calculate_stave_width())
     self.composition_textarea_width= ko.observable(self.calculate_textarea_width())
@@ -518,6 +518,7 @@ $(document).ready ->
       console.log "add_line"
       self.lines.push(x=new LineViewModel(source: EMPTY_LINE_SOURCE))
       console.log('add line x is',x)
+      self.re_index_lines()
       self.redraw()
     
     self.edit_line_open=ko.observable(false)
@@ -532,6 +533,7 @@ $(document).ready ->
       console.log "insert_line, line_model,index",line_model,index
       number_of_elements_to_remove=0
       self.lines.splice(index,number_of_elements_to_remove,x=new LineViewModel(source: EMPTY_LINE_SOURCE))
+      self.re_index_lines()
       self.redraw()
       return true
 
@@ -550,6 +552,7 @@ $(document).ready ->
       index=line_model.index()
       number_of_elements_to_remove=0
       self.lines.splice(index+1,number_of_elements_to_remove,x=new LineViewModel({source: EMPTY_LINE_SOURCE}))
+      self.re_index_lines()
       self.redraw()
       return true
 
