@@ -497,7 +497,7 @@ $(document).ready(function() {
           if (some_data.error) {
             self.staff_notation_url(NONE_URL);
             self.composition_lilypond_output_visible(true);
-            alert("An error occurred: " + some_data.error);
+            alert("An error occurred: " + some_data.lilypond_output);
             return;
           }
           fname = some_data.fname;
@@ -855,7 +855,7 @@ $(document).ready(function() {
       if (self.title() === "") {
         return true;
       }
-      if (self.lines().size === 0) {
+      if (self.lines().length === 0) {
         return true;
       }
       return false;
@@ -865,7 +865,7 @@ $(document).ready(function() {
       try {
         debug = false;
         doremi_source = self.compute_doremi_source();
-        count_before = self.lines().size;
+        count_before = self.lines().length;
         if (debug) {
           console.log("redraw after compute_do_remi_source");
         }
@@ -873,7 +873,7 @@ $(document).ready(function() {
         self.edit_line_open(false);
         composition_view.last_doremi_source = composition_view.doremi_source();
         parsed = composition_view.composition_parse();
-        if ((parsed != null) && parsed.lines.size !== count_before) {
+        if ((parsed != null) && parsed.lines.length !== count_before) {
           if (debug) {
             console.log("# of items changed!!");
           }

@@ -410,7 +410,7 @@ $(document).ready ->
           if some_data.error
             self.staff_notation_url(NONE_URL)
             self.composition_lilypond_output_visible(true)
-            alert("An error occurred: #{some_data.error}")
+            alert("An error occurred: #{some_data.lilypond_output}")
             return
           fname=some_data.fname
           base_url=fname.slice(0,fname.lastIndexOf('.'))
@@ -666,21 +666,21 @@ $(document).ready ->
       return true if self.editing_a_line()
       return true if self.composition_parse_failed()
       return true if self.title() is ""
-      return true if self.lines().size is 0
+      return true if self.lines().length is 0
       false
 
     self.redraw= () =>
       try
         debug=false
         doremi_source=self.compute_doremi_source()
-        count_before=self.lines().size
+        count_before=self.lines().length
         console.log "redraw after compute_do_remi_source" if debug
         
         composition_view=self
         self.edit_line_open(false)
         composition_view.last_doremi_source = composition_view.doremi_source()
         parsed=composition_view.composition_parse()
-        if parsed? and parsed.lines.size isnt count_before
+        if parsed? and parsed.lines.length isnt count_before
           console.log("# of items changed!!") if debug
         if !parsed?  # Didn't parse
           console.log "Parse failed" if debug
