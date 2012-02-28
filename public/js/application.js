@@ -804,7 +804,6 @@ $(document).ready(function() {
       return window.print();
     };
     self.new_composition = function() {
-      self.ask_user_if_they_want_to_save();
       if (self.ask_user_if_they_want_to_save()) {
         return;
       }
