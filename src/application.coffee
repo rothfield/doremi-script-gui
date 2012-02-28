@@ -1,16 +1,38 @@
 $(document).ready ->
+  debug=false
   window.doremi_script_gui_app={}
   app=window.doremi_script_gui_app
 
+
+  app.setup_context_menu = () ->
+     console.log('setup_context_menu') if debug
+     fun = (action, el, pos) ->
+       found=null
+       found=line for line in app.the_composition.lines() when line.stave_id() is $(el).attr('id')
+       console.log(action,el,pos) if debug
+       console.log "found is",found if debug
+       if (action is "delete")
+         if confirm("Are you sure you want to delete this line:\n\n#{found.source()}?")
+           app.the_composition.delete_line(found)
+         return
+       if (action is "edit")
+         found.edit()
+         return
+       if (action is "insert")
+         app.the_composition.composition_insert_line(found)
+         return
+       if (action is "append")
+         app.the_composition.composition_append_line(found)
+         return
+     $(".stave_wrapper").contextMenu({ menu: 'my_menu' }, fun)
   app.sanitize= (name)->
      name.replace(/[^0-9A-Za-z.\-]/g, '_').toLowerCase()
 
   app.scroll_to_element= (element_to_scroll_to_id) ->
-    $el=$("##{element_to_scroll_to_id}")
-    console.log("$el is",$el)
-    $('html, body').animate({scrollTop:$("##{element_to_scroll_to_id}").position().top}, 'slow')
+    # TODO: integrate scrollTo call here
+
   setup_downloadify = () ->
-    console.log "entering setup_downloadify"
+    console.log "entering setup_downloadify" if debug
     app.params_for_download_lilypond =
     	filename: () ->
         "#{app.the_composition.filename()}.ly"
@@ -23,13 +45,20 @@ $(document).ready ->
       downloadImage: './images/save.png'
       height:19
       width:76
-      transparent:true
+      transparent:false
       append:false
       onComplete: () ->
         alert("Your file was saved")
     app.params_for_download_sargam= _.clone(app.params_for_download_lilypond)
     app.params_for_download_sargam.data = () ->
+        if app.the_composition.composition_parse_failed()
+          alert("Please fix errors before saving")
+          return ""
         app.the_composition.doremi_source()
+
+    app.params_for_download_sargam.onError = () ->
+      # onError: Called when the Download button is clicked but your data callback returns "".
+      
     app.params_for_download_sargam.filename = () ->
       "#{app.sanitize(app.the_composition.title())}.doremi_script.txt"
     $("#download_lilypond").downloadify(app.params_for_download_lilypond)
@@ -68,33 +97,21 @@ $(document).ready ->
     self.parse_tree_visible= ko.observable(false)
     self.parse_tree_text= ko.observable("parse tree text here")
     self.editing= ko.observable(false)
-    self.not_editing= ko.observable(true)
+    self.not_editing=ko.observable(true)
     self.last_html_rendered= ""
     self.stave_height= ko.observable("161px")
     self.source= ko.observable(line_param.source) # doremi_source for self line
     self.rendered_in_html= ko.observable(line_param.rendered_in_html)
 
-    # Behaviours
-    self.line_wrapper_click= (my_model,event) ->
-      # UNUSED ??
-      return if winodw.the_composition.editing_a_line()
-      window.the_composition.compute_doremi_source()
-      window.the_composition.edit_line_open(true)
-      console.log "line_wrapper_click",event if debug
-      if !self.editing()
-        self.editing(true)
-        self.not_editing(false)
-        current_target=event.currentTarget
-        text_area=$(current_target).parent().find("textarea")
-        $(text_area).focus()
-      return true
-
     self.close_edit= (my_model, event) ->
       index=my_model.index()
       self.editing(false)
       self.not_editing(true)
+      window.the_composition.editing_a_line(false)
+      window.the_composition.not_editing_a_line(true)
       window.the_composition.last_line_opened=my_model.index()
       window.the_composition.redraw()
+      $(".stave_wrapper").enableContextMenu()
       return true
     
     self.toggle_line_warnings_visible= (event) ->
@@ -104,23 +121,31 @@ $(document).ready ->
       return true
     
     self.edit= (my_model,event) ->
-      # Handles click on rendered html in gui
+      $(".stave_wrapper").disableContextMenu()
       return false if window.the_composition.editing_a_line()
       if (self.editing())
         return false
       for line in window.the_composition.lines()
         line.editing(false)
+        line.not_editing(true) #TODO: unfunkify
       self.editing(true)
-      window.the_composition.edit_line_open(true)
       self.not_editing(false)
+      window.the_composition.editing_a_line(true)
+      window.the_composition.not_editing_a_line(false)
+      window.the_composition.edit_line_open(true)
       dom_id=self.entry_area_id()
-      console.log("dom_id is #{dom_id}")
+      console.log("dom_id is #{dom_id}") if debug
       $("textarea#"+dom_id).focus()
       val=self.source()
+      selector="textarea#"+dom_id
+      $(selector).select_range(val.length,val.length)
       $("textarea#"+dom_id).select_range(val.length,val.length)
+      $.scrollTo(selector, 500,{offset:-50})
       true
     
     self.entry_area_id= ko.observable("entry_area_#{unique_id}")
+    self.stave_id= ko.observable("stave_#{unique_id}")
+    self.context_menu_id= ko.observable("context_menu_#{unique_id}")
     self.handle_key_press= (current_line,event) ->
       let_default_action_proceed=true
       let_default_action_proceed
@@ -133,7 +158,7 @@ $(document).ready ->
   
  
   handleFileSelect = (evt) =>
-    console.log "handle_file_select"
+    console.log "handle_file_select" if debug
     if window.the_composition.editing_composition()
       x=confirm("Save current composition?")
       if x
@@ -146,7 +171,7 @@ $(document).ready ->
     reader.onload =  (evt) ->
       val=$('#file').val()
       $('#file').val('')
-      console.log "onload"
+      console.log "onload" if debug
       # TODO: DRY and move into composition
       $('#file').val('')
       window.the_composition.last_doremi_source= new Date().getTime()
@@ -165,9 +190,14 @@ $(document).ready ->
     self.last_line_opened=null
     self.help_visible=ko.observable(false)
     self.toggle_help_visible= (event) ->
+      console.log "toggle_help_visible" if debug
       self.help_visible(!this.help_visible())
+      if  self.help_visible()
+        $('#help_content').html($('#help-tpl').html())
+      else
+        $('#help_content').html('')
     self.help_visible_action = ko.computed( help_visible_fun= () ->
-      console.log "help_visible_action"
+      console.log "help_visible_action" if debug
       return if self.document?
       if self.help_visible()
         $("#help_button").text("Hide Help")
@@ -175,14 +205,9 @@ $(document).ready ->
         $("#help_button").text("Help")
       )
 
-    self.not_editing_a_line= () ->
-      !self.editing_a_line()
 
-    self.editing_a_line= () ->
-      val=false
-      for line in this.lines()
-        val=true if line.editing()
-      return val
+    self.editing_a_line= ko.observable(false)
+    self.not_editing_a_line= ko.observable(true)
     self.editing_composition=ko.observable(false)
     self.last_doremi_source = ""
     self.lines = ko.observableArray([])
@@ -199,13 +224,13 @@ $(document).ready ->
       "#{width-150}px"
     self.calculate_textarea_width=() ->
       width=$('div.composition_body').width()
-      "#{(width-350)}px"
+      "#{(width-150)}px"
 
     self.composition_stave_width= ko.observable(self.calculate_stave_width())
     self.composition_textarea_width= ko.observable(self.calculate_textarea_width())
     self.base_url=ko.observable(null)
     self.links_enabled=ko.computed( links_enabled= () ->
-      console.log "links_enabled"
+      console.log "links_enabled" if debug
       url=self.base_url()
       url? and url isnt ""
     )
@@ -343,7 +368,7 @@ $(document).ready ->
             return
           fname=some_data.fname
           base_url=fname.slice(0,fname.lastIndexOf('.'))
-          console.log base_url
+          console.log base_url if debug
           self.base_url(base_url)
           self.staff_notation_url(full_url_helper(some_data.fname))
           self.staff_notation_visible(true)
@@ -386,7 +411,7 @@ $(document).ready ->
             return
           fname=some_data.fname
           base_url=fname.slice(0,fname.lastIndexOf('.'))
-          console.log base_url
+          console.log base_url if debug
           self.base_url(base_url)
           self.staff_notation_url(full_url_helper(some_data.fname))
           x= self.calculate_staff_notation_url_with_time_stamp()
@@ -418,7 +443,7 @@ $(document).ready ->
     self.compute_doremi_source = () ->
       # Turn the data on the web page into a doremi_script format
       #
-      console.log "compute_doremi_source"
+      console.log "compute_doremi_source" if debug
       # list dependencies
       self.id()
       self.title()
@@ -466,7 +491,7 @@ $(document).ready ->
         source=self.doremi_source()
         ret_val=DoremiScriptParser.parse(source)
       catch err
-        console.log "composition.parse- error is #{err}"
+        console.log "composition.parse- error is #{err}" if debug
         ret_val=null
       finally
       ret_val
@@ -495,7 +520,7 @@ $(document).ready ->
 
     self.my_init = (doremi_source_param) ->
       # Initialize composition with doremi_script_source
-      console.log("composition.my_init",doremi_source_param)
+      console.log("composition.my_init",doremi_source_param) if debug
       parsed=DoremiScriptParser.parse(doremi_source_param)
       self.composition_parsed_doremi_script(parsed)
       self.last_doremi_source=""
@@ -509,18 +534,26 @@ $(document).ready ->
         fct=self[key]
         fct(val)
         #self[key](parsed[key])
-      console.log("Loading lines")
+      console.log("Loading lines") if debug
       my_lines= (new LineViewModel(parsed_line) for  parsed_line in parsed.lines)
       self.lines(my_lines)
       self.redraw()
+      seconds= 0.5
+      setTimeout("dom_fixes()",0.5*1000)  # necessary?
 
+    self.delete_line = (which_line) ->
+      which_line.source("")
+      self.redraw()
     self.add_line = () ->
-      console.log "add_line"
+      console.log "add_line" if debug
       self.lines.push(x=new LineViewModel(source: EMPTY_LINE_SOURCE))
-      console.log('add line x is',x)
+      console.log('add line x is',x) if debug
       self.re_index_lines()
       self.redraw()
-    
+      console.log "add_line before x.edit()" if debug
+      x.edit()
+      return true
+
     self.edit_line_open=ko.observable(false)
 
     self.no_edit_line_open= ko.computed () ->
@@ -528,45 +561,38 @@ $(document).ready ->
 
     self.composition_insert_line= (line_model, event) ->
       # insert line before the given line
-      console.log "composition_insert_line"
+      console.log "composition_insert_line" if debug
       index=line_model.index()
-      console.log "insert_line, line_model,index",line_model,index
+      console.log "insert_line, line_model,index",line_model,index if debug
       number_of_elements_to_remove=0
       self.lines.splice(index,number_of_elements_to_remove,x=new LineViewModel(source: EMPTY_LINE_SOURCE))
       self.re_index_lines()
-      self.redraw()
+      x.edit()
       return true
 
     self.re_index_lines=() ->
       # Note that the parser indexes the lines, but the indexes get
       # off as the composition is editted
       ctr=0
-      console.log "re_index_lines"
+      console.log "re_index_lines" if debug
       for line in self.lines()
         line.index(ctr)
         ctr=ctr+1
 
     self.composition_append_line= (line_model, event) ->
       # append line after the given line
-      console.log "composition_append_line"
+      console.log "composition_append_line" if debug
       index=line_model.index()
       number_of_elements_to_remove=0
       self.lines.splice(index+1,number_of_elements_to_remove,x=new LineViewModel({source: EMPTY_LINE_SOURCE}))
       self.re_index_lines()
-      self.redraw()
+      x.edit()
       return true
-
-    self.remove_line = (line) ->
-      res=confirm("Are you sure?")
-      return if !res
-      self.lines.remove(line)
 
     self.composition_select_visible= ko.observable(false)
 
-
-
     self.saveable = ko.computed () ->
-      console.log "in saveable"
+      console.log "in saveable" if debug
       self.title() isnt ""
       #(self.lines().length > 0) and self.title isnt ""
     self.ask_user_if_they_want_to_save = () ->
@@ -581,10 +607,10 @@ $(document).ready ->
 
     self.close = () ->
       self.editing_composition(false)
-      console.log "in close"
+      console.log "in close" if debug
       self.last_doremi_source=""
       self.lines.remove( ()-> true)
-      console.log "after close, lines are",self.lines()
+      console.log "after close, lines are",self.lines() if debug
     self.gui_close = () ->
       if self.ask_user_if_they_want_to_save()
         return
@@ -618,7 +644,7 @@ $(document).ready ->
       if localStorage.length > 0
         while ctr < localStorage.length
           key=localStorage.key(ctr)
-          console.log "key is",key
+          console.log "key is",key if debug
           if key.indexOf("composition_") is 0  # key starts with composition_
              items.push new Item(key,localStorage[key])
           ctr++
@@ -637,14 +663,18 @@ $(document).ready ->
       false
 
     self.redraw= () =>
-      debug=true
-      self.compute_doremi_source()
-      composition_view=self
-      self.edit_line_open(false)
-      if true
-        #composition_view.last_doremi_source isnt composition_view.doremi_source() # the source changed
+      try
+        debug=false
+        doremi_source=self.compute_doremi_source()
+        count_before=self.lines().size
+        console.log "redraw after compute_do_remi_source" if debug
+        
+        composition_view=self
+        self.edit_line_open(false)
         composition_view.last_doremi_source = composition_view.doremi_source()
         parsed=composition_view.composition_parse()
+        if parsed? and parsed.lines.size isnt count_before
+          console.log("# of items changed!!") if debug
         if !parsed?  # Didn't parse
           console.log "Parse failed" if debug
           composition_view.composition_parse_failed(true)
@@ -655,7 +685,7 @@ $(document).ready ->
             console.log "composition parse failed, checking #{view_line.source()}"
             try
               source=view_line.source()
-              if /^\s*$/.test(source)
+              if /^\s*$/.test(source) or source is ""
                 view_line.rendered_in_html('(empty line)')
                 continue
               parsed_line=DoremiScriptLineParser.parse(source)
@@ -667,6 +697,7 @@ $(document).ready ->
               view_line.line_has_warnings(false)
               view_line.line_warnings([])
               view_line.rendered_in_html("<pre>Didn't parse\n#{view_line.source()}</pre>")
+              console.log(view_line.rendered_in_html())
         else # parse succeeded.
           composition_view.composition_parse_failed(false)
           composition_view.composition_parsed_doremi_script(parsed)
@@ -677,11 +708,15 @@ $(document).ready ->
           ctr=0
           if parsed_lines.length isnt view_lines.length
             console.log "Info:assertion failed parsed_lines.length isnt view_lines.length"
+            self.my_init(doremi_source)
+            dom_fixes()
+            app.setup_context_menu()
+            return
           for parsed_line in parsed_lines
             view_line=view_lines[ctr]
             if /^\s*$/.test(view_line.source())
               view_line.rendered_in_html('(empty line)')
-              continue 
+              continue
             # Update the view
             # TODO: should I be calling init on the line?
             # TODO: add parsed_line as an attribute of LineView ?
@@ -696,22 +731,11 @@ $(document).ready ->
             view_line.line_warnings(warnings)
             view_line.line_has_warnings(warnings.length > 0)
             ctr++
-          dom_fixes()
-      else
-        # If we didn't run the renderer, run dom_fixes in case something
-        # has changed
+       catch err
+         console.log "Error in redraw #{err}" #if debug
+      finally
+        app.setup_context_menu()
         dom_fixes()
-      # At the end of the task, re-start the timer
-      debug=false
-      #last_line_opened=composition_view.last_line_opened
-      #if last_line_opened?
-      #  console.log "scroll to #{last_line_opened}"
-      #  top=$("#div_line_#{last_line_opened}").offset().top
-      #  console.log("top is",top)
-      #  $('html, body').animate({ scrollTop: top}, 2000)
-      #  composition_view.last_line_opened=null
-      #t=setTimeout("timed_count()",500)  # TODO: use try catch to make sure timer always gets re-run
-
     self.save_locally = () ->
       if self.composition_parse_failed() is true
         alert("Can't save because there are syntax errors. Please fix the lines outlined in red first")
@@ -728,8 +752,9 @@ $(document).ready ->
   ko.applyBindings(window.the_composition,$('html')[0])
   
   $(window).resize(() ->
-    console.log("info:resize")
+    console.log("resize")
     window.the_composition.composition_stave_width(window.the_composition.calculate_stave_width())
+    window.the_composition.composition_textarea_width(window.the_composition.calculate_textarea_width())
   )
   setup_downloadify()
   

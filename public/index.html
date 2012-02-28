@@ -6,23 +6,25 @@
     <link href='css/application.css' rel='stylesheet' type='text/css' />
     <link href='css/styles.css' rel='stylesheet' type='text/css' />
     <link href='css/doremi.css' rel='stylesheet' type='text/css' />
+    <link href='css/jquery.contextMenu.css' rel='stylesheet' type='text/css' />
   </head>
   <body>
     <div class='bodyArea'>
+      <h1 class='title'>
+        Doremi-Script - Easy to write textual Music Notation- ALPHA
+      </h1>
       <div class='controls'>
         <!-- downloadify save button -->
-        <div id='save_wrapper'>
-          <span data-bind='visible: saveable' id='save'>
-            Save(requires Flash)
-          </span>
-        </div>
+        <span data-bind='visible: saveable' id='save'>
+          Save(requires Flash)
+        </span>
         <button data-bind='click: new_composition'>
           New Composition
         </button>
         <button data-bind='visible: editing_composition,click: print_composition'>
           Print
         </button>
-        <span class='open_file_div'>
+        <span class='open_file'>
           <!-- uses html5 open file -->
           <label>Open:</label>
           <input id='file' name='files[]' type='file' />
@@ -37,193 +39,197 @@
           Development
         </a>
       </div>
-      <div data-bind='visible: help_visible,event:{dblclick:toggle_help_visible}' id='help'>
-        <h1>DoremiScript</h1>
-        <p>
-          <strong>DoremiScript</strong>
-          is a small language for creating
-          <a href='http://en.wikipedia.org/wiki/Letter_notation' target='_blank'>letter based musical notation</a>
-          It currently supports the following notation styles:
-          <ul>
-            <li>
-              Western style ABC notation as follows C C# Db D D# etc
-            </li>
-            <li>
-              <a href='http://http://en.wikipedia.org/wiki/Numbered_musical_notation' target='_blank'>Numbered notation</a>
-              Written using 1234567 with support for sharps and flats: 1# 2b etc
-            </li>
-            <li>
-              <a href='http://en.wikipedia.org/wiki/Swara' target='_blank'>
-                Sargam
-              </a>
-              notation using latin/english letters SrRgGmMPdnN with support for S# Pb etc
-            </li>
-            <li>
-              <a href='http://en.wikipedia.org/wiki/Musical_notation#India' target='_blank'>
-                Devanagri
-              </a>
-              notation in Bhatkande style
-              <a href='http://www.omenad.net/page.php?goPage=http%3A%2F%2Fwww.omenad.net%2Farticles%2Fomeswarlipi.htm' target='_blank'>(See also)</a>
-              using Devanagri letters for the sargam letters.
-            </li>
-          </ul>
-          <strong>DoremiScript</strong>
-          lets you write letter music notation using an easy-to-read, easy-to-write plain text format, then nicely formats it using css and html. DoremiScript can also generate standard western notation via a
-          <a href='http://lilypond.org' target='_blank'>Lilypond</a>
-          converter.
-        </p>
-        <p>
-          Try the
-          <a href='http://ragapedia.com' target='_blank'>online version</a>
-        </p>
-        <h2>Sample Input in AACM Sargam Style</h2>
-        <pre><code>Rag:Bhairavi&#x000A;Tal:Tintal&#x000A;Title:Bansuri&#x000A;Author:Traditional&#x000A;Source:AAK&#x000A;Mode: phrygian&#x000A;Filename: bansuri.sargam&#x000A;Time: 4/4&#x000A;Key: d&#x000A;&#x000A;&#x000A;&#x000A;                               i            IV         . &#x000A;         3S             n      +            2         DSnDn&#x000A;1)|: (Sr | n) S   (gm &lt;P d)&gt; | P - P  P   | P - D    n     |&#x000A;           .&#x000A;      ban-    su-  ri          ba- ja ra-   hi  dhu- na&#x000A;&#x000A;  0  ~                 3           mgm        +  .     *  *   &#x000A;| P  d   P    d    |  (Pm   PmnP)    (g m) | (PdnS) -- g  S |&#x000A;  ma-dhu-ra   kan-     nai-           ya      khe-     la-ta&#x000A;&#x000A;   2               0     &#x000A;                Pm ~&#x000A;| (d-Pm  g) P  m | r - S :|&#x000A;   ga-      wa-ta  ho- ri</code></pre>
-        <h2>DoremiScript HTML Output(screen snapshot)</h2>
-        <p>
-          <img alt='Screenshot of DoremiScript rendered in html' src='images/readme/bansuri_in_html_screenshot.png' title='Sargam Screenshot' />
-        </p>
-        <h2>Generated Western Staff Notation</h2>
-        <p>
-          <img alt='Converted to western notation' src='images/readme/bansuri_in_western_notation.png' title='' />
-        </p>
-        <ul>
-          <li>Use a blank line to separate lines of music.</li>
-          <li>Start lines of music with a barline "|", for example,  | C D E F | . Otherwise be sure to include a barline or dash in the main line of music.</li>
-          <li>ABC style notation is written as follows C C# Db etc</li>
-          <li>Numbered notation is written as follows 1234567 corresponding to the diatonic notes of the C scale, with sharps and flats notated as 2b(Db) and 2#(D#), for example.</li>
-          <li>AACM sargam notation is written as follows SrRgGmMPdDnN for the 12 notes. Sharp and flat notes are also supported as follows: S# R# etc and Pb. This allows proper notation using Sargam of Jazz/Pop/Classical music that uses these notes. For example, in notating the Beatles tune "Yesterday", use P# to indicate the sharpened fifth degree. P# corresponds to G# in the key of C.</li>
-          <li>
-            Note that the AACM style of Sargam notation uses
-            <em>lowercase</em>
-            characters to indicate the flattened notes.
-          </li>
-          <li>
-            Devanagri style sargam is written using the devanagri letters सरग़मपधऩस
-            for the seven notes SRGmPDN. Use an underline underneath the letter to indicate a kommal note (flat). For sharp Ma, write as म' (note the tick symbol)
-          </li>
-          <li>left and right parens are used to indicate slurs. Slurs can only be made between pitches. For example, use (SRg)- rather than  (Srg-)</li>
-          <li>Beats are delimited by spaces. You can also use angle brackets &lt;&gt; to delimit a beat.</li>
-          <li>
-            Dot (.) and asterisk can be used interchangeably to
-            indicate octaves. Place dots underneath for lower octave and above for
-            upper octaves. Use a colon
-            <strong>:</strong>
-            to indicate upper-upper octave or lower-lower octave
-          </li>
-          <li>Lyrics: Enter lyrics for each line underneath the notes. Syllable DO NOT need to be directly under their corresponding note, as the parser can figure out which syllables go with which notes by counting pitches and slurred phrases.</li>
-          <li>
-            Rhythm: In this style of notation, derived from the AACM style, the dash (<strong>-</strong>) is used as a rhythmic placeholder. For example, this measure
-            <code>| C--Eb--G-   A   A   A</code>
-            is interpreted as a measure consisting of four beats. The first beat is divided into 8 parts, where the C gets 3/8ths of the beat, Eb gets 3/8ths of a beat and G gets 2/8ths. (Note that 3/8ths of a beat in western 4/4 notation is considered 3/32nds and is written as a dotted 16th. The 3 A's are each a single beat. The lilypond generator attempts to support this, but still needs a bit of work.
-          </li>
-          <li>Underlines are supported for Devanagri to indicate flat notes</li>
-          <li>Mode,Time, and Key in header are used in generating western notation</li>
-          <li>Chord symbols are supported</li>
-          <li>Syllables must be entered directly under a pitch.</li>
-          <li>
-            For syllables to show up properly in generated western notation, slurs
-            should be used to indicate the melismas
-          </li>
-          <li>Use | for single barline, || for double barline, |: and :| for left and right repeats</li>
-          <li>If need be, you can have multiple upper or lower lines.</li>
-          <li>Asterisk (*) can be used instead of a . to indicate octave</li>
-          <li>
-            <p>
-              Use the tilde character
-              <strong>~</strong>
-              to indicate an ornament which is displayed as
-            </p>
-            <span style='font-size:24px'>
-              𝆝𝆝
-            </span>
-          </li>
-          <li>
-            <p>
-              Supports tala markings +023456 for notating classical North Indian rhythmical cycles such as teental. The
-              <strong>+</strong>
-              indicates (usually) the first beat of the rhythmical cycle. The tala markings indicate the claps(taali) and non-claps(kaali) that delimit the rhythmic cycle.
-            </p>
-          </li>
-          <li>
-            Generates
-            <a href='http://lilypond.org' target='_blank'>lilypond</a>
-            as a high quality interchange format, which can be used to generate western staff notation and midi.
-          </li>
-          <li>
-            Generates
-            <a href='http://en.wikipedia.org/wiki/MusicXML' target='_blank'>musicxml</a>
-            as a common music notation format. MusicXML can be imported into hundreds of notation packages. Note that the lilypond export is of higher quality. Currently supports the following: lyrics, before grace notes,title.
-          </li>
-          <li>
-            Parser is easy to modify and is generated from a PEG grammar using a parsing expression grammar
-            <a href='https://github.com/dmajda/pegjs' target='_blank'>peg.js</a>
-          </li>
-          <li>Parser is easy to modify and is generated from a PEG grammar using a parsing expression grammar [peg.js])https://github.com/dmajda/pegjs)</li>
-          <li>
-            DoremiScript grammar is
-            <a href='https://raw.github.com/rothfield/doremi-script/master/src/grammars/doremiscript.peg.js' target='_blank'>here</a>
-          </li>
-          <li>
-            Endings are entered as follows: 1.___  or 2.
-          </li>
-          <li>It is possible to mix ABC, Devanagri, and AACM notations in the same composition, but each line of notation must be in only one style.</li>
-          <li>
-            Supports ornaments. Ornaments can be entered either to RIGHT or LEFT of the note to be ornamented(on one of the lines above the note). You can put dots above/below the ornament pitch to indicate the octave. Lilypond renderer displays the (right hand) ornaments as un-slurred 32th grace notes.
-            Support for ornaments to the 'right' of a note seems to be very poor among software vendors, probably because the 'standard' way to right ornaments is before a note. Therefore it is probably advisable to not use the right hand ornaments as it may cause data interchange problems down the line.
-          </li>
-          <li>For best results it is best to start each main line of music with the barline character ("|")</li>
-          <li>
-            Since DoReMiScript also supports chords such as G, G7, this may cause problems for ornaments that start with an ABC letter. In this case you can delimit the ornament with angle brackets &lt;&gt;
-            Chord symbols take precedence, so that Dm above the main line is interpreted as the chord Dm rather than a Dm ornament.
-          </li>
-          <li>Code base is written in coffeescript</li>
-          <li>
-            Command line tools are available via npm:
+      <br />
+      <div id='help_content'></div>
+      <script id='help-tpl' type='text/html'>
+        <div data-bind='visible: help_visible,event:{dblclick:toggle_help_visible}' id='help'>
+          <h1>DoremiScript</h1>
+          <p>
+            <strong>DoremiScript</strong>
+            is a small language for creating
+            <a href='http://en.wikipedia.org/wiki/Letter_notation' target='_blank'>letter based musical notation</a>
+            It currently supports the following notation styles:
             <ul>
               <li>
-                First install
-                <a href='http://npmjs.org' target='_blank'>npm</a>
+                Western style ABC notation as follows C C# Db D D# etc
               </li>
               <li>
-                Then install the
-                <strong>doremi-script</strong>
-                package:
+                <a href='http://http://en.wikipedia.org/wiki/Numbered_musical_notation' target='_blank'>Numbered notation</a>
+                Written using 1234567 with support for sharps and flats: 1# 2b etc
               </li>
-              <li>npm install doremi-script</li>
               <li>
-                Command line usage:
-                <ul>
-                  <li>To generate lilypond:</li>
-                  <li>cat composition.txt | doremi2ly</li>
-                  <li>To parse the composition, returning the parsed json:</li>
-                  <li>cat composition.txt | doremiparse</li>
-                  <li>Run lilypond on composition.txt</li>
-                  <li>cat composition.txt | doremi2ly | lilypond -o composition -</li>
-                  <li>Create a standalone html page composition.html from composition.txt:</li>
-                  <li>cat composition.txt | doremi2htmldoc &gt; composition.html</li>
-                  <li>Open DoremiScript file in musescore:</li>
-                  <li>cat composition.txt | doremi2musicxml  &gt; composition.xml ; mscore composition.xml</li>
-                </ul>
+                <a href='http://en.wikipedia.org/wiki/Swara' target='_blank'>
+                  Sargam
+                </a>
+                notation using latin/english letters SrRgGmMPdnN with support for S# Pb etc
+              </li>
+              <li>
+                <a href='http://en.wikipedia.org/wiki/Musical_notation#India' target='_blank'>
+                  Devanagri
+                </a>
+                notation in Bhatkande style
+                <a href='http://www.omenad.net/page.php?goPage=http%3A%2F%2Fwww.omenad.net%2Farticles%2Fomeswarlipi.htm' target='_blank'>(See also)</a>
+                using Devanagri letters for the sargam letters.
               </li>
             </ul>
-          </li>
-          <li>
-            This project borrows ideas from
-            <a href='http://en.wikipedia.org/wiki/ABC_notation' target='_blank'>
-              ABC musical notation
-            </a>
-            <a href='http://lilypond.org' target='_blank'>
-              lilypond
-            </a>
-            and
-            <a href='http://en.wikipedia.org/wiki/Markdown' target='_blank'>
-              markdown
-            </a>
-          </li>
-          <li>Special thanks to George Ruckert, Ali Akbar Khan and the authors of peg.js, lilypond, and coffeescript.</li>
-          <li>The online version is best used with Chrome or Firefox. Firefox has better printing support</li>
-        </ul>
-      </div>
+            <strong>DoremiScript</strong>
+            lets you write letter music notation using an easy-to-read, easy-to-write plain text format, then nicely formats it using css and html. DoremiScript can also generate standard western notation via a
+            <a href='http://lilypond.org' target='_blank'>Lilypond</a>
+            converter.
+          </p>
+          <p>
+            Try the
+            <a href='http://ragapedia.com' target='_blank'>online version</a>
+          </p>
+          <h2>Sample Input in AACM Sargam Style</h2>
+          <pre><code>Rag:Bhairavi&#x000A;Tal:Tintal&#x000A;Title:Bansuri&#x000A;Author:Traditional&#x000A;Source:AAK&#x000A;Mode: phrygian&#x000A;Filename: bansuri.sargam&#x000A;Time: 4/4&#x000A;Key: d&#x000A;&#x000A;&#x000A;&#x000A;                               i            IV         . &#x000A;         3S             n      +            2         DSnDn&#x000A;1)|: (Sr | n) S   (gm &lt;P d)&gt; | P - P  P   | P - D    n     |&#x000A;           .&#x000A;      ban-    su-  ri          ba- ja ra-   hi  dhu- na&#x000A;&#x000A;  0  ~                 3           mgm        +  .     *  *   &#x000A;| P  d   P    d    |  (Pm   PmnP)    (g m) | (PdnS) -- g  S |&#x000A;  ma-dhu-ra   kan-     nai-           ya      khe-     la-ta&#x000A;&#x000A;   2               0     &#x000A;                Pm ~&#x000A;| (d-Pm  g) P  m | r - S :|&#x000A;   ga-      wa-ta  ho- ri</code></pre>
+          <h2>DoremiScript HTML Output(screen snapshot)</h2>
+          <p>
+            <img alt='Screenshot of DoremiScript rendered in html' src='images/readme/bansuri_in_html_screenshot.png' title='Sargam Screenshot' />
+          </p>
+          <h2>Generated Western Staff Notation</h2>
+          <p>
+            <img alt='Converted to western notation' src='images/readme/bansuri_in_western_notation.png' title='' />
+          </p>
+          <ul>
+            <li>Use a blank line to separate lines of music.</li>
+            <li>Start lines of music with a barline "|", for example,  | C D E F | . Otherwise be sure to include a barline or dash in the main line of music.</li>
+            <li>ABC style notation is written as follows C C# Db etc</li>
+            <li>Numbered notation is written as follows 1234567 corresponding to the diatonic notes of the C scale, with sharps and flats notated as 2b(Db) and 2#(D#), for example.</li>
+            <li>AACM sargam notation is written as follows SrRgGmMPdDnN for the 12 notes. Sharp and flat notes are also supported as follows: S# R# etc and Pb. This allows proper notation using Sargam of Jazz/Pop/Classical music that uses these notes. For example, in notating the Beatles tune "Yesterday", use P# to indicate the sharpened fifth degree. P# corresponds to G# in the key of C.</li>
+            <li>
+              Note that the AACM style of Sargam notation uses
+              <em>lowercase</em>
+              characters to indicate the flattened notes.
+            </li>
+            <li>
+              Devanagri style sargam is written using the devanagri letters सरग़मपधऩस
+              for the seven notes SRGmPDN. Use an underline underneath the letter to indicate a kommal note (flat). For sharp Ma, write as म' (note the tick symbol)
+            </li>
+            <li>left and right parens are used to indicate slurs. Slurs can only be made between pitches. For example, use (SRg)- rather than  (Srg-)</li>
+            <li>Beats are delimited by spaces. You can also use angle brackets &lt;&gt; to delimit a beat.</li>
+            <li>
+              Dot (.) and asterisk can be used interchangeably to
+              indicate octaves. Place dots underneath for lower octave and above for
+              upper octaves. Use a colon
+              <strong>:</strong>
+              to indicate upper-upper octave or lower-lower octave
+            </li>
+            <li>Lyrics: Enter lyrics for each line underneath the notes. Syllable DO NOT need to be directly under their corresponding note, as the parser can figure out which syllables go with which notes by counting pitches and slurred phrases.</li>
+            <li>
+              Rhythm: In this style of notation, derived from the AACM style, the dash (<strong>-</strong>) is used as a rhythmic placeholder. For example, this measure
+              <code>| C--Eb--G-   A   A   A</code>
+              is interpreted as a measure consisting of four beats. The first beat is divided into 8 parts, where the C gets 3/8ths of the beat, Eb gets 3/8ths of a beat and G gets 2/8ths. (Note that 3/8ths of a beat in western 4/4 notation is considered 3/32nds and is written as a dotted 16th. The 3 A's are each a single beat. The lilypond generator attempts to support this, but still needs a bit of work.
+            </li>
+            <li>Underlines are supported for Devanagri to indicate flat notes</li>
+            <li>Mode,Time, and Key in header are used in generating western notation</li>
+            <li>Chord symbols are supported</li>
+            <li>Syllables must be entered directly under a pitch.</li>
+            <li>
+              For syllables to show up properly in generated western notation, slurs
+              should be used to indicate the melismas
+            </li>
+            <li>Use | for single barline, || for double barline, |: and :| for left and right repeats</li>
+            <li>If need be, you can have multiple upper or lower lines.</li>
+            <li>Asterisk (*) can be used instead of a . to indicate octave</li>
+            <li>
+              <p>
+                Use the tilde character
+                <strong>~</strong>
+                to indicate an ornament which is displayed as
+              </p>
+              <span style='font-size:24px'>
+                𝆝𝆝
+              </span>
+            </li>
+            <li>
+              <p>
+                Supports tala markings +023456 for notating classical North Indian rhythmical cycles such as teental. The
+                <strong>+</strong>
+                indicates (usually) the first beat of the rhythmical cycle. The tala markings indicate the claps(taali) and non-claps(kaali) that delimit the rhythmic cycle.
+              </p>
+            </li>
+            <li>
+              Generates
+              <a href='http://lilypond.org' target='_blank'>lilypond</a>
+              as a high quality interchange format, which can be used to generate western staff notation and midi.
+            </li>
+            <li>
+              Generates
+              <a href='http://en.wikipedia.org/wiki/MusicXML' target='_blank'>musicxml</a>
+              as a common music notation format. MusicXML can be imported into hundreds of notation packages. Note that the lilypond export is of higher quality. Currently supports the following: lyrics, before grace notes,title.
+            </li>
+            <li>
+              Parser is easy to modify and is generated from a PEG grammar using a parsing expression grammar
+              <a href='https://github.com/dmajda/pegjs' target='_blank'>peg.js</a>
+            </li>
+            <li>Parser is easy to modify and is generated from a PEG grammar using a parsing expression grammar [peg.js])https://github.com/dmajda/pegjs)</li>
+            <li>
+              DoremiScript grammar is
+              <a href='https://raw.github.com/rothfield/doremi-script/master/src/grammars/doremiscript.peg.js' target='_blank'>here</a>
+            </li>
+            <li>
+              Endings are entered as follows: 1.___  or 2.
+            </li>
+            <li>It is possible to mix ABC, Devanagri, and AACM notations in the same composition, but each line of notation must be in only one style.</li>
+            <li>
+              Supports ornaments. Ornaments can be entered either to RIGHT or LEFT of the note to be ornamented(on one of the lines above the note). You can put dots above/below the ornament pitch to indicate the octave. Lilypond renderer displays the (right hand) ornaments as un-slurred 32th grace notes.
+              Support for ornaments to the 'right' of a note seems to be very poor among software vendors, probably because the 'standard' way to right ornaments is before a note. Therefore it is probably advisable to not use the right hand ornaments as it may cause data interchange problems down the line.
+            </li>
+            <li>For best results it is best to start each main line of music with the barline character ("|")</li>
+            <li>
+              Since DoReMiScript also supports chords such as G, G7, this may cause problems for ornaments that start with an ABC letter. In this case you can delimit the ornament with angle brackets &lt;&gt;
+              Chord symbols take precedence, so that Dm above the main line is interpreted as the chord Dm rather than a Dm ornament.
+            </li>
+            <li>Code base is written in coffeescript</li>
+            <li>
+              Command line tools are available via npm:
+              <ul>
+                <li>
+                  First install
+                  <a href='http://npmjs.org' target='_blank'>npm</a>
+                </li>
+                <li>
+                  Then install the
+                  <strong>doremi-script</strong>
+                  package:
+                </li>
+                <li>npm install doremi-script</li>
+                <li>
+                  Command line usage:
+                  <ul>
+                    <li>To generate lilypond:</li>
+                    <li>cat composition.txt | doremi2ly</li>
+                    <li>To parse the composition, returning the parsed json:</li>
+                    <li>cat composition.txt | doremiparse</li>
+                    <li>Run lilypond on composition.txt</li>
+                    <li>cat composition.txt | doremi2ly | lilypond -o composition -</li>
+                    <li>Create a standalone html page composition.html from composition.txt:</li>
+                    <li>cat composition.txt | doremi2htmldoc &gt; composition.html</li>
+                    <li>Open DoremiScript file in musescore:</li>
+                    <li>cat composition.txt | doremi2musicxml  &gt; composition.xml ; mscore composition.xml</li>
+                  </ul>
+                </li>
+              </ul>
+            </li>
+            <li>
+              This project borrows ideas from
+              <a href='http://en.wikipedia.org/wiki/ABC_notation' target='_blank'>
+                ABC musical notation
+              </a>
+              <a href='http://lilypond.org' target='_blank'>
+                lilypond
+              </a>
+              and
+              <a href='http://en.wikipedia.org/wiki/Markdown' target='_blank'>
+                markdown
+              </a>
+            </li>
+            <li>Special thanks to George Ruckert, Ali Akbar Khan and the authors of peg.js, lilypond, and coffeescript.</li>
+            <li>The online version is best used with Chrome or Firefox. Firefox has better printing support</li>
+          </ul>
+        </div>
+      </script>
       <fieldset class='controls' data-bind='visible: editing_composition' id='composition_info'>
         <legend data-bind='click: toggle_composition_info_visible' id='composition_info_legend'>
           <span data-bind='text: title'></span>
@@ -320,6 +326,7 @@
           <div class='server_links' data-bind='visible: links_enabled'>
             <h4>
               Links: Right click and select 'Save As' to save on your computer
+              (Run Generate staff notation first to get latest)
             </h4>
             <ul class='server_links' data-bind='visible: links_enabled'>
               <li>
@@ -366,43 +373,51 @@
           <img alt='spinner' class='spinner' data-bind='visible: generating_staff_notation' src='images/musical-notes-animated.gif' width='50' />
         </div>
         <div class='staff_notation_div' data-bind='visible: staff_notation_visible'>
-          <img alt='staff notation' class='staff_notation' data-bind='attr: {src:staff_notation_url_with_time_stamp}' src='images/none.jpg' />
+          <img alt='staff notation' class='staff_notation' data-bind='attr: {src:staff_notation_url_with_time_stamp}' src='images/none.png' />
         </div>
         <br />
         <div class='composition_headers' data-bind='visible: show_title'>
           <h1 class='composition_title' data-bind='text:title'></h1>
           <h2 class='composition_author' data-bind='text:author'></h2>
-        </div>
-        <div class='composition_body' data-bind='foreach: lines'>
           <!--  Each line consists of a textarea, some controls, and the rendered html. The textarea and controls are hidden unless the user is editting the line. When the user is editting the line, the rendered html is hidden -->
-          <div class='stave_wrapper' data-bind='css:{editing:editing},style: {width: $parent.composition_stave_width}'>
-            <!-- %div.edit_line_wrapper.controls{"data-bind"=> "attr: {id: div_line_id}, visible:editing, css: {line_has_warnings: line_has_warnings,line_parse_failed: line_parse_failed}"} -->
-            <textarea class='entry_area' cols='33' data-bind="attr: {id: entry_area_id()},style: {width: $parent.composition_textarea_width},css: {'line_has_warnings': line_has_warnings,'parse_failed': $data.parse_failed},visible: editing(), value: source " rows='6' spellcheck='false'></textarea>
-            <div class='line_controls controls'>
-              <button data-bind='enable:editing(),click: close_edit,clickBubble:false'>
-                Close
-              </button>
-              <!-- %br{"data-bind" => "enable:$parent.not_editing_a_line()"} -->
-              <button data-bind='enable:$parent.not_editing_a_line(),click: $parent.composition_insert_line,clickBubble:false'>
-                Insert
-              </button>
-              <!-- %br{"data-bind" => "enable:$parent.not_editing_a_line()"} -->
-              <button data-bind='enable:$parent.not_editing_a_line(),click: $parent.composition_append_line,clickBubble:false'>
-                Append
-              </button>
+        </div>
+        <ul class='contextMenu' data-bind='enable: not_editing_a_line' id='my_menu' style='top: 269px; left: 100px; display: none; '>
+          <li class='edit'>
+            <a href='#edit'>Edit</a>
+          </li>
+          <li class='cut separator'>
+            <a href='#insert'>Insert</a>
+          </li>
+          <li class='copy'>
+            <a href='#append'>Append</a>
+          </li>
+          <li class='delete'>
+            <a href='#delete'>Delete</a>
+          </li>
+        </ul>
+        <div class='composition_body' data-bind='foreach: lines'>
+          <div class='stave_wrapper' data-bind='attr: {id: stave_id},css:{editing:editing}'>
+            <div class='entry_area_wrapper' data-bind='visible:editing'>
+              <a class='close_box'>
+                <img data-bind='visible:editing(),click: close_edit,clickBubble:false' src='images/close_box.gif' />
+              </a>
+              <textarea class='entry_area' cols='33' data-bind="attr: {id: entry_area_id()},style: {width: $parent.composition_textarea_width},css: {'line_has_warnings': line_has_warnings,'parse_failed': $data.parse_failed},visible: editing(), value: source " rows='6' spellcheck='false'></textarea>
             </div>
-            <div class='rendered_html' data-bind='enable: not_editing,html: rendered_in_html, event: { dblclick: close_edit},click: edit,clickBubble:false, css: {editing:editing,not_editing:not_editing,line_has_warnings: line_has_warnings,line_parse_failed: line_parse_failed}' style='display:inline-block'></div>
+            <div class='rendered_html' data-bind='visible: not_editing,html: rendered_in_html, event: { dblclick: edit},clickBubble:false, css: {editing:editing,not_editing:not_editing,line_has_warnings: line_has_warnings,line_parse_failed: line_parse_failed},style: {width: $parent.composition_textarea_width}' style='display:inline-block'></div>
           </div>
         </div>
       </div>
-      <br />
-      <br />
-      <button class='controls' data-bind='click: add_line, enable: not_editing_a_line()'>New Line</button>
+      <div class='bottom_controls' data-bind='visible: editing_composition'>
+        <button class='controls' data-bind='click: add_line, enable: not_editing_a_line'>
+          New Line
+        </button>
+      </div>
     </div>
     <span class="note testing_utf_support" id="utf_left_repeat" style="display: none; ">&#x1d106;</span>
     <span id="utf_single_barline" class="note testing_utf_support" style="display: none; ">&#x1d100;</span>
     <script src='js/knockout-2.0.0.debug.js' type='text/javascript'></script>
-    <script src='js/doremi-script/third_party/jquery.js' type='text/javascript'></script>
+    <script src='js/jquery-1.7.1.min.js' type='text/javascript'></script>
+    <script src='js/jquery.contextMenu.js' type='text/javascript'></script>
     <script src='js/jquery.scrollTo.js' type='text/javascript'></script>
     <script src='js/select_range.js' type='text/javascript'></script>
     <script src='js/doremi-script/third_party/jquery.autogrow-textarea.js' type='text/javascript'></script>
@@ -412,8 +427,8 @@
     <script src='js/doremi-script/all_items.js' type='text/javascript'></script>
     <script src='js/doremi-script/shared.js' type='text/javascript'></script>
     <script src='js/doremi-script/third_party/fraction.js' type='text/javascript'></script>
-    <script src='js/doremi-script/third_party/downloadify/downloadify.min.js' type='text/javascript'></script>
-    <script src='js/doremi-script/third_party/downloadify/swfobject.js' type='text/javascript'></script>
+    <script src='js/downloadify/downloadify.min.js' type='text/javascript'></script>
+    <script src='js/downloadify/swfobject.js' type='text/javascript'></script>
     <script type="text/javascript">
     <!-- / Hack part 1- to make Hypher.js work in the browser. -->
     window.module= {exports:[]}

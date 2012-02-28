@@ -466,7 +466,7 @@
       }
       ary.push("\\break\n");
     }
-    mode = get_mode(composition_data, 'Mode');
+    mode = composition_data.mode;
     mode || (mode = "major");
     mode = mode.toLowerCase();
     composer = get_attribute(composition_data, "Author");
