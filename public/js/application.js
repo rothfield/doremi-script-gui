@@ -67,7 +67,7 @@ $(document).ready(function() {
           return console.log('Your File Has Been Saved!');
         }
       },
-      swf: './js/doremi-script/third_party/downloadify/downloadify.swf',
+      swf: './js/downloadify/downloadify.swf',
       downloadImage: './images/save.png',
       height: 19,
       width: 76,
@@ -414,12 +414,13 @@ $(document).ready(function() {
     self.key = ko.observable("");
     self.staff_notation_url_with_time_stamp = ko.observable();
     self.calculate_staff_notation_url_with_time_stamp = function() {
-      var time_stamp;
+      var time_stamp, x;
       if (self.staff_notation_url() === NONE_URL) {
         return self.staff_notation_url();
       }
       time_stamp = new Date().getTime();
-      return "" + (self.staff_notation_url()) + "?ts=" + time_stamp;
+      x = "" + (self.staff_notation_url()) + "?ts=" + time_stamp;
+      return self.staff_notation_url_with_time_stamp(x);
     };
     self.modes = ["ionian", "dorian", "phrygian", "lydian", "mixolydian", "aeolian", "locrian"];
     self.mode = ko.observable("");
@@ -466,6 +467,7 @@ $(document).ready(function() {
     };
     self.generate_staff_notation = function(my_model) {
       var lilypond_source, my_data, obj, src, timeout_in_seconds, ts, url;
+      self.compute_doremi_source();
       self.generating_staff_notation(true);
       lilypond_source = self.composition_lilypond_source();
       ts = new Date().getTime();
@@ -489,7 +491,7 @@ $(document).ready(function() {
           return alert("Couldn't connect to staff notation generator server at " + url);
         },
         success: function(some_data, text_status) {
-          var base_url, fname, x;
+          var base_url, fname;
           self.generating_staff_notation(false);
           self.composition_lilypond_output(some_data.lilypond_output);
           if (some_data.error) {
@@ -505,8 +507,7 @@ $(document).ready(function() {
           }
           self.base_url(base_url);
           self.staff_notation_url(full_url_helper(some_data.fname));
-          x = self.calculate_staff_notation_url_with_time_stamp();
-          self.staff_notation_url_with_time_stamp(x);
+          self.calculate_staff_notation_url_with_time_stamp();
           self.staff_notation_visible(true);
           return self.composition_lilypond_output_visible(false);
         }
@@ -641,6 +642,9 @@ $(document).ready(function() {
     });
     self.my_init = function(doremi_source_param) {
       var fct, key, my_lines, parsed, parsed_line, seconds, val, _i, _len, _ref;
+      $('img.staff_notation').attr('src', NONE_URL);
+      self.staff_notation_url(NONE_URL);
+      self.calculate_staff_notation_url_with_time_stamp();
       if (debug) {
         console.log("composition.my_init", doremi_source_param);
       }
@@ -675,6 +679,7 @@ $(document).ready(function() {
         return _results;
       })();
       self.lines(my_lines);
+      self.calculate_staff_notation_url_with_time_stamp();
       self.redraw();
       seconds = 0.5;
       return setTimeout("dom_fixes()", 0.5 * 1000);
@@ -842,6 +847,9 @@ $(document).ready(function() {
       return window.to_musicxml(self.composition_parsed_doremi_script());
     };
     self.disable_generate_staff_notation = ko.computed(function() {
+      if (self.editing_a_line()) {
+        return true;
+      }
       if (self.composition_parse_failed()) {
         return true;
       }

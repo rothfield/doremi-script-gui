@@ -41,7 +41,7 @@ $(document).ready ->
   	  onComplete: () ->
         console.log 'Your File Has Been Saved!' if debug
 
-      swf: './js/doremi-script/third_party/downloadify/downloadify.swf'
+      swf: './js/downloadify/downloadify.swf'
       downloadImage: './images/save.png'
       height:19
       width:76
@@ -336,7 +336,9 @@ $(document).ready ->
       if self.staff_notation_url() is NONE_URL
         return self.staff_notation_url()
       time_stamp=new Date().getTime()
-      "#{self.staff_notation_url()}?ts=#{time_stamp}"
+      x="#{self.staff_notation_url()}?ts=#{time_stamp}"
+      #TODO: clumsy
+      self.staff_notation_url_with_time_stamp(x)
     self.modes=["ionian","dorian","phrygian","lydian","mixolydian","aeolian","locrian"]
 
     self.mode= ko.observable("")
@@ -376,6 +378,7 @@ $(document).ready ->
       $.ajax(obj)
 
     self.generate_staff_notation = (my_model) ->
+      self.compute_doremi_source()
       # generate staff notation by converting doremi_script
       # to lilypond and call a web service
       #console.log "entering generate_staff_notation"
@@ -414,8 +417,7 @@ $(document).ready ->
           console.log base_url if debug
           self.base_url(base_url)
           self.staff_notation_url(full_url_helper(some_data.fname))
-          x= self.calculate_staff_notation_url_with_time_stamp()
-          self.staff_notation_url_with_time_stamp(x)
+          self.calculate_staff_notation_url_with_time_stamp()
           self.staff_notation_visible(true)
           self.composition_lilypond_output_visible(false)
       $.ajax(obj)
@@ -441,6 +443,7 @@ $(document).ready ->
       ]
 
     self.compute_doremi_source = () ->
+      # TODO: use computed???
       # Turn the data on the web page into a doremi_script format
       #
       console.log "compute_doremi_source" if debug
@@ -519,7 +522,10 @@ $(document).ready ->
       parse_tree.warnings.length > 0
 
     self.my_init = (doremi_source_param) ->
+      $('img.staff_notation').attr('src',NONE_URL)
       # Initialize composition with doremi_script_source
+      self.staff_notation_url(NONE_URL) # TODO: use computed observables
+      self.calculate_staff_notation_url_with_time_stamp()
       console.log("composition.my_init",doremi_source_param) if debug
       parsed=DoremiScriptParser.parse(doremi_source_param)
       self.composition_parsed_doremi_script(parsed)
@@ -537,6 +543,7 @@ $(document).ready ->
       console.log("Loading lines") if debug
       my_lines= (new LineViewModel(parsed_line) for  parsed_line in parsed.lines)
       self.lines(my_lines)
+      self.calculate_staff_notation_url_with_time_stamp()
       self.redraw()
       seconds= 0.5
       setTimeout("dom_fixes()",0.5*1000)  # necessary?
@@ -657,6 +664,7 @@ $(document).ready ->
       window.to_musicxml(self.composition_parsed_doremi_script())
 
     self.disable_generate_staff_notation= ko.computed () ->
+      return true if self.editing_a_line()
       return true if self.composition_parse_failed()
       return true if self.title() is ""
       return true if self.lines().size is 0
