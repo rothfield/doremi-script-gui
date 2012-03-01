@@ -895,7 +895,7 @@ $(document).ready(function() {
       return false;
     });
     self.generate_html_page_aux = function() {
-      var a, b, c, composition, css, full_url, js, js2;
+      var a, all_js, b, c, composition, css, full_url, js, js2;
       console.log("generate_html_page_aux");
       a = $('#application_for_html_doc').html();
       b = $('#styles_for_html_doc').html();
@@ -903,9 +903,10 @@ $(document).ready(function() {
       css = a + b + c;
       js = $('#zepto_for_html_doc').html();
       js2 = $('#dom_fixer_for_html_doc').html();
+      all_js = js + js2;
       composition = window.the_composition;
       full_url = document.location.origin;
-      return to_html_doc(self.composition_parsed_doremi_script(), full_url, css);
+      return to_html_doc(self.composition_parsed_doremi_script(), full_url, css, all_js);
     };
     self.get_dom_fixer = function() {
       var params;

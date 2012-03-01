@@ -714,9 +714,10 @@ $(document).ready ->
       css=a+b+c
       js=$('#zepto_for_html_doc').html()
       js2=$('#dom_fixer_for_html_doc').html()
+      all_js=js+js2
       composition=window.the_composition
       full_url=document.location.origin #"http://ragapedia.com"
-      to_html_doc(self.composition_parsed_doremi_script(),full_url,css)
+      to_html_doc(self.composition_parsed_doremi_script(),full_url,css,all_js)
 
     self.get_dom_fixer = () ->
       params=
