@@ -328,6 +328,9 @@
               Links: Right click and select 'Save As' to save on your computer
               (Run Generate staff notation first to get latest)
             </h4>
+            <button data-bind='disable: disable_generate_staff_notation,click: generate_all_but_staff_notation'>
+              Update all except staff notation
+            </button>
             <ul class='server_links' data-bind='visible: links_enabled'>
               <li>
                 <a class='saved_to_server' data-bind='enable: links_enabled,attr: {href: lilypond_url }' href='' id='download_ly' target='_blank'>

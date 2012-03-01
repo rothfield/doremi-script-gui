@@ -480,8 +480,14 @@ $(document).ready(function() {
       };
       return $.ajax(obj);
     };
-    self.generate_staff_notation = function(my_model) {
+    self.generate_all_but_staff_notation = function(my_model) {
+      return self.generate_staff_notation(my_model, "true");
+    };
+    self.generate_staff_notation = function(my_model, dont_generate_staff_notation) {
       var lilypond_source, my_data, obj, src, timeout_in_seconds, ts, url;
+      if (dont_generate_staff_notation == null) {
+        dont_generate_staff_notation = "false";
+      }
       self.compute_doremi_source();
       self.generating_staff_notation(true);
       lilypond_source = self.composition_lilypond_source();
@@ -493,7 +499,9 @@ $(document).ready(function() {
         fname: app.sanitize(self.title()),
         lilypond: lilypond_source,
         html_doc: self.generate_html_page_aux(),
-        doremi_source: src
+        doremi_source: src,
+        musicxml_source: self.get_musicxml_source(),
+        dont_generate_staff_notation: "false"
       };
       obj = {
         dataType: "json",
