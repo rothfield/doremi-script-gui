@@ -285,7 +285,7 @@
             <label>
               Apply Hyphenated Lyrics:
             </label>
-            <input data-bind='checked: apply_hyphenated_lyrics' type='checkbox' />
+            <span class='apply_hyphenated_lyrics' data-bind='text: apply_hyphenated_lyrics,click: toggle_apply_hyphenated_lyrics'></span>
           </p>
           <p>
             <label>
@@ -369,6 +369,9 @@
             <button data-bind='css: {button_on:show_title},click: toggle_title_visible'>
               Show Title
             </button>
+            <button data-bind='css: {button_on:disable_context_menu},click: toggle_disable_context_menu'>
+              Disable Context Menu(debugging only)
+            </button>
           </div>
           <img alt='spinner' class='spinner' data-bind='visible: generating_staff_notation' src='images/musical-notes-animated.gif' width='50' />
         </div>
@@ -450,6 +453,7 @@
     <script src='js/doremi-script/html_renderer.js' type='text/javascript'></script>
     <!-- stash css and javascript here when necessary to generate a standalone page. -->
     <script id='css_for_html_doc' type='text/html'></script>
+    <script id='css2_for_html_doc' type='text/html'></script>
     <script id='zepto_for_html_doc' type='text/html'></script>
     <script id='dom_fixer_for_html_doc' type='text/html'></script>
     <script id='testing_utf_support' type='text/html'></script>

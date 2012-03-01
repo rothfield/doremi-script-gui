@@ -41,7 +41,9 @@
     return LOOKUP[str];
   };
   draw_lyrics_section = function(lyrics_section) {
-    return "<div class='stave lyrics_section'>" + lyrics_section.source + "</div>";
+    var without_dashes;
+    without_dashes = lyrics_section.source.replace(/-/g, '');
+    return "<div title='Lyrics Section' class='stave lyrics_section'>" + without_dashes + "</div>";
   };
   draw_line = function(line) {
     var item, x;

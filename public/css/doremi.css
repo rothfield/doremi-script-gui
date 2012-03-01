@@ -90,14 +90,10 @@ div.rendered_html.editing:hover
 div.rendered_html.editing:hover {
   cursor:normal;
 }
-div.rendered_html.editing {
-  background-color: wheat;
-}
 
-div.rendered_html.not_editing:hover
-{ 
+div.rendered_html.not_editing:hover { 
   cursor:pointer;
-  background-color:gainsboro;
+  /* border: 2px solid black; */
 }
 
 div#rendered_doremi_script, div.rendered_doremi_script, div.parse_tree_div {
@@ -117,7 +113,7 @@ span.note_wrapper {
 
 div.edit_line_wrapper {
   background-color: AntiqueWhite;
-  border: 2px solid black;
+  border: 3px solid black;
 }
 
 div.edit_line_wrapper textarea.entry_area {
@@ -182,6 +178,14 @@ span.slur {
     border-bottom:none;
     border-left-width: 0em;;
     border-right-width: 0em;
+}
+
+span.beat.looped,span.slur {
+  /* TODO: review Funky fix for chrome to avoid hairline on right and left */
+  border-right-color:white;
+  border-left-color:white;
+  border-left-width:1px;
+  border-right-width:1px;
 }
 
 span.ornament_item {

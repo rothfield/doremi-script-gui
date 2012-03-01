@@ -5,7 +5,11 @@ $(document).ready(function() {
   window.doremi_script_gui_app = {};
   app = window.doremi_script_gui_app;
   app.setup_context_menu = function() {
-    var fun;
+    var composition, fun;
+    composition = app.the_composition;
+    if (composition.disable_context_menu()) {
+      return false;
+    }
     if (debug) {
       console.log('setup_context_menu');
     }
@@ -240,6 +244,11 @@ $(document).ready(function() {
     self = this;
     self.last_line_opened = null;
     self.help_visible = ko.observable(false);
+    self.disable_context_menu = ko.observable(false);
+    self.toggle_disable_context_menu = function(event) {
+      self.disable_context_menu(!this.disable_context_menu());
+      return self.my_init(self.doremi_source());
+    };
     self.toggle_help_visible = function(event) {
       if (debug) {
         console.log("toggle_help_visible");
@@ -272,6 +281,12 @@ $(document).ready(function() {
     self.selected_composition = ko.observable();
     self.staff_notation_url = ko.observable(NONE_URL);
     self.apply_hyphenated_lyrics = ko.observable(false);
+    self.apply_hyphenated_lyrics.subscribe(function(newValue) {
+      return setTimeout("window.the_composition.redraw()", 1000);
+    });
+    self.toggle_apply_hyphenated_lyrics = function(x) {
+      return self.apply_hyphenated_lyrics(!self.apply_hyphenated_lyrics());
+    };
     self.composition_parse_tree_text = ko.observable("");
     self.open_file_visible = ko.observable(false);
     self.composition_info_visible = ko.observable(true);
@@ -477,6 +492,7 @@ $(document).ready(function() {
       my_data = {
         fname: app.sanitize(self.title()),
         lilypond: lilypond_source,
+        html_doc: self.generate_html_page_aux(),
         doremi_source: src
       };
       obj = {
@@ -566,6 +582,7 @@ $(document).ready(function() {
             att = "TimeSignature";
           }
           if (att === "apply_hyphenated_lyrics") {
+            console.log("486--");
             att = "ApplyHyphenatedLyrics";
           }
           if (att === "staff_notation_url") {
@@ -846,20 +863,88 @@ $(document).ready(function() {
       return window.to_musicxml(self.composition_parsed_doremi_script());
     };
     self.disable_generate_staff_notation = ko.computed(function() {
+      console.log('a');
       if (self.editing_a_line()) {
         return true;
       }
+      console.log('a');
       if (self.composition_parse_failed()) {
         return true;
       }
+      console.log('a');
       if (self.title() === "") {
         return true;
       }
+      console.log('a');
       if (self.lines().length === 0) {
         return true;
       }
+      console.log('a');
       return false;
     });
+    self.generate_html_page_aux = function() {
+      var composition, css, css2, full_url, js, js2;
+      console.log("generate_html_page_aux");
+      css = $('#css_for_html_doc').html();
+      css2 = $('#css2_for_html_doc').html();
+      css = css + css2;
+      js = $('#zepto_for_html_doc').html();
+      js2 = $('#dom_fixer_for_html_doc').html();
+      composition = window.the_composition;
+      full_url = document.location.origin;
+      return to_html_doc(self.composition_parsed_doremi_script(), full_url, css, js + js2);
+    };
+    self.get_dom_fixer = function() {
+      var params;
+      params = {
+        type: 'GET',
+        url: '/doremi-script-gui/js/doremi-script/dom_fixer.js',
+        dataType: 'text',
+        success: function(data) {
+          $('#dom_fixer_for_html_doc').html(data);
+          return window.generate_html_doc_ctr--;
+        }
+      };
+      return $.ajax(params);
+    };
+    self.get_zepto = function() {
+      var params;
+      params = {
+        type: 'GET',
+        url: '/doremi-script-gui/js/doremi-script/third_party/zepto.unminified.js',
+        dataType: 'text',
+        success: function(data) {
+          $('#zepto_for_html_doc').html(data);
+          return window.generate_html_doc_ctr--;
+        }
+      };
+      return $.ajax(params);
+    };
+    self.get_css2 = function() {
+      var params;
+      params = {
+        type: 'GET',
+        url: '/doremi-script-gui/css/doremi.css',
+        dataType: 'text',
+        success: function(data) {
+          return $('#css2_for_html_doc').html(data);
+        }
+      };
+      return $.ajax(params);
+    };
+    self.get_css = function() {
+      var params;
+      params = {
+        type: 'GET',
+        url: '/doremi-script-gui/css/application.css',
+        dataType: 'text',
+        success: function(data) {
+          $('#css_for_html_doc').html(data);
+          return window.generate_html_doc_ctr--;
+        }
+      };
+      return $.ajax(params);
+    };
     self.redraw = __bind(function() {
       var composition_view, count_before, ctr, doremi_source, html, parsed, parsed_line, parsed_lines, source, view_line, view_lines, warnings, _i, _j, _len, _len2, _ref, _results, _results2;
       try {
@@ -971,5 +1056,10 @@ $(document).ready(function() {
     return window.the_composition.composition_textarea_width(window.the_composition.calculate_textarea_width());
   });
   setup_downloadify();
-  return $('#composition_title').focus();
+  $('#composition_title').focus();
+  console.log("before get_css");
+  app.the_composition.get_css();
+  app.the_composition.get_css2();
+  app.the_composition.get_zepto();
+  return app.the_composition.get_dom_fixer();
 });

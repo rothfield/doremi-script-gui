@@ -60,7 +60,7 @@
       %p
         %label
           Apply Hyphenated Lyrics:
-        %input{"type" => "checkbox", "data-bind" => "checked: apply_hyphenated_lyrics"}
+        %span.apply_hyphenated_lyrics{"data-bind" => "text: apply_hyphenated_lyrics,click: toggle_apply_hyphenated_lyrics"}
       %p
         %label
           Staff Notation URL:
@@ -116,6 +116,8 @@
           Show Staff Notation
         %button{"data-bind" => "css: {button_on:show_title},click: toggle_title_visible"} 
           Show Title
+        %button{"data-bind" => "css: {button_on:disable_context_menu},click: toggle_disable_context_menu"} 
+          Disable Context Menu(debugging only)
       %img.spinner{"alt" => 'spinner', "data-bind" => "visible: generating_staff_notation", "src" => "images/musical-notes-animated.gif", "width" => '50'}
     %div.staff_notation_div{"data-bind" => "visible: staff_notation_visible"}
       %img.staff_notation{"alt" => 'staff notation', "src" => 'images/none.png', "data-bind" => "attr: {src:staff_notation_url_with_time_stamp}"}

@@ -335,7 +335,7 @@
       } else {
         x = false;
       }
-      this.composition_data.apply_hyphenated_lyrics = x || false;
+      this.composition_data.apply_hyphenated_lyrics = x;
       this.mark_partial_measures();
       if (this.composition_data.apply_hyphenated_lyrics) {
         assign_syllables_from_lyrics_sections(this.composition_data);

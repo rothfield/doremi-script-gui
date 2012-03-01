@@ -5,6 +5,9 @@ $(document).ready ->
 
 
   app.setup_context_menu = () ->
+     composition=app.the_composition
+     if composition.disable_context_menu()
+       return false
      console.log('setup_context_menu') if debug
      fun = (action, el, pos) ->
        found=null
@@ -189,6 +192,14 @@ $(document).ready ->
     self = this
     self.last_line_opened=null
     self.help_visible=ko.observable(false)
+
+    self.disable_context_menu=ko.observable(false) # for debugging only
+
+    self.toggle_disable_context_menu= (event) ->
+      self.disable_context_menu(!this.disable_context_menu())
+      self.my_init(self.doremi_source())
+
+
     self.toggle_help_visible= (event) ->
       console.log "toggle_help_visible" if debug
       self.help_visible(!this.help_visible())
@@ -214,6 +225,13 @@ $(document).ready ->
     self.selected_composition = ko.observable() # nothing selected by default
     self.staff_notation_url=ko.observable(NONE_URL)
     self.apply_hyphenated_lyrics=ko.observable(false)
+    self.apply_hyphenated_lyrics.subscribe((newValue)->
+      #set_timeout("composition.self.redraw()
+      setTimeout("window.the_composition.redraw()",1000)
+    )
+    self.toggle_apply_hyphenated_lyrics=  (x) ->
+      self.apply_hyphenated_lyrics(!self.apply_hyphenated_lyrics())
+
     self.composition_parse_tree_text=ko.observable("")
     self.open_file_visible=ko.observable(false)
     self.composition_info_visible=ko.observable(true)
@@ -393,6 +411,7 @@ $(document).ready ->
         fname: app.sanitize(self.title())
         #"#{self.title()}_#{self.author()}_#{self.id()}"
         lilypond: lilypond_source
+        html_doc: self.generate_html_page_aux() #"<html><body>HI JOHN</body></html>" # TODO
         doremi_source: src
       obj=
         dataType : "json",
@@ -475,7 +494,10 @@ $(document).ready ->
         att="Author" if att is "author"
         att="Source" if att is "source"
         att="TimeSignature" if att is "time_signature"
-        att="ApplyHyphenatedLyrics" if att is "apply_hyphenated_lyrics"
+        if att is "apply_hyphenated_lyrics"
+          console.log("486--")
+          att="ApplyHyphenatedLyrics"
+        #att="ApplyHyphenatedLyrics" if att is "apply_hyphenated_lyrics"
         att="StaffNotationURL" if att is "staff_notation_url"
         continue if value is ""
         continue if !value
@@ -663,13 +685,71 @@ $(document).ready ->
       window.to_musicxml(self.composition_parsed_doremi_script())
 
     self.disable_generate_staff_notation= ko.computed () ->
+      console.log 'a'
       return true if self.editing_a_line()
+      console.log 'a'
       return true if self.composition_parse_failed()
+      console.log 'a'
       return true if self.title() is ""
+      console.log 'a'
       return true if self.lines().length is 0
+      console.log 'a'
       false
 
+    self.generate_html_page_aux = () ->
+      #window.generate_html_doc_ctr=3
+      console.log "generate_html_page_aux"
+      #return if window.generate_html_doc_ctr > 0
+      css=$('#css_for_html_doc').html()
+      css2=$('#css2_for_html_doc').html()
+      css=css+css2
+      js=$('#zepto_for_html_doc').html()
+      js2=$('#dom_fixer_for_html_doc').html()
+      composition=window.the_composition
+      full_url=document.location.origin #"http://ragapedia.com"
+      to_html_doc(self.composition_parsed_doremi_script(),full_url,css,js+js2)
+
+    self.get_dom_fixer = () ->
+      params=
+        type:'GET'
+        url:'/doremi-script-gui/js/doremi-script/dom_fixer.js'
+        dataType:'text'
+        success: (data) ->
+          $('#dom_fixer_for_html_doc').html(data)
+          window.generate_html_doc_ctr--
+      $.ajax(params)
+    
+    self.get_zepto = () ->
+      params=
+        type:'GET'
+        url:'/doremi-script-gui/js/doremi-script/third_party/zepto.unminified.js'
+        dataType:'text'
+        success: (data) ->
+          $('#zepto_for_html_doc').html(data)
+          window.generate_html_doc_ctr--
+      $.ajax(params)
+     
+    self.get_css2 = () ->
+      params=
+        type:'GET'
+        url:'/doremi-script-gui/css/doremi.css'
+        dataType:'text'
+        success: (data) ->
+          $('#css2_for_html_doc').html(data)
+      $.ajax(params)
+
+    self.get_css = () ->
+      params=
+        type:'GET'
+        url:'/doremi-script-gui/css/application.css'
+        dataType:'text'
+        success: (data) ->
+          $('#css_for_html_doc').html(data)
+          window.generate_html_doc_ctr--
+      $.ajax(params)
+
     self.redraw= () =>
+
       try
         debug=false
         doremi_source=self.compute_doremi_source()
@@ -764,6 +844,10 @@ $(document).ready ->
     window.the_composition.composition_textarea_width(window.the_composition.calculate_textarea_width())
   )
   setup_downloadify()
-  
   $('#composition_title').focus()
+  console.log("before get_css")
+  app.the_composition.get_css()
+  app.the_composition.get_css2()
+  app.the_composition.get_zepto()
+  app.the_composition.get_dom_fixer()
 
