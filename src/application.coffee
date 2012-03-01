@@ -396,9 +396,13 @@ $(document).ready ->
       $.ajax(obj)
 
     self.generate_all_but_staff_notation = (my_model) ->
-      self.generate_staff_notation(my_model,"true")
+      self.generate_staff_notation_aux(my_model,"true")
 
-    self.generate_staff_notation = (my_model,dont_generate_staff_notation="false") ->
+    self.generate_staff_notation = (my_model) ->
+      self.generate_staff_notation_aux(my_model)
+
+    self.generate_staff_notation_aux = (my_model,dont="false") ->
+      console.log "generate_staff_notation"
       self.compute_doremi_source()
       # generate staff notation by converting doremi_script
       # to lilypond and call a web service
@@ -416,7 +420,7 @@ $(document).ready ->
         html_doc: self.generate_html_page_aux()
         doremi_source: src
         musicxml_source: self.get_musicxml_source()
-        dont_generate_staff_notation:"false" #dont_generate_staff_notation
+        dont_generate_staff_notation:dont
       obj=
         dataType : "json",
         timeout : timeout_in_seconds * 1000  # milliseconds
@@ -704,14 +708,15 @@ $(document).ready ->
       #window.generate_html_doc_ctr=3
       console.log "generate_html_page_aux"
       #return if window.generate_html_doc_ctr > 0
-      css=$('#css_for_html_doc').html()
-      css2=$('#css2_for_html_doc').html()
-      css=css+css2
+      a=$('#application_for_html_doc').html()
+      b=$('#styles_for_html_doc').html()
+      c=$('#doremi_for_html_doc').html()
+      css=a+b+c
       js=$('#zepto_for_html_doc').html()
       js2=$('#dom_fixer_for_html_doc').html()
       composition=window.the_composition
       full_url=document.location.origin #"http://ragapedia.com"
-      to_html_doc(self.composition_parsed_doremi_script(),full_url,css,js+js2)
+      to_html_doc(self.composition_parsed_doremi_script(),full_url,css)
 
     self.get_dom_fixer = () ->
       params=
@@ -733,22 +738,30 @@ $(document).ready ->
           window.generate_html_doc_ctr--
       $.ajax(params)
      
-    self.get_css2 = () ->
+    self.get_styles_css = () ->
+      params=
+        type:'GET'
+        url:'/doremi-script-gui/css/styles.css'
+        dataType:'text'
+        success: (data) ->
+          $('#styles_for_html_doc').html(data)
+      $.ajax(params)
+    self.get_doremi_css = () ->
       params=
         type:'GET'
         url:'/doremi-script-gui/css/doremi.css'
         dataType:'text'
         success: (data) ->
-          $('#css2_for_html_doc').html(data)
+          $('#doremi_for_html_doc').html(data)
       $.ajax(params)
 
-    self.get_css = () ->
+    self.get_application_css = () ->
       params=
         type:'GET'
         url:'/doremi-script-gui/css/application.css'
         dataType:'text'
         success: (data) ->
-          $('#css_for_html_doc').html(data)
+          $('#application_for_html_doc').html(data)
           window.generate_html_doc_ctr--
       $.ajax(params)
 
@@ -850,8 +863,10 @@ $(document).ready ->
   setup_downloadify()
   $('#composition_title').focus()
   console.log("before get_css")
-  app.the_composition.get_css()
-  app.the_composition.get_css2()
+  a=app.the_composition.get_application_css()
+  b=app.the_composition.get_styles_css()
+  c=app.the_composition.get_doremi_css()
+  app.the_composition.all_css_for_html_doc=a+b+c
   app.the_composition.get_zepto()
   app.the_composition.get_dom_fixer()
 

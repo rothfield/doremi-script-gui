@@ -1,6 +1,6 @@
 var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; };
 $(document).ready(function() {
-  var EMPTY_LINE_SOURCE, Logger, NONE_URL, app, debug, full_url_helper, handleFileSelect, initialData, message_box, setup_downloadify, unique_id;
+  var EMPTY_LINE_SOURCE, Logger, NONE_URL, a, app, b, c, debug, full_url_helper, handleFileSelect, initialData, message_box, setup_downloadify, unique_id;
   debug = false;
   window.doremi_script_gui_app = {};
   app = window.doremi_script_gui_app;
@@ -481,13 +481,17 @@ $(document).ready(function() {
       return $.ajax(obj);
     };
     self.generate_all_but_staff_notation = function(my_model) {
-      return self.generate_staff_notation(my_model, "true");
+      return self.generate_staff_notation_aux(my_model, "true");
     };
-    self.generate_staff_notation = function(my_model, dont_generate_staff_notation) {
+    self.generate_staff_notation = function(my_model) {
+      return self.generate_staff_notation_aux(my_model);
+    };
+    self.generate_staff_notation_aux = function(my_model, dont) {
       var lilypond_source, my_data, obj, src, timeout_in_seconds, ts, url;
-      if (dont_generate_staff_notation == null) {
-        dont_generate_staff_notation = "false";
+      if (dont == null) {
+        dont = "false";
       }
+      console.log("generate_staff_notation");
       self.compute_doremi_source();
       self.generating_staff_notation(true);
       lilypond_source = self.composition_lilypond_source();
@@ -501,7 +505,7 @@ $(document).ready(function() {
         html_doc: self.generate_html_page_aux(),
         doremi_source: src,
         musicxml_source: self.get_musicxml_source(),
-        dont_generate_staff_notation: "false"
+        dont_generate_staff_notation: dont
       };
       obj = {
         dataType: "json",
@@ -891,16 +895,17 @@ $(document).ready(function() {
       return false;
     });
     self.generate_html_page_aux = function() {
-      var composition, css, css2, full_url, js, js2;
+      var a, b, c, composition, css, full_url, js, js2;
       console.log("generate_html_page_aux");
-      css = $('#css_for_html_doc').html();
-      css2 = $('#css2_for_html_doc').html();
-      css = css + css2;
+      a = $('#application_for_html_doc').html();
+      b = $('#styles_for_html_doc').html();
+      c = $('#doremi_for_html_doc').html();
+      css = a + b + c;
       js = $('#zepto_for_html_doc').html();
       js2 = $('#dom_fixer_for_html_doc').html();
       composition = window.the_composition;
       full_url = document.location.origin;
-      return to_html_doc(self.composition_parsed_doremi_script(), full_url, css, js + js2);
+      return to_html_doc(self.composition_parsed_doremi_script(), full_url, css);
     };
     self.get_dom_fixer = function() {
       var params;
@@ -928,26 +933,38 @@ $(document).ready(function() {
       };
       return $.ajax(params);
     };
-    self.get_css2 = function() {
+    self.get_styles_css = function() {
+      var params;
+      params = {
+        type: 'GET',
+        url: '/doremi-script-gui/css/styles.css',
+        dataType: 'text',
+        success: function(data) {
+          return $('#styles_for_html_doc').html(data);
+        }
+      };
+      return $.ajax(params);
+    };
+    self.get_doremi_css = function() {
       var params;
       params = {
         type: 'GET',
         url: '/doremi-script-gui/css/doremi.css',
         dataType: 'text',
         success: function(data) {
-          return $('#css2_for_html_doc').html(data);
+          return $('#doremi_for_html_doc').html(data);
         }
       };
       return $.ajax(params);
     };
-    self.get_css = function() {
+    self.get_application_css = function() {
       var params;
       params = {
         type: 'GET',
         url: '/doremi-script-gui/css/application.css',
         dataType: 'text',
         success: function(data) {
-          $('#css_for_html_doc').html(data);
+          $('#application_for_html_doc').html(data);
           return window.generate_html_doc_ctr--;
         }
       };
@@ -1066,8 +1083,10 @@ $(document).ready(function() {
   setup_downloadify();
   $('#composition_title').focus();
   console.log("before get_css");
-  app.the_composition.get_css();
-  app.the_composition.get_css2();
+  a = app.the_composition.get_application_css();
+  b = app.the_composition.get_styles_css();
+  c = app.the_composition.get_doremi_css();
+  app.the_composition.all_css_for_html_doc = a + b + c;
   app.the_composition.get_zepto();
   return app.the_composition.get_dom_fixer();
 });

@@ -323,15 +323,17 @@
             </button>
           </div>
           <div class='composition_musicxml_source_div like_pre' data-bind='visible: composition_musicxml_source_visible,text: composition_musicxml_source,event:{dblclick:toggle_composition_musicxml_source_visible}'></div>
-          <div class='server_links' data-bind='visible: links_enabled'>
+          <div class='server_links'>
             <h4>
               Links: Right click and select 'Save As' to save on your computer
               (Run Generate staff notation first to get latest)
             </h4>
-            <button data-bind='disable: disable_generate_staff_notation,click: generate_all_but_staff_notation'>
-              Update all except staff notation
-            </button>
-            <ul class='server_links' data-bind='visible: links_enabled'>
+            <ul class='server_links'>
+              <li>
+                <button data-bind='disable: disable_generate_staff_notation,click: generate_all_but_staff_notation'>
+                  Update all except staff notation
+                </button>
+              </li>
               <li>
                 <a class='saved_to_server' data-bind='enable: links_enabled,attr: {href: lilypond_url }' href='' id='download_ly' target='_blank'>
                   Lilypond
@@ -455,8 +457,9 @@
     <script src='js/doremi-script/dom_fixer.js' type='text/javascript'></script>
     <script src='js/doremi-script/html_renderer.js' type='text/javascript'></script>
     <!-- stash css and javascript here when necessary to generate a standalone page. -->
-    <script id='css_for_html_doc' type='text/html'></script>
-    <script id='css2_for_html_doc' type='text/html'></script>
+    <script id='application_for_html_doc' type='text/html'></script>
+    <script id='styles_for_html_doc' type='text/html'></script>
+    <script id='doremi_for_html_doc' type='text/html'></script>
     <script id='zepto_for_html_doc' type='text/html'></script>
     <script id='dom_fixer_for_html_doc' type='text/html'></script>
     <script id='testing_utf_support' type='text/html'></script>

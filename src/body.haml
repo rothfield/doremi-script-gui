@@ -86,13 +86,14 @@
         %button{"data-bind" => "css: {button_on:composition_musicxml_source_visible},click: toggle_composition_musicxml_source_visible"} 
           MusicXML Source 
       %div.composition_musicxml_source_div.like_pre{"data-bind" => "visible: composition_musicxml_source_visible,text: composition_musicxml_source,event:{dblclick:toggle_composition_musicxml_source_visible}"}
-      %div.server_links{"data-bind" => "visible: links_enabled"}
+      %div.server_links
         %h4
           Links: Right click and select 'Save As' to save on your computer
           (Run Generate staff notation first to get latest)
-        %button{"data-bind" => "disable: disable_generate_staff_notation,click: generate_all_but_staff_notation"}
-          Update all except staff notation
-        %ul.server_links{"data-bind" => "visible: links_enabled"}
+        %ul.server_links
+          %li
+            %button{"data-bind" => "disable: disable_generate_staff_notation,click: generate_all_but_staff_notation"}
+              Update all except staff notation
           %li
             %a#download_ly.saved_to_server{:href => "", :target => "_blank", "data-bind" => "enable: links_enabled,attr: {href: lilypond_url }"}
               Lilypond
