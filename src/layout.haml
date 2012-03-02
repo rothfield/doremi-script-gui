@@ -16,34 +16,34 @@
     %script{:src => "js/jquery.contextMenu.js", :type => "text/javascript"}
     %script{:src => "js/jquery.scrollTo.js", :type => "text/javascript"}
     %script{:src => "js/select_range.js", :type => "text/javascript"}
-    %script{:src => "js/doremi-script/third_party/jquery.autogrow-textarea.js", :type => "text/javascript"}
-    %script{:src => "js/doremi-script/third_party/underscore.js", :type => "text/javascript"}
-    %script{:src => "js/doremi-script/underscore.logger.js", :type => "text/javascript"}
-    %script{:src => "js/doremi-script/shims.js", :type => "text/javascript"}
-    %script{:src => "js/doremi-script/all_items.js", :type => "text/javascript"}
-    %script{:src => "js/doremi-script/shared.js", :type => "text/javascript"}
-    %script{:src => "js/doremi-script/third_party/fraction.js", :type => "text/javascript"}
+    %script{:src => "js/doremi-script-base/third_party/jquery.autogrow-textarea.js", :type => "text/javascript"}
+    %script{:src => "js/doremi-script-base/third_party/underscore.js", :type => "text/javascript"}
+    %script{:src => "js/doremi-script-base/underscore.logger.js", :type => "text/javascript"}
+    %script{:src => "js/doremi-script-base/shims.js", :type => "text/javascript"}
+    %script{:src => "js/doremi-script-base/all_items.js", :type => "text/javascript"}
+    %script{:src => "js/doremi-script-base/shared.js", :type => "text/javascript"}
+    %script{:src => "js/doremi-script-base/third_party/fraction.js", :type => "text/javascript"}
     %script{:src => "js/downloadify/downloadify.min.js", :type => "text/javascript"}
     %script{:src => "js/downloadify/swfobject.js", :type => "text/javascript"}
     <script type="text/javascript">
     // Hack part 1- to make Hypher.js work in the browser.
     window.module= {exports:[]}
     </script>
-    %script{:src => "js/doremi-script/third_party/hypher/hypher.js", :type => "text/javascript"}
-    %script{:src => "js/doremi-script/third_party/hyphenation_patterns/en-us.js", :type => "text/javascript"}
+    %script{:src => "js/doremi-script-base/third_party/hypher/hypher.js", :type => "text/javascript"}
+    %script{:src => "js/doremi-script-base/third_party/hyphenation_patterns/en-us.js", :type => "text/javascript"}
     <script type="text/javascript">
     // Hack part 2 to make Hypher.js work in the browser
     window.english=window.module.exports 
     window.module=undefined;
     </script>
-    %script{:src => "js/doremi-script/tree_iterators.js", :type => "text/javascript"}
-    %script{:src => "js/doremi-script/parser_helper.js", :type => "text/javascript"}
-    %script{:src => "js/doremi-script/to_lilypond.js", :type => "text/javascript"}
-    %script{:src => "js/doremi-script/to_musicxml.js", :type => "text/javascript"}
-    %script{:src => "js/doremi-script/doremi_script_parser.js", :type => "text/javascript"}
-    %script{:src => "js/doremi-script/doremi_script_line_parser.js", :type => "text/javascript"}
-    %script{:src => "js/doremi-script/dom_fixer.js", :type => "text/javascript"}
-    %script{:src => "js/doremi-script/html_renderer.js", :type => "text/javascript"}
+    %script{:src => "js/doremi-script-base/tree_iterators.js", :type => "text/javascript"}
+    %script{:src => "js/doremi-script-base/parser_helper.js", :type => "text/javascript"}
+    %script{:src => "js/doremi-script-base/to_lilypond.js", :type => "text/javascript"}
+    %script{:src => "js/doremi-script-base/to_musicxml.js", :type => "text/javascript"}
+    %script{:src => "js/doremi-script-base/doremi_script_parser.js", :type => "text/javascript"}
+    %script{:src => "js/doremi-script-base/doremi_script_line_parser.js", :type => "text/javascript"}
+    %script{:src => "js/doremi-script-base/dom_fixer.js", :type => "text/javascript"}
+    %script{:src => "js/doremi-script-base/html_renderer.js", :type => "text/javascript"}
     / stash css and javascript here when necessary to generate a standalone page.
     %script#application_for_html_doc{:type => "text/html"}
     %script#styles_for_html_doc{:type => "text/html"}

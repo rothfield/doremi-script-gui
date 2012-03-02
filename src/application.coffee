@@ -722,7 +722,7 @@ $(document).ready ->
     self.get_dom_fixer = () ->
       params=
         type:'GET'
-        url:'/doremi-script-gui/js/doremi-script/dom_fixer.js'
+        url:'/doremi-script-gui/js/doremi-script-base/dom_fixer.js'
         dataType:'text'
         success: (data) ->
           $('#dom_fixer_for_html_doc').html(data)
@@ -732,7 +732,7 @@ $(document).ready ->
     self.get_zepto = () ->
       params=
         type:'GET'
-        url:'/doremi-script-gui/js/doremi-script/third_party/zepto.unminified.js'
+        url:'/doremi-script-gui/js/doremi-script-base/third_party/zepto.unminified.js'
         dataType:'text'
         success: (data) ->
           $('#zepto_for_html_doc').html(data)
