@@ -125,7 +125,7 @@
     %div.staff_notation_div{"data-bind" => "visible: staff_notation_visible"}
       %img.staff_notation{"alt" => 'staff notation', "src" => 'images/none.png', "data-bind" => "attr: {src:staff_notation_url_with_time_stamp}"}
     %br
-    %div.composition_headers{"data-bind" => "visible: show_title"}
+    %div.composition_headers{"data-bind" => "css:{hide_title:hide_title}"}
       %h1.composition_title{"data-bind" => "text:title"}
       %h2.composition_author{"data-bind" => "text:author"}
       <!--  Each line consists of a textarea, some controls, and the rendered html. The textarea and controls are hidden unless the user is editting the line. When the user is editting the line, the rendered html is hidden -->

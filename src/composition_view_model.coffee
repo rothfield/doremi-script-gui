@@ -51,6 +51,9 @@ window.CompositionViewModel = (my_doremi_source) ->
   self.open_file_visible=ko.observable(false)
   self.composition_info_visible=ko.observable(true)
   self.show_title=ko.observable(false)
+  self.hide_title=ko.computed( () ->
+    !self.show_title()
+  )
   self.composition_parse_failed=ko.observable(false)
   self.calculate_stave_width=() ->
     width=$('div.composition_body').width()

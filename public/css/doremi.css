@@ -255,8 +255,18 @@ div.rendered_wrapper {
 span.line_number {
   display:none;
 }
+div.composition_headers.hide_title {
+  display:none;
+}
 @media print {
-    .controls,span.line_number,button {
+    div.composition_headers.hide_title {
+      /* This seems to be the opposite of display:none */
+      display:block !important;
+    }
+    h1.title, .controls,span.line_number,button {
+      display:none;
+    }
+    div.lyrics_section.hyphenated {
       display:none;
     }
     div.composition, div.rendered_wrapper,div.rendered_html,div.stave_wrapper {

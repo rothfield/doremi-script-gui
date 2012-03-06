@@ -74,7 +74,7 @@
       return _results;
     },
     parse_lyrics_section: function(lyrics_lines) {
-      var all_words, hy_ary, hyphenated_words, hyphenated_words_str, item, line, regex, result, soft_hyphen, source, word;
+      var all_words, ary, hy_ary, hyphenated_line, hyphenated_source, hyphenated_words, hyphenated_words_str, item, line, regex, result, soft_hyphen, source, without_dashes, word;
       if (lyrics_lines === "") {
         source = "";
       } else {
@@ -126,9 +126,23 @@
       regex = new RegExp(/([^ -]+)/);
       regex = /([^- ]+[- ]?)/g;
       hyphenated_words = hyphenated_words_str.match(regex);
+      ary = (function() {
+        var _i, _len, _results;
+        _results = [];
+        for (_i = 0, _len = lyrics_lines.length; _i < _len; _i++) {
+          line = lyrics_lines[_i];
+          hyphenated_line = hypher.hyphenateText(line.source);
+          _results.push(hyphenated_line.split(soft_hyphen).join('-'));
+        }
+        return _results;
+      })();
+      hyphenated_source = ary.join("\n");
+      without_dashes = source.replace(/-/g, '');
       return {
         my_type: "lyrics_section",
         source: source,
+        hyphenated_source: hyphenated_source,
+        unhyphenated_source: source.replace(/-/g, ''),
         lyrics_lines: lyrics_lines,
         line_warnings: [],
         items: [],

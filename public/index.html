@@ -384,7 +384,7 @@
           <img alt='staff notation' class='staff_notation' data-bind='attr: {src:staff_notation_url_with_time_stamp}' src='images/none.png' />
         </div>
         <br />
-        <div class='composition_headers' data-bind='visible: show_title'>
+        <div class='composition_headers' data-bind='css:{hide_title:hide_title}'>
           <h1 class='composition_title' data-bind='text:title'></h1>
           <h2 class='composition_author' data-bind='text:author'></h2>
           <!--  Each line consists of a textarea, some controls, and the rendered html. The textarea and controls are hidden unless the user is editting the line. When the user is editting the line, the rendered html is hidden -->

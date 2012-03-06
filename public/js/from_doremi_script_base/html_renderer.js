@@ -41,9 +41,10 @@
     return LOOKUP[str];
   };
   draw_lyrics_section = function(lyrics_section) {
-    var without_dashes;
-    without_dashes = lyrics_section.source.replace(/-/g, '');
-    return "<div title='Lyrics Section' class='stave lyrics_section'>" + without_dashes + "</div>";
+    var without_dashes, x;
+    without_dashes = lyrics_section.unhyphenated_source.replace(/-/g, '');
+    x = "<div title='Lyrics Section' class='stave lyrics_section unhyphenated'>" + lyrics_section.unhyphenated_source + "</div>";
+    return x + ("<div title='Lyrics Section' class='stave lyrics_section hyphenated'>" + lyrics_section.hyphenated_source + "</div>");
   };
   draw_line = function(line) {
     var item, x;
