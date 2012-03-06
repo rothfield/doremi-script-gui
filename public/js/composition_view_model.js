@@ -238,7 +238,7 @@ window.CompositionViewModel = function(my_doremi_source) {
           console.log(base_url);
         }
         self.base_url(base_url);
-        self.staff_notation_url(full_url_helper(some_data.fname));
+        self.staff_notation_url(app.app.full_url_helper(some_data.fname));
         self.staff_notation_visible(true);
         return self.composition_lilypond_output_visible(false);
       }
@@ -299,7 +299,7 @@ window.CompositionViewModel = function(my_doremi_source) {
           console.log(base_url);
         }
         self.base_url(base_url);
-        self.staff_notation_url(full_url_helper(some_data.fname));
+        self.staff_notation_url(app.full_url_helper(some_data.fname));
         self.calculate_staff_notation_url_with_time_stamp();
         self.staff_notation_visible(true);
         return self.composition_lilypond_output_visible(false);
@@ -604,7 +604,7 @@ window.CompositionViewModel = function(my_doremi_source) {
     }
     initialData = "";
     window.the_composition.my_init(initialData);
-    message_box("An untitled composition was created with a new id. Please enter a title");
+    app.message_box("An untitled composition was created with a new id. Please enter a title");
     self.composition_info_visible(true);
     self.editing_composition(true);
     self.help_visible(false);
@@ -678,7 +678,7 @@ window.CompositionViewModel = function(my_doremi_source) {
     var params;
     params = {
       type: 'GET',
-      url: '/doremi-script-gui/js/doremi-script-base/dom_fixer.js',
+      url: '/doremi-script-gui/js/from_doremi_script_base/dom_fixer.js',
       dataType: 'text',
       success: function(data) {
         $('#dom_fixer_for_html_doc').html(data);
@@ -691,7 +691,7 @@ window.CompositionViewModel = function(my_doremi_source) {
     var params;
     params = {
       type: 'GET',
-      url: '/doremi-script-gui/js/doremi-script-base/third_party/zepto.unminified.js',
+      url: '/doremi-script-gui/js/from_doremi_script_base/third_party/zepto.unminified.js',
       dataType: 'text',
       success: function(data) {
         $('#zepto_for_html_doc').html(data);

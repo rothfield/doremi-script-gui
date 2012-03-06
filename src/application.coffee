@@ -69,14 +69,14 @@ $(document).ready ->
   initialData = ""
   debug=false
 
-  message_box= (str) ->
+  app.message_box= (str) ->
     alert(str)
 
-  full_url_helper = (fname) ->
+  app.full_url_helper = (fname) ->
     loc=document.location
     "#{loc.protocol}//#{loc.host}#{fname}"
 
-  window.the_composition=new CompositionViewModel() 
+  window.the_composition=new CompositionViewModel()
   # TOODO: move away from window.the_composition
   app.the_composition=window.the_composition
   window.the_composition.help_visible(false)

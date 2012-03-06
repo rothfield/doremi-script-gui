@@ -1,5 +1,5 @@
 $(document).ready(function() {
-  var a, app, b, c, debug, full_url_helper, initialData, message_box, setup_downloadify;
+  var a, app, b, c, debug, initialData, setup_downloadify;
   debug = false;
   window.doremi_script_gui_app = {};
   app = window.doremi_script_gui_app;
@@ -97,10 +97,10 @@ $(document).ready(function() {
   initialData = "Title: testing\nAuthor: anon\nApplyHyphenatedLyrics: true\nmany words aren't hyphenated\n\n| SRG- m-m-\n. \n\n|PDNS";
   initialData = "";
   debug = false;
-  message_box = function(str) {
+  app.message_box = function(str) {
     return alert(str);
   };
-  full_url_helper = function(fname) {
+  app.full_url_helper = function(fname) {
     var loc;
     loc = document.location;
     return "" + loc.protocol + "//" + loc.host + fname;
