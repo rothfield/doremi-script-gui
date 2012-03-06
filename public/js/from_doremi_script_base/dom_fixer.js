@@ -101,12 +101,12 @@
     });
   };
   dom_fixes = function() {
-    adjust_slurs_in_dom();
     fallback_if_utf8_characters_not_supported();
     fix_before_ornaments();
-    expand_note_widths_to_accomodate_syllables();
     add_left_margin_to_notes_with_left_superscripts();
-    return add_right_margin_to_notes_with_right_superscripts();
+    add_right_margin_to_notes_with_right_superscripts();
+    expand_note_widths_to_accomodate_syllables();
+    return adjust_slurs_in_dom();
   };
   root.dom_fixes = dom_fixes;
 }).call(this);
