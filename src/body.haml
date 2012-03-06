@@ -119,8 +119,6 @@
           Show Staff Notation
         %button{"data-bind" => "css: {button_on:show_title},click: toggle_title_visible"} 
           Show Title
-        %button{"data-bind" => "css: {button_on:disable_context_menu},click: toggle_disable_context_menu"} 
-          Disable Context Menu(debugging only)
       %img.spinner{"alt" => 'spinner', "data-bind" => "visible: generating_staff_notation", "src" => "images/musical-notes-animated.gif", "width" => '50'}
     %div.staff_notation_div{"data-bind" => "visible: staff_notation_visible"}
       %img.staff_notation{"alt" => 'staff notation', "src" => 'images/none.png', "data-bind" => "attr: {src:staff_notation_url_with_time_stamp}"}
@@ -143,6 +141,8 @@
         %div.entry_area_wrapper{"data-bind" => 'visible:editing'}
           %a.close_box
             %img{:src => 'images/close_box.gif',"data-bind" => "visible:editing(),click: close_edit,clickBubble:false"} 
+          %span.show_warnings{"data-bind" => "visible: line_has_warnings, attr: {title: line_warnings}"} 
+            W
           %textarea.entry_area{:spellcheck => "false",:rows => "6", :cols => "33", "data-bind" => "attr: {id: entry_area_id()},style: {width: $parent.composition_textarea_width},css: {'line_has_warnings': line_has_warnings,'parse_failed': $data.parse_failed},visible: editing(), value: source "}
 
         %div.rendered_html{"style" => "display:inline-block", "data-bind" => "visible: not_editing,html: rendered_in_html, event: { dblclick: edit},clickBubble:false, css: {editing:editing,not_editing:not_editing,line_has_warnings: line_has_warnings,line_parse_failed: line_parse_failed},style: {width: $parent.composition_textarea_width}"}

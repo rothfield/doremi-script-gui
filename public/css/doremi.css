@@ -20,7 +20,7 @@ fieldset#composition_info label {
   display: inline-block;
 }
 
-div.edit_line_wrapper.line_has_warnings, div.line_has_warnings {
+div.edit_line_wrapper.line_has_warnings, div.line_has_warnings,span.show_warnings {
   border:2px solid orange;
 }
 div.edit_line_wrapper.line_parse_failed, div.line_parse_failed, div.composition_parse_failed {

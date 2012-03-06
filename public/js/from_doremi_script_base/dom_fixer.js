@@ -1,6 +1,14 @@
 (function() {
-  var add_left_margin_to_notes_with_left_superscripts, add_right_margin_to_notes_with_right_superscripts, adjust_slurs_in_dom, dom_fixes, expand_note_widths_to_accomodate_syllables, fallback_if_utf8_characters_not_supported, fix_before_ornaments, root;
+  var add_left_margin_to_notes_with_left_superscripts, add_right_margin_to_notes_with_pitch_signs, add_right_margin_to_notes_with_right_superscripts, adjust_slurs_in_dom, dom_fixes, expand_note_widths_to_accomodate_syllables, fallback_if_utf8_characters_not_supported, fix_before_ornaments, root;
   root = typeof exports !== "undefined" && exports !== null ? exports : this;
+  add_right_margin_to_notes_with_pitch_signs = function() {
+    return $('span.note_wrapper *.pitch_sign').each(function(index) {
+      var current_margin_right, parent;
+      parent = $(this).parent();
+      current_margin_right = parseInt($(parent).css('margin-right').replace('px', ''));
+      return $(parent).css('margin-right', current_margin_right + $(this).width());
+    });
+  };
   add_left_margin_to_notes_with_left_superscripts = function() {
     return $('span.note_wrapper *.ornament.placement_before').each(function(index) {
       var current_margin_left, parent;
@@ -105,6 +113,7 @@
     fix_before_ornaments();
     add_left_margin_to_notes_with_left_superscripts();
     add_right_margin_to_notes_with_right_superscripts();
+    add_right_margin_to_notes_with_pitch_signs();
     expand_note_widths_to_accomodate_syllables();
     return adjust_slurs_in_dom();
   };
