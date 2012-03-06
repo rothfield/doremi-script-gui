@@ -1,3 +1,15 @@
+button#help_button {
+   margin-left: 53px;  
+   margin-right: 53px;  
+}
+
+span.open_file {
+  display:inline-block;
+  border: 1px solid black;
+  margin-left: 15px;
+  margin-right:15px;
+  padding:4px;
+}
 h1.title {
   font-size:16px;
   font-weight: bold;
