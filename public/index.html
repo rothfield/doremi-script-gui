@@ -11,7 +11,7 @@
   <body>
     <div class='bodyArea'>
       <h1 class='title'>
-        Doremi-Script - Easy to write textual Music Notation- ALPHA
+        Doremi-Script - Easy to write textual Music Notation- ALPHA (works best with Firefox)
       </h1>
       <div class='controls'>
         <!-- downloadify save button -->
@@ -92,6 +92,7 @@
             <img alt='Converted to western notation' src='images/readme/bansuri_in_western_notation.png' title='' />
           </p>
           <ul>
+            <li>Works best with Firefox. Chrome is OK but Chrome can't print backgrounds (as of 2012). I haven't tested other browsers.</li>
             <li>Use a blank line to separate lines of music.</li>
             <li>Start lines of music with a barline "|", for example,  | C D E F | . Otherwise be sure to include a barline or dash in the main line of music.</li>
             <li>ABC style notation is written as follows C C# Db etc</li>
@@ -115,7 +116,14 @@
               <strong>:</strong>
               to indicate upper-upper octave or lower-lower octave
             </li>
-            <li>Lyrics: Enter lyrics for each line underneath the notes. Syllable DO NOT need to be directly under their corresponding note, as the parser can figure out which syllables go with which notes by counting pitches and slurred phrases.</li>
+            <li>Lyrics: Enter lyrics sections as stanzas separated by new lines.</li>
+            The doremi-script parser will attempt to hyphenate your lyrics and apply the syllables to the the appropriate notes, taking into account slurs. Alternatively, enter lyrics for each line underneath the notes. Taking this approach may require the use of angle brackets for delimiting beats if spaces need to be inserted. For example &lt;C&nbsp;&nbsp;&nbsp;  D&gt; if you need more space after the C note for a syllable.
+            <li>
+              Multiple spaces are treated as a single space
+            </li>
+            <li>
+              The html renderer attempts to allot extra margins to ornaments so they don't collide with adjacent notes
+            </li>
             <li>
               Rhythm: In this style of notation, derived from the AACM style, the dash (<strong>-</strong>) is used as a rhythmic placeholder. For example, this measure
               <code>| C--Eb--G-   A   A   A</code>
