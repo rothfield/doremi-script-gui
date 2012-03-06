@@ -263,7 +263,7 @@
     }
     my_source = source2 != null ? source2 : item.source;
     if (item.my_type === "whitespace") {
-      my_source = Array(item.source.length + 1).join("&nbsp;");
+      my_source = "&nbsp;";
     }
     if (!(my_source != null)) {
       my_source = "";

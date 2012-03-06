@@ -31,7 +31,6 @@
     if (!(debug != null)) {
       return;
     }
-    console.log("debug is " + debug);
     if (!debug) {
       return;
     }
@@ -83,9 +82,13 @@
     if (msg == null) {
       msg = "";
     }
-    _.debug("Entering test_parses, str is " + str);
+    if (false) {
+      _.debug("Entering test_parses, str is " + str);
+    }
     composition = parser.parse(str);
-    _.debug("in test_parses,composition is " + composition);
+    if (false) {
+      _.debug("in test_parses,composition is " + composition);
+    }
     return composition;
     /*
       test.doesNotThrow(-> result=parser.parse(str))
@@ -304,8 +307,9 @@
   };
   exports.test_syllable_assigned_using_melismas = function(test) {
     var composition, line, my_pitch, str;
-    str = '| (SR G)m P\nhe-llo     john \n';
+    str = 'ApplyHyphenatedLyrics: true\n\nhe-llo john\n\n| (SR G)m P\n';
     composition = test_parses(str, test);
+    console.log("composition " + composition);
     line = first_sargam_line(composition);
     my_pitch = utils.tree_find(line, function(item) {
       return item.syllable === "llo";
@@ -315,6 +319,17 @@
       return item.source === "R";
     });
     test.ok(!(my_pitch.syllable != null), "R is part of a slur SRG an should not be assigned a syllable");
+    return test.done();
+  };
+  exports.test_syllable = function(test) {
+    var composition, line, my_pitch, str;
+    str = '| S\n  foobar';
+    composition = test_parses(str, test);
+    line = first_sargam_line(composition);
+    my_pitch = utils.tree_find(line, function(item) {
+      return item.syllable === "foobar";
+    });
+    test.equal("S", my_pitch.source);
     return test.done();
   };
   exports.test_upper_octave_assigned_to_note_below_it = function(test) {
@@ -609,16 +624,16 @@
     return test.done();
   };
   exports.test_abc = function(test) {
-    var composition, line, str, x;
+    var composition, line, str;
+    console.log("entering test_abc");
     str = 'C#D#F#G#A#B#DbEbGbAbBbCC#DbDD#EbEFF#GbGAbAA#BbBB# ';
     composition = test_parses(str, test);
     line = first_sargam_line(composition);
-    x = sys.inspect(line, true, null);
     return test.done();
   };
   exports.test_apply_hyphenated_lyrics_attribute = function(test) {
     var composition, str, x;
-    debug = true;
+    debug = false;
     str = 'ApplyHyphenatedLyrics: true\n\nHello john many zany egos\n\n| SRG';
     composition = test_parses(str, test);
     test.equal(composition.lines[0].my_type, "lyrics_section", "First 'line' should be lyrics_section");

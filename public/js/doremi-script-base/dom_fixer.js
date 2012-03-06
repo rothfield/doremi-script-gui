@@ -1,6 +1,22 @@
 (function() {
-  var adjust_slurs_in_dom, dom_fixes, expand_note_widths_to_accomodate_syllables, fallback_if_utf8_characters_not_supported, fix_before_ornaments, root;
+  var add_left_margin_to_notes_with_left_superscripts, add_right_margin_to_notes_with_right_superscripts, adjust_slurs_in_dom, dom_fixes, expand_note_widths_to_accomodate_syllables, fallback_if_utf8_characters_not_supported, fix_before_ornaments, root;
   root = typeof exports !== "undefined" && exports !== null ? exports : this;
+  add_left_margin_to_notes_with_left_superscripts = function() {
+    return $('span.note_wrapper *.ornament.placement_before').each(function(index) {
+      var current_margin_left, parent;
+      parent = $(this).parent();
+      current_margin_left = parseInt($(parent).css('margin-left').replace('px', ''));
+      return $(parent).css('margin-left', current_margin_left + $(this).width());
+    });
+  };
+  add_right_margin_to_notes_with_right_superscripts = function() {
+    return $('span.note_wrapper *.ornament.placement_after').each(function(index) {
+      var current_margin_right, parent;
+      parent = $(this).parent();
+      current_margin_right = parseInt($(parent).css('margin-right').replace('px', ''));
+      return $(parent).css('margin-right', current_margin_right + $(this).width());
+    });
+  };
   expand_note_widths_to_accomodate_syllables = function() {
     /*
            Example:
@@ -88,7 +104,9 @@
     adjust_slurs_in_dom();
     fallback_if_utf8_characters_not_supported();
     fix_before_ornaments();
-    return expand_note_widths_to_accomodate_syllables();
+    expand_note_widths_to_accomodate_syllables();
+    add_left_margin_to_notes_with_left_superscripts();
+    return add_right_margin_to_notes_with_right_superscripts();
   };
   root.dom_fixes = dom_fixes;
 }).call(this);

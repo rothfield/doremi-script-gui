@@ -137,7 +137,7 @@
       };
     },
     parse_line: function(uppers, sargam, lowers, lyrics) {
-      var attribute_lines, ctr, item, lower, lyric, my_items, my_items2, my_line, my_lowers, my_uppers, upper, x, _i, _j, _k, _l, _len, _len2, _len3, _len4;
+      var attribute_lines, ctr, item, lower, lyric, my_items, my_line, my_lowers, my_uppers, upper, x, _i, _j, _k, _l, _len, _len2, _len3, _len4;
       this.line_warnings = [];
       if (lyrics.length === 0) {
         lyrics = '';
@@ -148,13 +148,12 @@
       if (uppers.length === 0) {
         uppers = '';
       }
-      my_items = _.flatten(_.compact([uppers, sargam, lowers]));
-      my_items2 = _.flatten(_.compact([uppers, sargam, lowers, lyrics]));
+      my_items = _.flatten(_.compact([uppers, sargam, lowers, lyrics]));
       sargam.source = (x = (function() {
         var _i, _len, _results;
         _results = [];
-        for (_i = 0, _len = my_items2.length; _i < _len; _i++) {
-          item = my_items2[_i];
+        for (_i = 0, _len = my_items.length; _i < _len; _i++) {
+          item = my_items[_i];
           _results.push(item.source);
         }
         return _results;
@@ -184,7 +183,6 @@
       my_lowers = _.flatten(_.compact([lowers]));
       attribute_lines = _.flatten(_.compact([uppers, lowers, lyrics]));
       this.assign_attributes(sargam, attribute_lines);
-      this.assign_lyrics(sargam, lyrics);
       sargam.line_warnings = this.line_warnings;
       return sargam;
     },
@@ -787,7 +785,6 @@
       return this.push_warning(("" + ornament.my_type + " (" + ornament.source + ") not to right ") + ("or left of pitch , column is " + ornament.column));
     },
     push_warning: function(str) {
-      console.log("in push_warning, str=", str);
       this.warnings.push(str);
       return this.line_warnings.push(str);
     },
