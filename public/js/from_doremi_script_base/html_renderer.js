@@ -346,7 +346,7 @@
       js = "";
     }
     rendered_composition = to_html(composition);
-    return "<html>\n  <head>\n  <style type=\"text/css\">\n    " + css + "\n  </style>\n    <title>" + composition.title + "</title>\n    <!--\n    <link media=\"all\" type=\"text/css\" href=\"" + full_url + "/css/application.css\" rel=\"stylesheet\">\n     -->\n    <meta content=\"text/html;charset=utf-8\" http-equiv=\"Content-Type\">\n  </head>\n<body>\n  <div id=\"rendered_sargam\">\n    " + rendered_composition + "\n  </div>\n<span id=\"testing_utf_support\" style=\"display:none\" class=\"note left_repeat\">&#x1d106;</span>\n<script type=\"text/javascript\">\n" + js + "\n$(document).ready(function() {\n    return dom_fixes()\n})\n</script>\n<script id=\"source\" type=\"text/html\">\n" + composition.source + "\n</script>\n</body>\n</html>";
+    return "<!DOCTYPE html>\n<html>\n  <head>\n  <style type=\"text/css\">\n    " + css + "\n  </style>\n    <title>" + composition.title + "</title>\n    <!--\n    <link media=\"all\" type=\"text/css\" href=\"" + full_url + "/css/application.css\" rel=\"stylesheet\">\n     -->\n    <meta content=\"text/html;charset=utf-8\" http-equiv=\"Content-Type\">\n  </head>\n<body>\n  <div id=\"rendered_sargam\">\n    " + rendered_composition + "\n  </div>\n<span id=\"testing_utf_support\" style=\"display:none\" class=\"note left_repeat\">&#x1d106;</span>\n<script type=\"text/javascript\">\n" + js + "\n$(document).ready(function() {\n    return dom_fixes()\n})\n</script>\n<script id=\"source\" type=\"text/html\">\n" + composition.source + "\n</script>\n</body>\n</html>";
   };
   draw_attributes = function(attributes) {
     var attribute, attrs;

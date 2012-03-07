@@ -526,10 +526,11 @@ window.CompositionViewModel = (my_doremi_source) ->
     #window.generate_html_doc_ctr=3
     console.log "generate_html_page_aux"
     #return if window.generate_html_doc_ctr > 0
-    a=$('#application_for_html_doc').html()
-    b=$('#styles_for_html_doc').html()
-    c=$('#doremi_for_html_doc').html()
+    a=$('#styles_for_html_doc').html()
+    b=$('#doremi_for_html_doc').html()
+    c=$('#application_for_html_doc').html()
     css=a+b+c
+    console.log "in generate_html_page_aux, css is #{css}"
     js=$('#zepto_for_html_doc').html()
     js2=$('#dom_fixer_for_html_doc').html()
     all_js=js+js2

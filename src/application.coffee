@@ -93,10 +93,10 @@ $(document).ready ->
   $('#composition_title').focus()
 
   console.log("before get_css")
-  a=app.the_composition.get_application_css()
-  b=app.the_composition.get_styles_css()
-  c=app.the_composition.get_doremi_css()
-  app.the_composition.all_css_for_html_doc=a+b+c
+  app.the_composition.get_application_css()
+  app.the_composition.get_styles_css()
+  app.the_composition.get_doremi_css()
+  #app.the_composition.all_css_for_html_doc=a+b+c
   app.the_composition.get_zepto()
   app.the_composition.get_dom_fixer()
 

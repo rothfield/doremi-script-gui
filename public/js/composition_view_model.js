@@ -666,10 +666,11 @@ window.CompositionViewModel = function(my_doremi_source) {
   self.generate_html_page_aux = function() {
     var a, all_js, b, c, composition, css, full_url, js, js2;
     console.log("generate_html_page_aux");
-    a = $('#application_for_html_doc').html();
-    b = $('#styles_for_html_doc').html();
-    c = $('#doremi_for_html_doc').html();
+    a = $('#styles_for_html_doc').html();
+    b = $('#doremi_for_html_doc').html();
+    c = $('#application_for_html_doc').html();
     css = a + b + c;
+    console.log("in generate_html_page_aux, css is " + css);
     js = $('#zepto_for_html_doc').html();
     js2 = $('#dom_fixer_for_html_doc').html();
     all_js = js + js2;
