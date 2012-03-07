@@ -56,6 +56,18 @@ window.CompositionViewModel = function(my_doremi_source) {
   self.open_file_visible = ko.observable(false);
   self.composition_info_visible = ko.observable(true);
   self.show_title = ko.observable(false);
+  self.show_hyphenated_lyrics = ko.observable(false);
+  self.hide_show_hyphenated_lyrics = function() {
+    if (self.show_hyphenated_lyrics()) {
+      return $('.lyrics_section.hyphenated').show();
+    } else {
+      return $('.lyrics_section.hyphenated').hide();
+    }
+  };
+  self.hide_hyphenated_lyrics = ko.computed(function() {
+    !self.show_hyphenated_lyrics();
+    return self.hide_show_hyphenated_lyrics();
+  });
   self.hide_title = ko.computed(function() {
     return !self.show_title();
   });
@@ -143,6 +155,9 @@ window.CompositionViewModel = function(my_doremi_source) {
   self.composition_lilypond_output_visible = ko.observable(false);
   self.composition_lilypond_output = ko.observable(false);
   self.doremi_source_visible = ko.observable(false);
+  self.toggle_hyphenated_lyrics_visible = function(event) {
+    return self.show_hyphenated_lyrics(!this.show_hyphenated_lyrics());
+  };
   self.toggle_title_visible = function(event) {
     return self.show_title(!this.show_title());
   };
@@ -791,9 +806,6 @@ window.CompositionViewModel = function(my_doremi_source) {
       } else {
         composition_view.composition_parse_failed(false);
         composition_view.composition_parsed_doremi_script(parsed);
-        if (composition_view.composition_musicxml_source_visible()) {
-          composition_view.composition_musicxml_source(to_musicxml(parsed));
-        }
         parsed_lines = parsed.lines;
         view_lines = composition_view.lines();
         ctr = 0;
@@ -825,6 +837,7 @@ window.CompositionViewModel = function(my_doremi_source) {
     } finally {
       app.setup_context_menu();
       dom_fixes();
+      self.hide_show_hyphenated_lyrics();
     }
   }, this);
   self.save_locally = function() {

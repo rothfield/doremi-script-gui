@@ -269,7 +269,7 @@
       };
       this.composition_data = {
         my_type: "composition",
-        apply_hyphenated_lyrics: false,
+        apply_hyphenated_lyrics: true,
         title: "",
         filename: "",
         attributes: attributes,
@@ -344,8 +344,10 @@
       x = get_composition_attribute(this.composition_data, "ApplyHyphenatedLyrics");
       if (x === "true") {
         x = true;
-      } else {
+      } else if (x === "false") {
         x = false;
+      } else {
+        x = true;
       }
       this.composition_data.apply_hyphenated_lyrics = x;
       this.mark_partial_measures();

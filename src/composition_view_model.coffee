@@ -51,6 +51,20 @@ window.CompositionViewModel = (my_doremi_source) ->
   self.open_file_visible=ko.observable(false)
   self.composition_info_visible=ko.observable(true)
   self.show_title=ko.observable(false)
+
+
+  self.show_hyphenated_lyrics=ko.observable(false)
+
+  self.hide_show_hyphenated_lyrics=() ->
+    if self.show_hyphenated_lyrics()
+      $('.lyrics_section.hyphenated').show()
+    else
+      $('.lyrics_section.hyphenated').hide()
+
+  self.hide_hyphenated_lyrics=ko.computed( () ->
+    !self.show_hyphenated_lyrics()
+    self.hide_show_hyphenated_lyrics()
+  )
   self.hide_title=ko.computed( () ->
     !self.show_title()
   )
@@ -114,6 +128,9 @@ window.CompositionViewModel = (my_doremi_source) ->
   self.composition_lilypond_output_visible=ko.observable(false)
   self.composition_lilypond_output=ko.observable(false)
   self.doremi_source_visible=ko.observable(false)
+
+  self.toggle_hyphenated_lyrics_visible= (event) ->
+    self.show_hyphenated_lyrics(!this.show_hyphenated_lyrics())
 
   self.toggle_title_visible= (event) ->
     self.show_title(!this.show_title())
@@ -625,8 +642,8 @@ window.CompositionViewModel = (my_doremi_source) ->
       else # parse (on whole input) succeeded.
         composition_view.composition_parse_failed(false)
         composition_view.composition_parsed_doremi_script(parsed)
-        if composition_view.composition_musicxml_source_visible()
-          composition_view.composition_musicxml_source(to_musicxml(parsed))
+        #if composition_view.composition_musicxml_source_visible()
+        #composition_view.composition_musicxml_source(to_musicxml(parsed))
         parsed_lines=parsed.lines
         view_lines=composition_view.lines()
         ctr=0
@@ -658,6 +675,7 @@ window.CompositionViewModel = (my_doremi_source) ->
     finally
       app.setup_context_menu()
       dom_fixes()
+      self.hide_show_hyphenated_lyrics()
   self.save_locally = () ->
     if self.composition_parse_failed() is true
       alert("Can't save because there are syntax errors. Please fix the lines outlined in red first")

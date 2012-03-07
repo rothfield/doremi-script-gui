@@ -255,7 +255,7 @@ div.rendered_wrapper {
 span.line_number {
   display:none;
 }
-div.composition_headers.hide_title {
+div.composition_headers.hide_title, div.hide_hyphenated_lyrics {
   display:none;
 }
 @media print {
