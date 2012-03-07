@@ -346,7 +346,7 @@
       js = "";
     }
     rendered_composition = to_html(composition);
-    return "<!DOCTYPE html>\n<html>\n  <head>\n  <style type=\"text/css\">\n    " + css + "\n  </style>\n    <title>" + composition.title + "</title>\n    <!--\n    <link media=\"all\" type=\"text/css\" href=\"" + full_url + "/css/application.css\" rel=\"stylesheet\">\n     -->\n    <meta content=\"text/html;charset=utf-8\" http-equiv=\"Content-Type\">\n  </head>\n<body>\n  <div id=\"rendered_sargam\">\n    " + rendered_composition + "\n  </div>\n<span id=\"testing_utf_support\" style=\"display:none\" class=\"note left_repeat\">&#x1d106;</span>\n<script type=\"text/javascript\">\n" + js + "\n$(document).ready(function() {\n    return dom_fixes()\n})\n</script>\n<script id=\"source\" type=\"text/html\">\n" + composition.source + "\n</script>\n</body>\n</html>";
+    return "<!DOCTYPE html>\n<html>\n  <head>\n  <style type=\"text/css\">\n    " + css + "\n  </style>\n    <title>" + composition.title + "</title>\n    <!--\n    <link media=\"all\" type=\"text/css\" href=\"" + full_url + "/css/application.css\" rel=\"stylesheet\">\n     -->\n    <meta content=\"text/html;charset=utf-8\" http-equiv=\"Content-Type\">\n  </head>\n<body>\n\n<div class=\"composition_headers\">\n        <h1 class=\"composition_title\">" + composition.title + "</h1>\n        <h2 class=\"composition_author\">" + composition.author + "</h2>\n        <!--  Each line consists of a textarea, some controls, and the rendered html. The textarea and controls are hidden unless the user is editting the line. When the user is editting the line, the rendered html is hidden -->\n                  </div>\n  <div id=\"rendered_sargam\">\n    " + rendered_composition + "\n  </div>\n  <span class=\"note testing_utf_support\" id=\"utf_left_repeat\" style=\"display: none; \">&#x1d106;</span>\n  <span id=\"utf_single_barline\" class=\"note testing_utf_support\" style=\"display: none; \">&#x1d100;</span>\n<script type=\"text/javascript\">\n" + js + "\n$(document).ready(function() {\n    dom_fixes()\n})\n</script>\n<script id=\"source\" type=\"text/html\">\n" + composition.source + "\n</script>\n</body>\n</html>";
   };
   draw_attributes = function(attributes) {
     var attribute, attrs;
@@ -370,7 +370,10 @@
   };
   to_html = function(composition) {
     var attrs, item, lines;
-    attrs = draw_attributes(composition.attributes);
+    attrs = "";
+    if (false) {
+      attrs = draw_attributes(composition.attributes);
+    }
     lines = ((function() {
       var _i, _len, _ref, _results;
       _ref = composition.lines;

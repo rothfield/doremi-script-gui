@@ -1,107 +1,226 @@
-<h1>DoremiScript</h1>
-
-<p><strong>DoremiScript</strong> is a small language for creating <a href="http://en.wikipedia.org/wiki/Letter_notation">letter based musical notation</a>. It currently supports western ABC style notation, <a href="http://http://en.wikipedia.org/wiki/Numbered_musical_notation">Numbered notation</a> using 1234567, <a href="http://en.wikipedia.org/wiki/Swara">Sargam</a> notation using english letters SrRgGmMPdnN as used at the AACM for notating Ragas, and <a href="http://en.wikipedia.org/wiki/Musical_notation#India">Devanagri notation in Bhatkande style</a> <a href="http://www.omenad.net/page.php?goPage=http%3A%2F%2Fwww.omenad.net%2Farticles%2Fomeswarlipi.htm">(See also)</a> using Devanagri letters for the sargam letters. <strong>DoremiScript</strong> lets you write letter music notation using an easy-to-read, easy-to-write plain text format, then nicely formats it using css and html. DoremiScript can also generate standard western notation via a <a href="http://lilypond.org">Lilypond</a> converter. </p>
-
-<p>Try the <a href="http://ragapedia.com">online version</a></p>
-
-<h2>Sample Input in AACM Sargam Style</h2>
-
-<pre><code>Rag:Bhairavi
-Tal:Tintal
-Title:Bansuri
-Author:Traditional
-Source:AAK
-Mode: phrygian
-Filename: bansuri.sargam
-Time: 4/4
-Key: d
-
-
-
-                               i            IV         . 
-         3S             n      +            2         DSnDn
-1)|: (Sr | n) S   (gm &lt;P d)&gt; | P - P  P   | P - D    n     |
-           .
-      ban-    su-  ri          ba- ja ra-   hi  dhu- na
-
-  0  ~                 3           mgm        +  .     *  *   
-| P  d   P    d    |  (Pm   PmnP)    (g m) | (PdnS) -- g  S |
-  ma-dhu-ra   kan-     nai-           ya      khe-     la-ta
-
-   2               0     
-                Pm ~
-| (d-Pm  g) P  m | r - S :|
-   ga-      wa-ta  ho- ri
-</code></pre>
-
-<h2>DoremiScript HTML Output(screen snapshot)</h2>
-
-<p><img src="https://github.com/rothfield/doremi-script/raw/master/docs/bansuri_in_html_screenshot.png" alt="Screenshot of DoremiScript rendered in html" title="Sargam Screenshot" /></p>
-
-<h2>Generated Western Staff Notation</h2>
-
-<p><img src="https://github.com/rothfield/doremi-script/raw/master/docs/bansuri_in_western_notation.png" alt="Converted to western notation" title="" /></p>
-
-<ul>
-<li>Use a blank line to separate lines of music.</li>
-<li>Start lines of music with a barline "|", for example,  | C D E F | . Otherwise be sure to include a barline or dash in the main line of music.</li>
-<li>ABC style notation is written as follows C C# Db etc</li>
-<li>Numbered notation is written as follows 1234567 corresponding to the diatonic notes of the C scale, with sharps and flats notated as 2b(Db) and 2#(D#), for example.</li>
-<li>AACM sargam notation is written as follows SrRgGmMPdDnN for the 12 notes. Sharp and flat notes are also supported as follows: S# R# etc and Pb. This allows proper notation using Sargam of Jazz/Pop/Classical music that uses these notes. For example, in notating the Beatles tune "Yesterday", use P# to indicate the sharpened fifth degree. P# corresponds to G# in the key of C.</li>
-<li>Note that the AACM style of Sargam notation uses <em>lowercase</em> characters to indicate the flattened notes.</li>
-<li>Devanagri style sargam is written using the devanagri letters सरग़मपधऩस
-for the seven notes SRGmPDN. Use an underline underneath the letter to indicate a kommal note (flat). For sharp Ma, write as म' (note the tick symbol) </li>
-<li>left and right parens are used to indicate slurs. Slurs can only be made between pitches. For example, use (SRg)- rather than  (Srg-)</li>
-<li>Beats are delimited by spaces. You can also use angle brackets &lt;> to delimit the beat</li>
-<li>Dot (.) and asterisk can be used interchangeably to 
-indicate octaves. Place dots underneath for lower octave and above for
-upper octaves. Use a colon <strong>:</strong> to indicate upper-upper octave or lower-lower octave</li>
-<li>Lyrics: Enter lyrics for each line underneath the notes. Syllable DO NOT need to be directly under their corresponding note, as the parser can figure out which syllables go with which notes by counting pitches and slurred phrases. </li>
-<li>Rhythm: In this style of notation, derived from the AACM style, the dash (<strong>-</strong>) is used as a rhythmic placeholder. For example, this measure <code>| C--Eb--G-   A   A   A |</code> is interpreted as a measure consisting of four beats. The first beat is divided into 8 parts, where the C gets 3/8ths of the beat, Eb gets 3/8ths of a beat and G gets 2/8ths. (Note that 3/8ths of a beat in western 4/4 notation is considered 3/32nds and is written as a dotted 16th. The 3 A's are each a single beat. The lilypond generator attempts to support this, but still needs a bit of work.</li>
-<li>Underlines are supported for Devanagri to indicate flat notes</li>
-<li>Mode,Time, and Key in header are used in generating western notation</li>
-<li>Chord symbols are supported</li>
-<li>Syllables must be entered directly under a pitch.</li>
-<li>For syllables to show up properly in generated western notation, slurs
-should be used to indicate the melismas</li>
-<li>Use | for single barline, || for double barline, |: and :| for left and right repeats</li>
-<li>If need be, you can have multiple upper or lower lines.</li>
-<li>Asterisk (*) can be used instead of a . to indicate octave</li>
-<li><p>Use the tilde character <strong>~</strong> to indicate an ornament which is displayed as </p>
-
-<h1>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;    &#x1D19D;&#x1D19D;</h1></li>
-<li><p>Supports tala markings +023456 for notating classical North Indian rhythmical cycles such as teental. The <strong>+</strong> indicates (usually) the first beat of the rhythmical cycle. The tala markings indicate the claps(taali) and non-claps(kaali) that delimit the rhythmic cycle.  </p></li>
-<li>Generates <a href="http://lilypond.org">lilypond</a> as a high quality interchange format, which can be used to generate western staff notation and midi.</li>
-<li>Generates <a href="http://en.wikipedia.org/wiki/MusicXML">musicxml</a> as a common music notation format. MusicXML can be imported into hundreds of notation packages. Note that the lilypond export is of higher quality. Currently supports the following: lyrics, before grace notes,title.</li>
-<li>Parser is easy to modify and is generated from a PEG grammar using a parsing expression grammar [peg.js])https://github.com/dmajda/pegjs)</li>
-<li>Parser is easy to modify and is generated from a PEG grammar using a parsing expression grammar [peg.js])https://github.com/dmajda/pegjs)</li>
-<li>DoremiScript grammar is <a href="https://raw.github.com/rothfield/doremi-script/master/src/grammars/doremiscript.peg.js">here</a></li>
-<li>Endings are entered as follows: 1.<strong><em>_</em><em></strong> or 2.<strong></em></strong> Current lilypond support for endings is poor.</li>
-<li>It is possible to mix ABC, Devanagri, and AACM notations in the same composition, but each line of notation must be in only one style.</li>
-<li>Supports ornaments (Sargam only for now). Ornaments can be entered either to RIGHT or LEFT of the note to be ornamented(on one of the lines above the note). You can put dots above/below the ornament pitch to indicate the octave. Lilypond renderer displays the (right hand) ornaments as looped 32th grace notes. <strong>Important note</strong>: Support for ornaments to the 'right' of a note seems to be very poor among software vendors, probably because the 'standard' way to right ornaments is <em>before</em> a note. Therefore it is probably advisable to not use the right hand ornaments as it may cause data interchange problems down the line. </li>
-<li>For best results it is best to start each main line of music with the barline character ("|")</li>
-<li>Since DoReMiScript also supports chords such as G, G7, this may cause problems for ornaments that start with an ABC letter. In this case you can delimit the ornament with angle brackets <strong>&lt;></strong>. Chord symbols take precedence, so that Dm above the main line is interpreted as the chord Dm rather than a Dm ornament.</li>
-<li>Code base is written in coffeescript</li>
-<li>Command line tools are available via npm:
-<ul>
-<li>First install <a href="http://npmjs.org">npm</a></li>
-<li>Then install the <strong>doremi-script</strong> package:</li>
-<li>npm install doremi-script</li>
-<li>Command line usage: 
-<ul>
-<li>To generate lilypond:</li>
-<li>cat composition.txt | doremi2ly</li>
-<li>To parse the composition, returning the parsed json:</li>
-<li>cat composition.txt | doremiparse</li>
-<li>Run lilypond on composition.txt</li>
-<li>cat composition.txt | doremi2ly | lilypond -o composition -</li>
-<li>Create a standalone html page composition.html from composition.txt:</li>
-<li>cat composition.txt | doremi2htmldoc > composition.html</li>
-<li>Open DoremiScript file in musescore:</li>
-<li>cat composition.txt | doremi2musicxml  > composition.xml ; mscore composition.xml</li>
-</ul></li>
-</ul></li>
-<li>This project borrows ideas from <a href="http://en.wikipedia.org/wiki/ABC_notation">ABC musical notation</a>, <a href="http://lilypond.org">lilypond</a>, and <a href="http://en.wikipedia.org/wiki/Markdown">markdown</a>.</li>
-<li>Special thanks to George Ruckert, Ali Akbar Khan and the authors of peg.js, lilypond, and coffeescript.</li>
-<li>The online version is best used with Firefox.</li>
-</ul>
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset='UTF-8' />
+    <title>
+      Doremi-Script - Easy to write letter music notation
+    </title>
+  </head>
+  <body>
+    <div data-bind='visible: help_visible,event:{dblclick:toggle_help_visible}' id='help'>
+      <pre style='font-size:15px;font-family:monospace;border:1px solid black;display:inline-block'>Key: D&#x000A;Mode: ionian&#x000A;Author: Anon&#x000A;TimeSignature: 4/4&#x000A;&#x000A;Happy birthday to you&#x000A;Happy birthday to you&#x000A;Happy birthday dear Jim&#x000A;Happy birthday to you&#x000A;And ma-ny more&#x000A;&#x000A;|  P-P | D P S | N  -- PP |&#x000A;   * *   * *     *     **&#x000A;&#x000A;&#x000A;| D P R | S - PP |&#x000A;  * *         **        &#x000A;&#x000A;&#x000A;            SN       &#x000A;             *     &#x000A;| P G S | (N   D) mm |&#x000A;           *   *    &#x000A;&#x000A;      &lt;GR&gt;             DSnDn&#x000A;                       * ***&#x000A;| G S R   | S -P DP | n - - &#x000A;               * **   *&#x000A;</pre>
+      <img src='images/arrow.png' />
+      <img src='images/happy.png' style='border:1px solid black' />
+      <br />
+      <img src='images/down_arrow.png' />
+      <br />
+      <img src='images/happy_birthday.jpg' style='border:1px solid black' />
+      <br />
+      <h2>
+        Also lilypond and musicxml export
+      </h2>
+      <h2>
+        Also supports
+        <em>C C# D</em>
+        <em>1 1# 2</em>
+        and devanagri
+      </h2>
+      <h1>DoremiScript</h1>
+      <p>
+        <strong>DoremiScript</strong>
+        is a small language for creating
+        <a href='http://en.wikipedia.org/wiki/Letter_notation' target='_blank'>letter based musical notation</a>
+        It currently supports the following notation styles:
+        <ul>
+          <li>
+            Western style ABC notation as follows C C# Db D D# etc
+          </li>
+          <li>
+            <a href='http://http://en.wikipedia.org/wiki/Numbered_musical_notation' target='_blank'>Numbered notation</a>
+            Written using 1234567 with support for sharps and flats: 1# 2b etc
+          </li>
+          <li>
+            <a href='http://en.wikipedia.org/wiki/Swara' target='_blank'>
+              Sargam
+            </a>
+            notation using latin/english letters SrRgGmMPdnN with support for S# Pb etc
+          </li>
+          <li>
+            <a href='http://en.wikipedia.org/wiki/Musical_notation#India' target='_blank'>
+              Devanagri
+            </a>
+            notation in Bhatkande style
+            <a href='http://www.omenad.net/page.php?goPage=http%3A%2F%2Fwww.omenad.net%2Farticles%2Fomeswarlipi.htm' target='_blank'>(See also)</a>
+            using Devanagri letters for the sargam letters.
+          </li>
+        </ul>
+        <strong>DoremiScript</strong>
+        lets you write letter music notation using an easy-to-read, easy-to-write plain text format, then nicely formats it using css and html. DoremiScript can also generate standard western notation via a
+        <a href='http://lilypond.org' target='_blank'>Lilypond</a>
+        converter.
+      </p>
+      <p>
+        Try the
+        <a href='http://ragapedia.com' target='_blank'>online version</a>
+      </p>
+      <h2>Sample Input in AACM Sargam Style</h2>
+      <pre><code>Rag:Bhairavi&#x000A;Tal:Tintal&#x000A;Title:Bansuri&#x000A;Author:Traditional&#x000A;Source:AAK&#x000A;Mode: phrygian&#x000A;Filename: bansuri.sargam&#x000A;Time: 4/4&#x000A;Key: d&#x000A;&#x000A;&#x000A;&#x000A;                               i            IV         . &#x000A;         3S             n      +            2         DSnDn&#x000A;1)|: (Sr | n) S   (gm &lt;P d)&gt; | P - P  P   | P - D    n     |&#x000A;           .&#x000A;      ban-    su-  ri          ba- ja ra-   hi  dhu- na&#x000A;&#x000A;  0  ~                 3           mgm        +  .     *  *   &#x000A;| P  d   P    d    |  (Pm   PmnP)    (g m) | (PdnS) -- g  S |&#x000A;  ma-dhu-ra   kan-     nai-           ya      khe-     la-ta&#x000A;&#x000A;   2               0     &#x000A;                Pm ~&#x000A;| (d-Pm  g) P  m | r - S :|&#x000A;   ga-      wa-ta  ho- ri</code></pre>
+      <h2>DoremiScript HTML Output(screen snapshot)</h2>
+      <p>
+        <img alt='Screenshot of DoremiScript rendered in html' src='images/readme/bansuri_in_html_screenshot.png' title='Sargam Screenshot' />
+      </p>
+      <h2>Generated Western Staff Notation</h2>
+      <p>
+        <img alt='Converted to western notation' src='images/readme/bansuri_in_western_notation.png' title='' />
+      </p>
+      <ul>
+        <li>Works best with Firefox. Chrome is OK but Chrome can't print backgrounds (as of 2012). I haven't tested other browsers.</li>
+        <li>Use a blank line to separate lines of music.</li>
+        <li>Start lines of music with a barline "|", for example,  | C D E F | . Otherwise be sure to include a barline or dash in the main line of music.</li>
+        <li>ABC style notation is written as follows C C# Db etc</li>
+        <li>Numbered notation is written as follows 1234567 corresponding to the diatonic notes of the C scale, with sharps and flats notated as 2b(Db) and 2#(D#), for example.</li>
+        <li>AACM sargam notation is written as follows SrRgGmMPdDnN for the 12 notes. Sharp and flat notes are also supported as follows: S# R# etc and Pb. This allows proper notation using Sargam of Jazz/Pop/Classical music that uses these notes. For example, in notating the Beatles tune "Yesterday", use P# to indicate the sharpened fifth degree. P# corresponds to G# in the key of C.</li>
+        <li>
+          Note that the AACM style of Sargam notation uses
+          <em>lowercase</em>
+          characters to indicate the flattened notes.
+        </li>
+        <li>
+          Devanagri style sargam is written using the devanagri letters सरग़मपधऩस
+          for the seven notes SRGmPDN. Use an underline underneath the letter to indicate a kommal note (flat). For sharp Ma, write as म' (note the tick symbol)
+        </li>
+        <li>left and right parens are used to indicate slurs. Slurs can only be made between pitches. For example, use (SRg)- rather than  (Srg-)</li>
+        <li>Beats are delimited by spaces. You can also use angle brackets &lt;&gt; to delimit a beat.</li>
+        <li>
+          Dot (.) and asterisk can be used interchangeably to
+          indicate octaves. Place dots underneath for lower octave and above for
+          upper octaves. Use a colon
+          <strong>:</strong>
+          to indicate upper-upper octave or lower-lower octave
+        </li>
+        <li>Lyrics: Enter lyrics sections as stanzas separated by new lines.</li>
+        The doremi-script parser will attempt to hyphenate your lyrics and apply the syllables to the the appropriate notes, taking into account slurs. Alternatively, enter lyrics for each line underneath the notes. Taking this approach may require the use of angle brackets for delimiting beats if spaces need to be inserted. For example &lt;C&nbsp;&nbsp;&nbsp;  D&gt; if you need more space after the C note for a syllable.
+        <li>
+          Multiple spaces are treated as a single space
+        </li>
+        <li>
+          The html renderer attempts to allot extra margins to ornaments so they don't collide with adjacent notes
+        </li>
+        <li>
+          Rhythm: In this style of notation, derived from the AACM style, the dash (<strong>-</strong>) is used as a rhythmic placeholder. For example, this measure
+          <code>| C--Eb--G-   A   A   A</code>
+          is interpreted as a measure consisting of four beats. The first beat is divided into 8 parts, where the C gets 3/8ths of the beat, Eb gets 3/8ths of a beat and G gets 2/8ths. (Note that 3/8ths of a beat in western 4/4 notation is considered 3/32nds and is written as a dotted 16th. The 3 A's are each a single beat. The lilypond generator attempts to support this, but still needs a bit of work.
+        </li>
+        <li>Underlines are supported for Devanagri to indicate flat notes</li>
+        <li>Mode,Time, and Key in header are used in generating western notation</li>
+        <li>Chord symbols are supported</li>
+        <li>Syllables must be entered directly under a pitch.</li>
+        <li>
+          For syllables to show up properly in generated western notation, slurs
+          should be used to indicate the melismas
+        </li>
+        <li>Use | for single barline, || for double barline, |: and :| for left and right repeats</li>
+        <li>If need be, you can have multiple upper or lower lines.</li>
+        <li>Asterisk (*) can be used instead of a . to indicate octave</li>
+        <li>
+          <p>
+            Use the tilde character
+            <strong>~</strong>
+            to indicate an ornament which is displayed as
+          </p>
+          <span style='font-size:24px'>
+            𝆝𝆝
+          </span>
+        </li>
+        <li>
+          <p>
+            Supports tala markings +023456 for notating classical North Indian rhythmical cycles such as teental. The
+            <strong>+</strong>
+            indicates (usually) the first beat of the rhythmical cycle. The tala markings indicate the claps(taali) and non-claps(kaali) that delimit the rhythmic cycle.
+          </p>
+        </li>
+        <li>
+          Generates
+          <a href='http://lilypond.org' target='_blank'>lilypond</a>
+          as a high quality interchange format, which can be used to generate western staff notation and midi.
+        </li>
+        <li>
+          Generates
+          <a href='http://en.wikipedia.org/wiki/MusicXML' target='_blank'>musicxml</a>
+          as a common music notation format. MusicXML can be imported into hundreds of notation packages. Note that the lilypond export is of higher quality. Currently supports the following: lyrics, before grace notes,title.
+        </li>
+        <li>
+          Parser is easy to modify and is generated from a PEG grammar using a parsing expression grammar
+          <a href='https://github.com/dmajda/pegjs' target='_blank'>peg.js</a>
+        </li>
+        <li>Parser is easy to modify and is generated from a PEG grammar using a parsing expression grammar [peg.js])https://github.com/dmajda/pegjs)</li>
+        <li>
+          DoremiScript grammar is
+          <a href='https://github.com/rothfield/doremi-script-base/blob/master/src/doremiscript.peg.js' target='_blank'>here</a>
+        </li>
+        <li>
+          Endings are entered as follows: 1.___  or 2.
+        </li>
+        <li>It is possible to mix ABC, Devanagri, and AACM notations in the same composition, but each line of notation must be in only one style.</li>
+        <li>
+          Supports ornaments. Ornaments can be entered either to RIGHT or LEFT of the note to be ornamented(on one of the lines above the note). You can put dots above/below the ornament pitch to indicate the octave. Lilypond renderer displays the (right hand) ornaments as un-slurred 32th grace notes.
+          Support for ornaments to the 'right' of a note seems to be very poor among software vendors, probably because the 'standard' way to right ornaments is before a note. Therefore it is probably advisable to not use the right hand ornaments as it may cause data interchange problems down the line.
+        </li>
+        <li>For best results it is best to start each main line of music with the barline character ("|")</li>
+        <li>
+          Devanagri support is only minimally tested. In my browsers, the devanagri characters don't appear as monospaced in the text area.
+        </li>
+        <li>
+          Since DoReMiScript also supports chords such as G, G7, this may cause problems for ornaments that start with an ABC letter. In this case you can delimit the ornament with angle brackets &lt;&gt;
+          Chord symbols take precedence, so that Dm above the main line is interpreted as the chord Dm rather than a Dm ornament.
+        </li>
+        <li>Code base is written in coffeescript</li>
+        <li>
+          Command line tools are available via npm:
+          <ul>
+            <li>
+              First install
+              <a href='http://npmjs.org' target='_blank'>npm</a>
+            </li>
+            <li>
+              Then install the
+              <strong>doremi-script</strong>
+              package:
+            </li>
+            <li>npm install doremi-script</li>
+            <li>
+              Command line usage:
+              <ul>
+                <li>To generate lilypond:</li>
+                <li>cat composition.txt | doremi2ly</li>
+                <li>To parse the composition, returning the parsed json:</li>
+                <li>cat composition.txt | doremiparse</li>
+                <li>Run lilypond on composition.txt</li>
+                <li>cat composition.txt | doremi2ly | lilypond -o composition -</li>
+                <li>Create a standalone html page composition.html from composition.txt:</li>
+                <li>cat composition.txt | doremi2htmldoc &gt; composition.html</li>
+                <li>Open DoremiScript file in musescore:</li>
+                <li>cat composition.txt | doremi2musicxml  &gt; composition.xml ; mscore composition.xml</li>
+              </ul>
+            </li>
+          </ul>
+        </li>
+        <li>
+          This project borrows ideas from
+          <a href='http://en.wikipedia.org/wiki/ABC_notation' target='_blank'>
+            ABC musical notation
+          </a>
+          <a href='http://lilypond.org' target='_blank'>
+            lilypond
+          </a>
+          and
+          <a href='http://en.wikipedia.org/wiki/Markdown' target='_blank'>
+            markdown
+          </a>
+        </li>
+        <li>Special thanks to George Ruckert, Ali Akbar Khan and the authors of peg.js, lilypond, and coffeescript.</li>
+        <li>The online version is best used with Chrome or Firefox. Firefox has better printing support</li>
+      </ul>
+    </div>
+  </body>
+</html>

@@ -238,7 +238,8 @@ window.CompositionViewModel = (my_doremi_source) ->
 
   self.generate_staff_notation_aux = (my_model,dont="false") ->
     console.log "generate_staff_notation"
-    self.compute_doremi_source()
+    # self.compute_doremi_source()
+    self.redraw()
     # generate staff notation by converting doremi_script
     # to lilypond and call a web service
     self.generating_staff_notation(true)

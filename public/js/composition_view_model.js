@@ -275,7 +275,7 @@ window.CompositionViewModel = function(my_doremi_source) {
       dont = "false";
     }
     console.log("generate_staff_notation");
-    self.compute_doremi_source();
+    self.redraw();
     self.generating_staff_notation(true);
     lilypond_source = self.composition_lilypond_source();
     ts = new Date().getTime();
