@@ -129,19 +129,19 @@
       return el.css('margin-left', "-" + (el.width()) + "px");
     });
   };
-  dom_fixes = function(context) {
-    if (context == null) {
-      context = null;
-    }
+  dom_fixes = function() {
+    var context;
     context = $("div.stave:not([data-dom-fixed='true'])");
-    context.attr('data-dom-fixed', true);
+    console.log("entering dom_fixes, context is", context);
+    console.log("entering dom_fixes, context.size() is", context.size());
     fallback_if_utf8_characters_not_supported(context);
     fix_before_ornaments(context);
     add_left_margin_to_notes_with_left_superscripts(context);
     add_right_margin_to_notes_with_right_superscripts(context);
     add_right_margin_to_notes_with_pitch_signs(context);
     expand_note_widths_to_accomodate_syllables(context);
-    return adjust_slurs_in_dom(context);
+    adjust_slurs_in_dom(context);
+    return context.attr('data-dom-fixed', 'true');
   };
   root.dom_fixes = dom_fixes;
 }).call(this);

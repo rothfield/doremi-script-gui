@@ -87,6 +87,8 @@ $(document).ready ->
     console.log("resize")
     window.the_composition.composition_stave_width(window.the_composition.calculate_stave_width())
     window.the_composition.composition_textarea_width(window.the_composition.calculate_textarea_width())
+    $('div.stave').attr('data-dom-fixed',"false")
+    window.the_composition.redraw()
   )
 
   setup_downloadify()
