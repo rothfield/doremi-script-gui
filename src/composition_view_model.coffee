@@ -411,8 +411,8 @@ window.CompositionViewModel = (my_doremi_source) ->
     self.lines(my_lines)
     self.calculate_staff_notation_url_with_time_stamp()
     self.redraw()
-    seconds= 0.5
-    setTimeout("dom_fixes()",0.5*1000)  # necessary?
+    #seconds= 0.5
+    #setTimeout("dom_fixes()",0.5*1000)  # necessary?
 
   self.delete_line = (which_line) ->
     which_line.source("")
@@ -631,8 +631,7 @@ window.CompositionViewModel = (my_doremi_source) ->
               view_line.rendered_in_html('(empty line)')
               continue
             parsed_line=DoremiScriptLineParser.parse(source)
-            html=line_to_html(parsed_line)
-            view_line.rendered_in_html(html)
+            view_line.rendered_in_html(line_to_html(parsed_line))
             view_line.line_parse_failed(false)
           catch err # line didn't parse
             view_line.line_parse_failed(true)
@@ -643,8 +642,6 @@ window.CompositionViewModel = (my_doremi_source) ->
       else # parse (on whole input) succeeded.
         composition_view.composition_parse_failed(false)
         composition_view.composition_parsed_doremi_script(parsed)
-        #if composition_view.composition_musicxml_source_visible()
-        #composition_view.composition_musicxml_source(to_musicxml(parsed))
         parsed_lines=parsed.lines
         view_lines=composition_view.lines()
         ctr=0
@@ -657,16 +654,8 @@ window.CompositionViewModel = (my_doremi_source) ->
           if /^\s*$/.test(view_line.source())
             view_line.rendered_in_html('(empty line)')
             continue
-          # Update the view
-          # TODO: should I be calling init on the line?
-          # TODO: add parsed_line as an attribute of LineView ?
-          # Note that the parsed_line has all the information
-          # needed to render it.
-
-          # render line as html-see html_renderer.coffee
-          html=line_to_html(parsed_line)
           view_line.line_parse_failed(false)
-          view_line.rendered_in_html(html)
+          view_line.rendered_in_html(line_to_html(parsed_line))
           warnings=parsed_line.line_warnings
           view_line.line_warnings(warnings)
           view_line.line_has_warnings(warnings.length > 0)
@@ -674,14 +663,12 @@ window.CompositionViewModel = (my_doremi_source) ->
      catch err
        console.log "Error in redraw #{err}" #if debug
     finally
-      app.setup_context_menu()
-      dom_fixes()
       self.hide_show_hyphenated_lyrics()
-  self.save_locally = () ->
-    if self.composition_parse_failed() is true
-      alert("Can't save because there are syntax errors. Please fix the lines outlined in red first")
-      return true
-    localStorage.setItem("composition_#{self.id()}",self.doremi_source())
-    message_box("#{self.title()} was saved in your browser's localStorage")
+      fun = () ->
+        dom_fixes()
+      setTimeout(fun,300)
+      app.setup_context_menu()
+
+
   self.my_init(my_doremi_source) if my_doremi_source?
   self

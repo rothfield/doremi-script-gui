@@ -1,31 +1,44 @@
 (function() {
   var add_left_margin_to_notes_with_left_superscripts, add_right_margin_to_notes_with_pitch_signs, add_right_margin_to_notes_with_right_superscripts, adjust_slurs_in_dom, dom_fixes, expand_note_widths_to_accomodate_syllables, fallback_if_utf8_characters_not_supported, fix_before_ornaments, root;
   root = typeof exports !== "undefined" && exports !== null ? exports : this;
-  add_right_margin_to_notes_with_pitch_signs = function() {
-    return $('span.note_wrapper *.pitch_sign').each(function(index) {
+  add_right_margin_to_notes_with_pitch_signs = function(context) {
+    if (context == null) {
+      context = null;
+    }
+    return $('span.note_wrapper *.pitch_sign', context).each(function(index) {
       var current_margin_right, parent;
       parent = $(this).parent();
       current_margin_right = parseInt($(parent).css('margin-right').replace('px', ''));
       return $(parent).css('margin-right', current_margin_right + $(this).width());
     });
   };
-  add_left_margin_to_notes_with_left_superscripts = function() {
-    return $('span.note_wrapper *.ornament.placement_before').each(function(index) {
+  add_left_margin_to_notes_with_left_superscripts = function(context) {
+    if (context == null) {
+      context = null;
+    }
+    return $('span.note_wrapper *.ornament.placement_before', context).each(function(index) {
       var current_margin_left, parent;
       parent = $(this).parent();
       current_margin_left = parseInt($(parent).css('margin-left').replace('px', ''));
       return $(parent).css('margin-left', current_margin_left + $(this).width());
     });
   };
-  add_right_margin_to_notes_with_right_superscripts = function() {
-    return $('span.note_wrapper *.ornament.placement_after').each(function(index) {
+  add_right_margin_to_notes_with_right_superscripts = function(context) {
+    if (context == null) {
+      context = null;
+    }
+    return $('span.note_wrapper *.ornament.placement_after', context).each(function(index) {
       var current_margin_right, parent;
       parent = $(this).parent();
       current_margin_right = parseInt($(parent).css('margin-right').replace('px', ''));
       return $(parent).css('margin-right', current_margin_right + $(this).width());
     });
   };
-  expand_note_widths_to_accomodate_syllables = function() {
+  expand_note_widths_to_accomodate_syllables = function(context) {
+    var $next, $note, $par, $syllable, existing_margin_right, extra, extra2, index, is_word_end, left, len, margin_right, next_left, syl_right, syl_str, syllable, syllables, width, _len, _results;
+    if (context == null) {
+      context = null;
+    }
     /*
            Example:
        RS S
@@ -36,8 +49,7 @@
        with each other. Examine each syllable, and if the next syllable
        collides, then adjust the width of the NOTE accordingly     
       */
-    var $next, $note, $par, $syllable, existing_margin_right, extra, extra2, index, is_word_end, left, len, margin_right, next_left, syl_right, syl_str, syllable, syllables, width, _len, _results;
-    syllables = $('span.syllable').get();
+    syllables = $('span.syllable', context).get();
     len = syllables.length;
     _results = [];
     for (index = 0, _len = syllables.length; index < _len; index++) {
@@ -61,8 +73,11 @@
     }
     return _results;
   };
-  fallback_if_utf8_characters_not_supported = function() {
+  fallback_if_utf8_characters_not_supported = function(context) {
     var tag, width1, width2;
+    if (context == null) {
+      context = null;
+    }
     if (!(window.ok_to_use_utf8_music_characters != null)) {
       width1 = $('#utf_left_repeat').show().width();
       width2 = $('#utf_single_barline').show().width();
@@ -72,8 +87,8 @@
     }
     if (!window.ok_to_use_utf8_music_characters) {
       tag = "data-fallback-if-no-utf8-chars";
-      $("span[" + tag + "]").addClass('dont_use_utf8_chars');
-      return $("span[" + tag + "]").each(function(index) {
+      $("span[" + tag + "]", context).addClass('dont_use_utf8_chars');
+      return $("span[" + tag + "]", context).each(function(index) {
         var attr, obj;
         obj = $(this);
         attr = obj.attr(tag);
@@ -81,8 +96,11 @@
       });
     }
   };
-  adjust_slurs_in_dom = function() {
-    return $('span[data-begin-slur-id]').each(function(index) {
+  adjust_slurs_in_dom = function(context) {
+    if (context == null) {
+      context = null;
+    }
+    return $('span[data-begin-slur-id]', context).each(function(index) {
       var attr, pos1, pos2, slur, val;
       pos2 = $(this).offset();
       attr = $(this).attr("data-begin-slur-id");
@@ -101,21 +119,29 @@
       });
     });
   };
-  fix_before_ornaments = function() {
-    return $('span.ornament.placement_before').each(function(index) {
+  fix_before_ornaments = function(context) {
+    if (context == null) {
+      context = null;
+    }
+    return $('span.ornament.placement_before', context).each(function(index) {
       var el;
       el = $(this);
       return el.css('margin-left', "-" + (el.width()) + "px");
     });
   };
-  dom_fixes = function() {
-    fallback_if_utf8_characters_not_supported();
-    fix_before_ornaments();
-    add_left_margin_to_notes_with_left_superscripts();
-    add_right_margin_to_notes_with_right_superscripts();
-    add_right_margin_to_notes_with_pitch_signs();
-    expand_note_widths_to_accomodate_syllables();
-    return adjust_slurs_in_dom();
+  dom_fixes = function(context) {
+    if (context == null) {
+      context = null;
+    }
+    context = $("div.stave:not([data-dom-fixed='true'])");
+    context.attr('data-dom-fixed', true);
+    fallback_if_utf8_characters_not_supported(context);
+    fix_before_ornaments(context);
+    add_left_margin_to_notes_with_left_superscripts(context);
+    add_right_margin_to_notes_with_right_superscripts(context);
+    add_right_margin_to_notes_with_pitch_signs(context);
+    expand_note_widths_to_accomodate_syllables(context);
+    return adjust_slurs_in_dom(context);
   };
   root.dom_fixes = dom_fixes;
 }).call(this);
