@@ -137,7 +137,8 @@
           <div class='server_links'>
             <h4>
               Links: Right click and select 'Save As' to save on your computer
-              (Run Generate staff notation first to get latest)
+              or click to open in a new window.
+              (Click Update all button first to get latest)
             </h4>
             <ul class='server_links'>
               <li>
@@ -146,27 +147,27 @@
                 </button>
               </li>
               <li>
-                <a class='saved_to_server' data-bind='enable: links_enabled,attr: {href: lilypond_url }' href='' id='download_ly' target='_blank'>
+                <a class='saved_to_server' data-bind='click:handle_link_click,enable: links_enabled,attr: {href: lilypond_url }' href='' id='download_ly' target='_blank'>
                   Lilypond
                 </a>
               </li>
               <li class='commented_out'>
-                <a class='saved_to_server' data-bind='enable: links_enabled,attr: {href: music_xml_url }' href='/#' id='download_xml' target='_blank'>MusicXML</a>
+                <a class='saved_to_server' data-bind='click:handle_link_click,enable: links_enabled,attr: {href: music_xml_url }' href='/#' id='download_xml' target='_blank'>MusicXML</a>
               </li>
               <li class='commented_out'>
-                <a class='saved_to_server' data-bind='enable: links_enabled,attr: {href: html_url }' href='/#' id='download_html' target='_blank'>HTML Page</a>
+                <a class='saved_to_server' data-bind='click:handle_link_click,enable: links_enabled,attr: {href: html_url }' href='/#' id='download_html' target='_blank'>HTML Page</a>
               </li>
               <li>
-                <a class='generated_by_lilypond' data-bind='enable: links_enabled,attr: {href: staff_notation_url }' href='/#' id='download_jpeg' target='_blank'>jpeg</a>
+                <a class='generated_by_lilypond' data-bind='click:handle_link_click,enable: links_enabled,attr: {href: staff_notation_url }' href='/#' id='download_jpeg' target='_blank'>jpeg</a>
               </li>
               <li>
-                <a class='generated_by_lilypond' data-bind='enable: links_enabled,attr: {href: pdf_url }' href='/#' id='download_pdf' target='_blank'>pdf</a>
+                <a class='generated_by_lilypond' data-bind='click:handle_link_click,enable: links_enabled,attr: {href: pdf_url }' href='/#' id='download_pdf' target='_blank'>pdf</a>
               </li>
               <li>
-                <a class='generated_by_lilypond' data-bind='enable: links_enabled,attr: {href: midi_url }' href='' id='download_mid' target='_blank' title='Play midi file'>midi</a>
+                <a class='generated_by_lilypond' data-bind='click:handle_link_click,enable: links_enabled,attr: {href: midi_url }' href='' id='download_mid' target='_blank' title='Play midi file'>midi</a>
               </li>
               <li>
-                <a data-bind='enable: links_enabled,attr: {href: doremi_source_url }' href='' id='download_doremi_source' target='_blank' title=''>Doremi-Script Source</a>
+                <a data-bind='click:handle_link_click,enable: links_enabled,attr: {href: doremi_source_url }' href='' id='download_doremi_source' target='_blank' title=''>Doremi-Script Source</a>
               </li>
             </ul>
           </div>

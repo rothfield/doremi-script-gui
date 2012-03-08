@@ -10,6 +10,16 @@ window.CompositionViewModel = function(my_doremi_source) {
   self.last_line_opened = null;
   self.help_visible = ko.observable(false);
   self.disable_context_menu = ko.observable(false);
+  self.handle_link_click = function(x, y) {
+    var target;
+    console.log("handle_link_click", x, y);
+    target = y.target;
+    if (target.href.indexOf("#") !== -1) {
+      alert("Please click the Update all button first");
+      return false;
+    }
+    return true;
+  };
   self.toggle_disable_context_menu = function(event) {
     self.disable_context_menu(!this.disable_context_menu());
     return self.my_init(self.doremi_source());

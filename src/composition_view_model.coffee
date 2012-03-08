@@ -10,6 +10,13 @@ window.CompositionViewModel = (my_doremi_source) ->
 
   self.disable_context_menu=ko.observable(false) # for debugging only
 
+  self.handle_link_click = (x,y) ->
+    console.log "handle_link_click",x,y
+    target=y.target #TODO: crossbrowser here?
+    if target.href.indexOf("#") isnt -1
+      alert("Please click the Update all button first")
+      return false
+    true
   self.toggle_disable_context_menu= (event) ->
     self.disable_context_menu(!this.disable_context_menu())
     self.my_init(self.doremi_source())

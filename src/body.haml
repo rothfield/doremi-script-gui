@@ -88,26 +88,27 @@
       %div.server_links
         %h4
           Links: Right click and select 'Save As' to save on your computer
-          (Run Generate staff notation first to get latest)
+          or click to open in a new window.
+          (Click Update all button first to get latest)
         %ul.server_links
           %li
             %button{"data-bind" => "disable: disable_generate_staff_notation,click: generate_all_but_staff_notation"}
               Update all except staff notation
           %li
-            %a#download_ly.saved_to_server{:href => "", :target => "_blank", "data-bind" => "enable: links_enabled,attr: {href: lilypond_url }"}
+            %a#download_ly.saved_to_server{:href => "", :target => "_blank", "data-bind" => "click:handle_link_click,enable: links_enabled,attr: {href: lilypond_url }"}
               Lilypond
           %li.commented_out
-            %a#download_xml.saved_to_server{"data-bind" => "enable: links_enabled,attr: {href: music_xml_url }", :href => "/#", :target => "_blank"} MusicXML
+            %a#download_xml.saved_to_server{"data-bind" => "click:handle_link_click,enable: links_enabled,attr: {href: music_xml_url }", :href => "/#", :target => "_blank"} MusicXML
           %li.commented_out
-            %a#download_html.saved_to_server{"data-bind" => "enable: links_enabled,attr: {href: html_url }",:href => "/#", :target => "_blank"} HTML Page
+            %a#download_html.saved_to_server{"data-bind" => "click:handle_link_click,enable: links_enabled,attr: {href: html_url }",:href => "/#", :target => "_blank"} HTML Page
           %li
-            %a#download_jpeg.generated_by_lilypond{"data-bind" => "enable: links_enabled,attr: {href: staff_notation_url }",:href => "/#", :target => "_blank"} jpeg 
+            %a#download_jpeg.generated_by_lilypond{"data-bind" => "click:handle_link_click,enable: links_enabled,attr: {href: staff_notation_url }",:href => "/#", :target => "_blank"} jpeg 
           %li
-            %a#download_pdf.generated_by_lilypond{"data-bind" => "enable: links_enabled,attr: {href: pdf_url }",:href => "/#", :target => "_blank"} pdf
+            %a#download_pdf.generated_by_lilypond{"data-bind" => "click:handle_link_click,enable: links_enabled,attr: {href: pdf_url }",:href => "/#", :target => "_blank"} pdf
           %li
-            %a#download_mid.generated_by_lilypond{"data-bind" => "enable: links_enabled,attr: {href: midi_url }",:href => "", :target => "_blank", :title => "Play midi file"} midi
+            %a#download_mid.generated_by_lilypond{"data-bind" => "click:handle_link_click,enable: links_enabled,attr: {href: midi_url }",:href => "", :target => "_blank", :title => "Play midi file"} midi
           %li
-            %a#download_doremi_source{"data-bind" => "enable: links_enabled,attr: {href: doremi_source_url }",:href => "", :target => "_blank", :title => ""} Doremi-Script Source
+            %a#download_doremi_source{"data-bind" => "click:handle_link_click,enable: links_enabled,attr: {href: doremi_source_url }",:href => "", :target => "_blank", :title => ""} Doremi-Script Source
   %br
   .composition{"data-bind" => "visible:editing_composition"}
     %div.controls
