@@ -7,6 +7,10 @@ window.LineViewModel = (line_param= {source: EMPTY_LINE_SOURCE,rendered_in_html:
 
   self.index= ko.observable(line_param.index) # 0 and up
   
+  self.line_dom_fixes = (lines) ->
+    # Gets called after rendering by knockout.
+    console.log('line_dom_fixes')
+    alert('line_dom_fixes')
   self.div_line_id= ko.computed( () ->
     return "div_line_#{self.index()}"
   )

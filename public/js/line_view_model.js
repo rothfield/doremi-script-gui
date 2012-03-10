@@ -13,6 +13,10 @@ window.LineViewModel = function(line_param) {
   self = this;
   self.line_id = ko.observable(unique_id++);
   self.index = ko.observable(line_param.index);
+  self.line_dom_fixes = function(lines) {
+    console.log('line_dom_fixes');
+    return alert('line_dom_fixes');
+  };
   self.div_line_id = ko.computed(function() {
     return "div_line_" + (self.index());
   });

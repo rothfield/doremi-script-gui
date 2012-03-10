@@ -1,45 +1,39 @@
 %pre{:style => "font-size:15px;font-family:monospace;border:1px solid black;display:inline-block"}
   :preserve
+    id: 1331402710302
+    Title: Happy Birthday 123
+    Filename: untitled
     Key: D
     Mode: ionian
-    Author: Anon
     TimeSignature: 4/4
+    ApplyHyphenatedLyrics: true
+    StaffNotationURL: http://ragapedia.local/compositions/happy_birthday_123.jpg
     
     Happy birthday to you
     Happy birthday to you
-    Happy birthday dear Jim
+    Happy birthday dear Joe
     Happy birthday to you
     And ma-ny more
     
-    |  P-P | D P S | N  -- PP |
-       * *   * *     *     **
+    |: - - 55 | 6 5 1 | 7 - 55 | 6 5 2 | 1 - 55 |
+           ..   . .     .   ..   . .         .. 
     
-    
-    | D P R | S - PP |
-      * *         **        
-    
-    
-                SN       
-                 *     
-    | P G S | (N   D) mm |
-               *   *    
-    
-          &lt;GR&gt;             DSnDn
-                           * ***
-    | G S R   | S -P DP | n - - 
-                   * **   *
+    | 5 3 1 | (7   6) 44 | 3 1 2 | 1 -5 65 | 7b :|
+               .   .                  . ..   .
     
 %img{:src => "images/arrow.png"}
-%img{:src => "images/happy.png", :style => "border:1px solid black"}
+%img{:src => "images/number_example.png", :style => "border:1px solid black"}
 %br
 %img{:src => "images/down_arrow.png"}
 %br
-%img{:src => "images/happy_birthday.jpg", :style => "border:1px solid black"}
+%img{:src => "images/happy_birthday_123.jpg", :style => "border:1px solid black"}
 %br
 %h2
-  Also lilypond and musicxml export
+  Generates staff notation with lilypond and musicxml export
 %h2
-  Also supports
-  %em C C# D
-  %em 1 1# 2
-  and devanagri
+  Supports
+  %ul
+    %li ABC Style:  C C# Db E F F# ..
+    %li Number Style: 1 1# 2b 2 3b 3 4 4# ..
+    %li Sargam(AACM style) : SrRgGmMPdDnN (Indian Classical Music)
+    %li Sargam(Devanagri)(Indian Classical Music)

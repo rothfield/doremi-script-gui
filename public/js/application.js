@@ -12,13 +12,20 @@ $(document).ready(function() {
     if (debug) {
       console.log('setup_context_menu');
     }
-    fun = function(action, el, pos) {
-      var found, line, _i, _len, _ref;
+    fun = function(action, original_element, pos) {
+      var el, found, line, stave_id, _i, _len, _ref;
+      el = $(original_element).parentsUntil('div.stave_wrapper').last().parent();
+      if (el.size === 0) {
+        return;
+      }
+      console.log("el", el);
+      stave_id = $(el).attr("id");
+      console.log("el", el);
       found = null;
       _ref = app.the_composition.lines();
       for (_i = 0, _len = _ref.length; _i < _len; _i++) {
         line = _ref[_i];
-        if (line.stave_id() === $(el).attr('id')) {
+        if (line.stave_id() === stave_id) {
           found = line;
         }
       }
@@ -46,7 +53,10 @@ $(document).ready(function() {
         app.the_composition.composition_append_line(found);
       }
     };
-    return $(".stave_wrapper").contextMenu({
+    $(".note_wrapper").contextMenu({
+      menu: 'my_menu'
+    }, fun);
+    return $(".lyrics_section").contextMenu({
       menu: 'my_menu'
     }, fun);
   };

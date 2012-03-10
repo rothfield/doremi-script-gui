@@ -8,9 +8,16 @@ $(document).ready ->
      if composition.disable_context_menu()
        return false
      console.log('setup_context_menu') if debug
-     fun = (action, el, pos) ->
+     fun = (action, original_element, pos) ->
+       el=$(original_element).parentsUntil('div.stave_wrapper').last().parent()
+       #console.log("els",els)
+       return if el.size is 0
+       #el=$(els[0]).parent().parent().parent()
+       console.log("el",el)
+       stave_id=$(el).attr("id")
+       console.log "el",el
        found=null
-       found=line for line in app.the_composition.lines() when line.stave_id() is $(el).attr('id')
+       found=line for line in app.the_composition.lines() when line.stave_id() is stave_id
        console.log(action,el,pos) if debug
        console.log "found is",found if debug
        if (action is "delete")
@@ -26,7 +33,8 @@ $(document).ready ->
        if (action is "append")
          app.the_composition.composition_append_line(found)
          return
-     $(".stave_wrapper").contextMenu({ menu: 'my_menu' }, fun)
+     $(".note_wrapper").contextMenu({ menu: 'my_menu' }, fun)
+     $(".lyrics_section").contextMenu({ menu: 'my_menu' }, fun)
 
   app.sanitize= (name)->
      name.replace(/[^0-9A-Za-z.\-]/g, '_').toLowerCase()
