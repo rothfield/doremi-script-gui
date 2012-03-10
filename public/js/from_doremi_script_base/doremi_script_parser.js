@@ -22,6 +22,7 @@ DoremiScriptParser = (function(){
         "ABC_BSHARP": parse_ABC_BSHARP,
         "ABC_C": parse_ABC_C,
         "ABC_CFLAT": parse_ABC_CFLAT,
+        "ABC_CHAR": parse_ABC_CHAR,
         "ABC_CSHARP": parse_ABC_CSHARP,
         "ABC_D": parse_ABC_D,
         "ABC_DFLAT": parse_ABC_DFLAT,
@@ -33,12 +34,11 @@ DoremiScriptParser = (function(){
         "ABC_G": parse_ABC_G,
         "ABC_GFLAT": parse_ABC_GFLAT,
         "ABC_GSHARP": parse_ABC_GSHARP,
+        "ABC_LINE": parse_ABC_LINE,
         "ABC_MEASURE": parse_ABC_MEASURE,
         "ABC_MUSICAL_CHAR": parse_ABC_MUSICAL_CHAR,
         "ABC_NON_BARLINE": parse_ABC_NON_BARLINE,
-        "ABC_SARGAM_CHAR": parse_ABC_SARGAM_CHAR,
-        "ABC_SARGAM_LINE": parse_ABC_SARGAM_LINE,
-        "ABC_SARGAM_PITCH": parse_ABC_SARGAM_PITCH,
+        "ABC_PITCH": parse_ABC_PITCH,
         "ALTERNATE_ENDING_INDICATOR": parse_ALTERNATE_ENDING_INDICATOR,
         "ATTRIBUTE_LINE": parse_ATTRIBUTE_LINE,
         "BARLINE": parse_BARLINE,
@@ -53,6 +53,7 @@ DoremiScriptParser = (function(){
         "CHORD_SYMBOL_INITIAL_CHAR": parse_CHORD_SYMBOL_INITIAL_CHAR,
         "COMPOSITION": parse_COMPOSITION,
         "COMPOUND_LINE": parse_COMPOUND_LINE,
+        "DELIMITED_NUMBER_ORNAMENT": parse_DELIMITED_NUMBER_ORNAMENT,
         "DELIMITED_SARGAM_ORNAMENT": parse_DELIMITED_SARGAM_ORNAMENT,
         "DEVANAGRI_BEAT_DELIMITED": parse_DEVANAGRI_BEAT_DELIMITED,
         "DEVANAGRI_BEAT_DELIMITED_ITEM": parse_DEVANAGRI_BEAT_DELIMITED_ITEM,
@@ -60,6 +61,7 @@ DoremiScriptParser = (function(){
         "DEVANAGRI_BEAT_UNDELIMITED_ITEM": parse_DEVANAGRI_BEAT_UNDELIMITED_ITEM,
         "DEVANAGRI_DHA": parse_DEVANAGRI_DHA,
         "DEVANAGRI_GA": parse_DEVANAGRI_GA,
+        "DEVANAGRI_LINE": parse_DEVANAGRI_LINE,
         "DEVANAGRI_MA": parse_DEVANAGRI_MA,
         "DEVANAGRI_MA_SHARP": parse_DEVANAGRI_MA_SHARP,
         "DEVANAGRI_MEASURE": parse_DEVANAGRI_MEASURE,
@@ -67,10 +69,9 @@ DoremiScriptParser = (function(){
         "DEVANAGRI_NI": parse_DEVANAGRI_NI,
         "DEVANAGRI_NON_BARLINE": parse_DEVANAGRI_NON_BARLINE,
         "DEVANAGRI_PA": parse_DEVANAGRI_PA,
+        "DEVANAGRI_PITCH": parse_DEVANAGRI_PITCH,
         "DEVANAGRI_RE": parse_DEVANAGRI_RE,
         "DEVANAGRI_SA": parse_DEVANAGRI_SA,
-        "DEVANAGRI_SARGAM_LINE": parse_DEVANAGRI_SARGAM_LINE,
-        "DEVANAGRI_SARGAM_PITCH": parse_DEVANAGRI_SARGAM_PITCH,
         "DOUBLE_BARLINE": parse_DOUBLE_BARLINE,
         "EMPTY_LINE": parse_EMPTY_LINE,
         "END_BEAT_SYMBOL": parse_END_BEAT_SYMBOL,
@@ -121,11 +122,12 @@ DoremiScriptParser = (function(){
         "NUMBER_G": parse_NUMBER_G,
         "NUMBER_GFLAT": parse_NUMBER_GFLAT,
         "NUMBER_GSHARP": parse_NUMBER_GSHARP,
+        "NUMBER_LINE": parse_NUMBER_LINE,
         "NUMBER_MEASURE": parse_NUMBER_MEASURE,
         "NUMBER_MUSICAL_CHAR": parse_NUMBER_MUSICAL_CHAR,
         "NUMBER_NON_BARLINE": parse_NUMBER_NON_BARLINE,
-        "NUMBER_SARGAM_LINE": parse_NUMBER_SARGAM_LINE,
-        "NUMBER_SARGAM_PITCH": parse_NUMBER_SARGAM_PITCH,
+        "NUMBER_ORNAMENT": parse_NUMBER_ORNAMENT,
+        "NUMBER_PITCH": parse_NUMBER_PITCH,
         "REPEAT_SYMBOL": parse_REPEAT_SYMBOL,
         "REVERSE_FINAL_BARLINE": parse_REVERSE_FINAL_BARLINE,
         "RHYTHMICAL_DASH": parse_RHYTHMICAL_DASH,
@@ -825,7 +827,7 @@ DoremiScriptParser = (function(){
           var result16 = parse_UPPER_OCTAVE_LINE();
         }
         if (result3 !== null) {
-          var result15 = parse_DEVANAGRI_SARGAM_LINE();
+          var result15 = parse_DEVANAGRI_LINE();
           if (result15 !== null) {
             var result4 = result15;
           } else {
@@ -833,11 +835,11 @@ DoremiScriptParser = (function(){
             if (result14 !== null) {
               var result4 = result14;
             } else {
-              var result13 = parse_ABC_SARGAM_LINE();
+              var result13 = parse_ABC_LINE();
               if (result13 !== null) {
                 var result4 = result13;
               } else {
-                var result12 = parse_NUMBER_SARGAM_LINE();
+                var result12 = parse_NUMBER_LINE();
                 if (result12 !== null) {
                   var result4 = result12;
                 } else {
@@ -1029,7 +1031,7 @@ DoremiScriptParser = (function(){
         
         var savedPos0 = pos;
         var savedPos1 = pos;
-        var result14 = parse_DEVANAGRI_SARGAM_LINE();
+        var result14 = parse_DEVANAGRI_LINE();
         if (result14 !== null) {
           var result3 = result14;
         } else {
@@ -1037,11 +1039,11 @@ DoremiScriptParser = (function(){
           if (result13 !== null) {
             var result3 = result13;
           } else {
-            var result12 = parse_ABC_SARGAM_LINE();
+            var result12 = parse_ABC_LINE();
             if (result12 !== null) {
               var result3 = result12;
             } else {
-              var result11 = parse_NUMBER_SARGAM_LINE();
+              var result11 = parse_NUMBER_LINE();
               if (result11 !== null) {
                 var result3 = result11;
               } else {
@@ -1185,6 +1187,129 @@ DoremiScriptParser = (function(){
             while (result6 !== null) {
               result4.push(result6);
               var result6 = parse_SARGAM_PITCH();
+            }
+          } else {
+            var result4 = null;
+          }
+          if (result4 !== null) {
+            if (input.substr(pos, 1) === ">") {
+              var result5 = ">";
+              pos += 1;
+            } else {
+              var result5 = null;
+              if (reportMatchFailures) {
+                matchFailed("\">\"");
+              }
+            }
+            if (result5 !== null) {
+              var result1 = [result3, result4, result5];
+            } else {
+              var result1 = null;
+              pos = savedPos1;
+            }
+          } else {
+            var result1 = null;
+            pos = savedPos1;
+          }
+        } else {
+          var result1 = null;
+          pos = savedPos1;
+        }
+        var result2 = result1 !== null
+          ? (function(left_delimiter, items, right_delimiter) { 
+                      return parse_ornament(left_delimiter,items,right_delimiter)
+                   })(result1[0], result1[1], result1[2])
+          : null;
+        if (result2 !== null) {
+          var result0 = result2;
+        } else {
+          var result0 = null;
+          pos = savedPos0;
+        }
+        reportMatchFailures = savedReportMatchFailures;
+        if (reportMatchFailures && result0 === null) {
+          matchFailed("in upper line <NRSNS>");
+        }
+        
+        cache[cacheKey] = {
+          nextPos: pos,
+          result:  result0
+        };
+        return result0;
+      }
+      
+      function parse_NUMBER_ORNAMENT() {
+        var cacheKey = 'NUMBER_ORNAMENT@' + pos;
+        var cachedResult = cache[cacheKey];
+        if (cachedResult) {
+          pos = cachedResult.nextPos;
+          return cachedResult.result;
+        }
+        
+        var savedReportMatchFailures = reportMatchFailures;
+        reportMatchFailures = false;
+        var savedPos0 = pos;
+        var result3 = parse_NUMBER_PITCH();
+        if (result3 !== null) {
+          var result1 = [];
+          while (result3 !== null) {
+            result1.push(result3);
+            var result3 = parse_NUMBER_PITCH();
+          }
+        } else {
+          var result1 = null;
+        }
+        var result2 = result1 !== null
+          ? (function(items) { 
+                      return parse_ornament("",items,"")
+                   })(result1)
+          : null;
+        if (result2 !== null) {
+          var result0 = result2;
+        } else {
+          var result0 = null;
+          pos = savedPos0;
+        }
+        reportMatchFailures = savedReportMatchFailures;
+        if (reportMatchFailures && result0 === null) {
+          matchFailed("in upper line NRSNS");
+        }
+        
+        cache[cacheKey] = {
+          nextPos: pos,
+          result:  result0
+        };
+        return result0;
+      }
+      
+      function parse_DELIMITED_NUMBER_ORNAMENT() {
+        var cacheKey = 'DELIMITED_NUMBER_ORNAMENT@' + pos;
+        var cachedResult = cache[cacheKey];
+        if (cachedResult) {
+          pos = cachedResult.nextPos;
+          return cachedResult.result;
+        }
+        
+        var savedReportMatchFailures = reportMatchFailures;
+        reportMatchFailures = false;
+        var savedPos0 = pos;
+        var savedPos1 = pos;
+        if (input.substr(pos, 1) === "<") {
+          var result3 = "<";
+          pos += 1;
+        } else {
+          var result3 = null;
+          if (reportMatchFailures) {
+            matchFailed("\"<\"");
+          }
+        }
+        if (result3 !== null) {
+          var result6 = parse_NUMBER_PITCH();
+          if (result6 !== null) {
+            var result4 = [];
+            while (result6 !== null) {
+              result4.push(result6);
+              var result6 = parse_NUMBER_PITCH();
             }
           } else {
             var result4 = null;
@@ -1627,43 +1752,53 @@ DoremiScriptParser = (function(){
         
         var savedReportMatchFailures = reportMatchFailures;
         reportMatchFailures = false;
-        var result9 = parse_DELIMITED_SARGAM_ORNAMENT();
-        if (result9 !== null) {
-          var result0 = result9;
+        var result11 = parse_DELIMITED_SARGAM_ORNAMENT();
+        if (result11 !== null) {
+          var result0 = result11;
         } else {
-          var result8 = parse_WHITE_SPACE();
-          if (result8 !== null) {
-            var result0 = result8;
+          var result10 = parse_DELIMITED_NUMBER_ORNAMENT();
+          if (result10 !== null) {
+            var result0 = result10;
           } else {
-            var result7 = parse_UPPER_OCTAVE_DOT();
-            if (result7 !== null) {
-              var result0 = result7;
+            var result9 = parse_WHITE_SPACE();
+            if (result9 !== null) {
+              var result0 = result9;
             } else {
-              var result6 = parse_ALTERNATE_ENDING_INDICATOR();
-              if (result6 !== null) {
-                var result0 = result6;
+              var result8 = parse_UPPER_OCTAVE_DOT();
+              if (result8 !== null) {
+                var result0 = result8;
               } else {
-                var result5 = parse_TALA();
-                if (result5 !== null) {
-                  var result0 = result5;
+                var result7 = parse_ALTERNATE_ENDING_INDICATOR();
+                if (result7 !== null) {
+                  var result0 = result7;
                 } else {
-                  var result4 = parse_MORDENT();
-                  if (result4 !== null) {
-                    var result0 = result4;
+                  var result6 = parse_TALA();
+                  if (result6 !== null) {
+                    var result0 = result6;
                   } else {
-                    var result3 = parse_UPPER_UPPER_OCTAVE_SYMBOL();
-                    if (result3 !== null) {
-                      var result0 = result3;
+                    var result5 = parse_MORDENT();
+                    if (result5 !== null) {
+                      var result0 = result5;
                     } else {
-                      var result2 = parse_CHORD_SYMBOL();
-                      if (result2 !== null) {
-                        var result0 = result2;
+                      var result4 = parse_UPPER_UPPER_OCTAVE_SYMBOL();
+                      if (result4 !== null) {
+                        var result0 = result4;
                       } else {
-                        var result1 = parse_SARGAM_ORNAMENT();
-                        if (result1 !== null) {
-                          var result0 = result1;
+                        var result3 = parse_CHORD_SYMBOL();
+                        if (result3 !== null) {
+                          var result0 = result3;
                         } else {
-                          var result0 = null;;
+                          var result2 = parse_SARGAM_ORNAMENT();
+                          if (result2 !== null) {
+                            var result0 = result2;
+                          } else {
+                            var result1 = parse_NUMBER_ORNAMENT();
+                            if (result1 !== null) {
+                              var result0 = result1;
+                            } else {
+                              var result0 = null;;
+                            };
+                          };
                         };
                       };
                     };
@@ -2581,7 +2716,7 @@ DoremiScriptParser = (function(){
             if (result6 !== null) {
               var result0 = result6;
             } else {
-              var result5 = parse_ABC_SARGAM_PITCH();
+              var result5 = parse_ABC_PITCH();
               if (result5 !== null) {
                 var result0 = result5;
               } else {
@@ -2644,7 +2779,7 @@ DoremiScriptParser = (function(){
             if (result6 !== null) {
               var result0 = result6;
             } else {
-              var result5 = parse_NUMBER_SARGAM_PITCH();
+              var result5 = parse_NUMBER_PITCH();
               if (result5 !== null) {
                 var result0 = result5;
               } else {
@@ -2707,7 +2842,7 @@ DoremiScriptParser = (function(){
             if (result6 !== null) {
               var result0 = result6;
             } else {
-              var result5 = parse_DEVANAGRI_SARGAM_PITCH();
+              var result5 = parse_DEVANAGRI_PITCH();
               if (result5 !== null) {
                 var result0 = result5;
               } else {
@@ -2972,8 +3107,8 @@ DoremiScriptParser = (function(){
         return result0;
       }
       
-      function parse_ABC_SARGAM_LINE() {
-        var cacheKey = 'ABC_SARGAM_LINE@' + pos;
+      function parse_ABC_LINE() {
+        var cacheKey = 'ABC_LINE@' + pos;
         var cachedResult = cache[cacheKey];
         if (cachedResult) {
           pos = cachedResult.nextPos;
@@ -3036,8 +3171,8 @@ DoremiScriptParser = (function(){
         return result0;
       }
       
-      function parse_DEVANAGRI_SARGAM_LINE() {
-        var cacheKey = 'DEVANAGRI_SARGAM_LINE@' + pos;
+      function parse_DEVANAGRI_LINE() {
+        var cacheKey = 'DEVANAGRI_LINE@' + pos;
         var cachedResult = cache[cacheKey];
         if (cachedResult) {
           pos = cachedResult.nextPos;
@@ -3100,8 +3235,8 @@ DoremiScriptParser = (function(){
         return result0;
       }
       
-      function parse_NUMBER_SARGAM_LINE() {
-        var cacheKey = 'NUMBER_SARGAM_LINE@' + pos;
+      function parse_NUMBER_LINE() {
+        var cacheKey = 'NUMBER_LINE@' + pos;
         var cachedResult = cache[cacheKey];
         if (cachedResult) {
           pos = cachedResult.nextPos;
@@ -3414,7 +3549,7 @@ DoremiScriptParser = (function(){
         
         var savedReportMatchFailures = reportMatchFailures;
         reportMatchFailures = false;
-        var result2 = parse_NUMBER_SARGAM_PITCH();
+        var result2 = parse_NUMBER_PITCH();
         if (result2 !== null) {
           var result0 = result2;
         } else {
@@ -3447,7 +3582,7 @@ DoremiScriptParser = (function(){
         
         var savedReportMatchFailures = reportMatchFailures;
         reportMatchFailures = false;
-        var result2 = parse_ABC_SARGAM_PITCH();
+        var result2 = parse_ABC_PITCH();
         if (result2 !== null) {
           var result0 = result2;
         } else {
@@ -3480,7 +3615,7 @@ DoremiScriptParser = (function(){
         
         var savedReportMatchFailures = reportMatchFailures;
         reportMatchFailures = false;
-        var result2 = parse_DEVANAGRI_SARGAM_PITCH();
+        var result2 = parse_DEVANAGRI_PITCH();
         if (result2 !== null) {
           var result0 = result2;
         } else {
@@ -3951,7 +4086,7 @@ DoremiScriptParser = (function(){
         
         var savedReportMatchFailures = reportMatchFailures;
         reportMatchFailures = false;
-        var result3 = parse_ABC_SARGAM_PITCH();
+        var result3 = parse_ABC_PITCH();
         if (result3 !== null) {
           var result0 = result3;
         } else {
@@ -3989,7 +4124,7 @@ DoremiScriptParser = (function(){
         
         var savedReportMatchFailures = reportMatchFailures;
         reportMatchFailures = false;
-        var result3 = parse_NUMBER_SARGAM_PITCH();
+        var result3 = parse_NUMBER_PITCH();
         if (result3 !== null) {
           var result0 = result3;
         } else {
@@ -4027,7 +4162,7 @@ DoremiScriptParser = (function(){
         
         var savedReportMatchFailures = reportMatchFailures;
         reportMatchFailures = false;
-        var result3 = parse_DEVANAGRI_SARGAM_PITCH();
+        var result3 = parse_DEVANAGRI_PITCH();
         if (result3 !== null) {
           var result0 = result3;
         } else {
@@ -6711,8 +6846,8 @@ DoremiScriptParser = (function(){
         return result0;
       }
       
-      function parse_ABC_SARGAM_CHAR() {
-        var cacheKey = 'ABC_SARGAM_CHAR@' + pos;
+      function parse_ABC_CHAR() {
+        var cacheKey = 'ABC_CHAR@' + pos;
         var cachedResult = cache[cacheKey];
         if (cachedResult) {
           pos = cachedResult.nextPos;
@@ -7514,8 +7649,8 @@ DoremiScriptParser = (function(){
         return result0;
       }
       
-      function parse_NUMBER_SARGAM_PITCH() {
-        var cacheKey = 'NUMBER_SARGAM_PITCH@' + pos;
+      function parse_NUMBER_PITCH() {
+        var cacheKey = 'NUMBER_PITCH@' + pos;
         var cachedResult = cache[cacheKey];
         if (cachedResult) {
           pos = cachedResult.nextPos;
@@ -7570,8 +7705,8 @@ DoremiScriptParser = (function(){
         return result0;
       }
       
-      function parse_ABC_SARGAM_PITCH() {
-        var cacheKey = 'ABC_SARGAM_PITCH@' + pos;
+      function parse_ABC_PITCH() {
+        var cacheKey = 'ABC_PITCH@' + pos;
         var cachedResult = cache[cacheKey];
         if (cachedResult) {
           pos = cachedResult.nextPos;
@@ -7626,8 +7761,8 @@ DoremiScriptParser = (function(){
         return result0;
       }
       
-      function parse_DEVANAGRI_SARGAM_PITCH() {
-        var cacheKey = 'DEVANAGRI_SARGAM_PITCH@' + pos;
+      function parse_DEVANAGRI_PITCH() {
+        var cacheKey = 'DEVANAGRI_PITCH@' + pos;
         var cachedResult = cache[cacheKey];
         if (cachedResult) {
           pos = cachedResult.nextPos;
