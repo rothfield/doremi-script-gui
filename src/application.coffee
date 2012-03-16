@@ -3,6 +3,12 @@ $(document).ready ->
   window.doremi_script_gui_app={}
   app=window.doremi_script_gui_app
 
+  ko.bindingHandlers.rendered_doremi_script =
+    update: (element,value_accessor,all_bindings_accessor) ->
+      value=ko.utils.unwrapObservable(value_accessor())
+      $(element).html(value)
+      dom_fixes($(element))
+      
   app.setup_context_menu = () ->
      composition=app.the_composition
      if composition.disable_context_menu()

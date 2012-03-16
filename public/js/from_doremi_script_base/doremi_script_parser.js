@@ -4358,26 +4358,26 @@ DoremiScriptParser = (function(){
         reportMatchFailures = false;
         var savedPos0 = pos;
         var savedPos1 = pos;
-        if (input.substr(pos).match(/^[a-zA-Z'!]/) !== null) {
+        if (input.substr(pos).match(/^[a-zA-Z'!?\-,]/) !== null) {
           var result7 = input.charAt(pos);
           pos++;
         } else {
           var result7 = null;
           if (reportMatchFailures) {
-            matchFailed("[a-zA-Z'!]");
+            matchFailed("[a-zA-Z'!?\\-,]");
           }
         }
         if (result7 !== null) {
           var result3 = [];
           while (result7 !== null) {
             result3.push(result7);
-            if (input.substr(pos).match(/^[a-zA-Z'!]/) !== null) {
+            if (input.substr(pos).match(/^[a-zA-Z'!?\-,]/) !== null) {
               var result7 = input.charAt(pos);
               pos++;
             } else {
               var result7 = null;
               if (reportMatchFailures) {
-                matchFailed("[a-zA-Z'!]");
+                matchFailed("[a-zA-Z'!?\\-,]");
               }
             }
           }

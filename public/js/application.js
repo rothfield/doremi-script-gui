@@ -3,6 +3,14 @@ $(document).ready(function() {
   debug = false;
   window.doremi_script_gui_app = {};
   app = window.doremi_script_gui_app;
+  ko.bindingHandlers.rendered_doremi_script = {
+    update: function(element, value_accessor, all_bindings_accessor) {
+      var value;
+      value = ko.utils.unwrapObservable(value_accessor());
+      $(element).html(value);
+      return dom_fixes($(element));
+    }
+  };
   app.setup_context_menu = function() {
     var composition, fun;
     composition = app.the_composition;

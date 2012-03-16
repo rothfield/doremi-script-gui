@@ -502,7 +502,9 @@ window.CompositionViewModel = function(my_doremi_source) {
     })();
     self.lines(my_lines);
     self.calculate_staff_notation_url_with_time_stamp();
-    return self.redraw();
+    self.editing_a_line(false);
+    self.editing_composition(true);
+    return self.not_editing_a_line(true);
   };
   self.delete_line = function(which_line) {
     which_line.source("");
@@ -630,11 +632,11 @@ window.CompositionViewModel = function(my_doremi_source) {
     }
     initialData = "";
     window.the_composition.my_init(initialData);
-    app.message_box("An untitled composition was created with a new id. Please enter a title");
+    self.add_line();
+    self.title("untitled");
     self.composition_info_visible(true);
     self.editing_composition(true);
-    self.help_visible(false);
-    return $('#composition_title').focus();
+    return self.help_visible(false);
   };
   self.refresh_compositions_in_local_storage = function() {
     var Item, ctr, items, key;
@@ -842,10 +844,7 @@ window.CompositionViewModel = function(my_doremi_source) {
       return console.log("Error in redraw " + err);
     } finally {
       self.hide_show_hyphenated_lyrics();
-      fun = function() {
-        return dom_fixes();
-      };
-      setTimeout(fun, 300);
+      fun = function() {};
       app.setup_context_menu();
     }
   }, this);

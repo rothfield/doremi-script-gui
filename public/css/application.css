@@ -1,3 +1,17 @@
+div#composition_info label {
+  width:100px;  
+  display: inline-block;
+}
+div#composition_info ul {
+  list-style-type:none;
+  width: 100%;
+  margin:auto;
+  padding:0;
+}
+div#composition_info li {
+  float: left;
+  margin-right:20px;
+}
 button#help_button {
    margin-left: 53px;  
    margin-right: 53px;  

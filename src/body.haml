@@ -21,17 +21,16 @@
       Development
   %br
   %div#help_content
-  %fieldset.controls#composition_info{"data-bind" => 'visible: editing_composition'}
-    %legend#composition_info_legend{"data-bind" => "click: toggle_composition_info_visible"}
-      %span{"data-bind" => "text: title"}
-      (Click to hide/show composition info such as title and key)
-    #composition_info_content{"data-bind" => "visible: composition_info_visible", :style => ""}
-      %p
-        %label
-          Title:
-        %input#composition_title{"data-bind" => "valueUpdate: 'afterkeydown',value: title"}/
-        %span.requiredz
-          Required
+  %div#composition_info{"data-bind" => 'visible: editing_composition'}
+    %p
+      %label
+        Title:
+      %input#composition_title{"data-bind" => "valueUpdate: 'afterkeydown',value: title"}/
+      %span.requiredz
+        Required
+      %button.more_properties_button{"onclick" => "$('#more_properties').toggle()"}
+        More...
+    %div#more_properties{"style" => 'display:none'}
       %p
         %label
           Author:
@@ -110,6 +109,7 @@
           %li
             %a#download_doremi_source{"data-bind" => "click:handle_link_click,enable: links_enabled,attr: {href: doremi_source_url }",:href => "/#", :target => "_blank", :title => ""} Doremi-Script Source
   %br
+  %br
   .composition{"data-bind" => "visible:editing_composition"}
     %div.controls
       %div.composition_controls
@@ -146,7 +146,7 @@
           %span.show_warnings{"data-bind" => "visible: line_has_warnings, attr: {title: line_warnings}"} 
             W
           %textarea.entry_area{:spellcheck => "false",:rows => "6", :cols => "33", "data-bind" => "attr: {id: entry_area_id()},style: {width: $parent.composition_textarea_width},css: {'line_has_warnings': line_has_warnings,'parse_failed': $data.parse_failed},visible: editing(), value: source "}
-        %div.rendered_html{"style" => "display:inline-block", "data-bind" => "afterRender:line_dom_fixes,html:rendered_in_html, visible: not_editing, event: { dblclick: edit},clickBubble:false, css: {editing:editing,not_editing:not_editing,line_has_warnings: line_has_warnings,line_parse_failed: line_parse_failed},style: {width: $parent.composition_textarea_width}"}
+        %div.rendered_html{"style" => "display:inline-block", "data-bind" => "rendered_doremi_script:rendered_in_html, visible: not_editing, event: { dblclick: edit},clickBubble:false, css: {editing:editing,not_editing:not_editing,line_has_warnings: line_has_warnings,line_parse_failed: line_parse_failed},style: {width: $parent.composition_textarea_width}"}
 
   %div.bottom_controls{"data-bind" => "visible: editing_composition"}
     %button.controls{"data-bind" => "click: add_line, enable: not_editing_a_line"}

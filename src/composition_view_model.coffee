@@ -417,7 +417,10 @@ window.CompositionViewModel = (my_doremi_source) ->
     my_lines= (new LineViewModel(parsed_line) for  parsed_line in parsed.lines)
     self.lines(my_lines)
     self.calculate_staff_notation_url_with_time_stamp()
-    self.redraw()
+    self.editing_a_line(false)
+    self.editing_composition(true)
+    self.not_editing_a_line(true)
+    #self.redraw()
     #seconds= 0.5
     #setTimeout("dom_fixes()",0.5*1000)  # necessary?
 
@@ -504,11 +507,13 @@ window.CompositionViewModel = (my_doremi_source) ->
       return
     initialData = ""
     window.the_composition.my_init(initialData)
-    app.message_box("An untitled composition was created with a new id. Please enter a title")
+    self.add_line()
+    #app.message_box("An untitled composition was created with a new id. Please enter a title")
+    self.title("untitled")
     self.composition_info_visible(true)
     self.editing_composition(true)
     self.help_visible(false)
-    $('#composition_title').focus()
+    #$('#composition_title').focus()
 
   self.refresh_compositions_in_local_storage  = () ->
     Item = (key, doremi_script) ->
@@ -672,8 +677,8 @@ window.CompositionViewModel = (my_doremi_source) ->
     finally
       self.hide_show_hyphenated_lyrics()
       fun = () ->
-        dom_fixes()
-      setTimeout(fun,300)
+        #dom_fixes()
+      #setTimeout(fun,300)
       app.setup_context_menu()
 
 

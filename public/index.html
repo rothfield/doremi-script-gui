@@ -41,21 +41,20 @@
       </div>
       <br />
       <div id='help_content'></div>
-      <fieldset class='controls' data-bind='visible: editing_composition' id='composition_info'>
-        <legend data-bind='click: toggle_composition_info_visible' id='composition_info_legend'>
-          <span data-bind='text: title'></span>
-          (Click to hide/show composition info such as title and key)
-        </legend>
-        <div data-bind='visible: composition_info_visible' id='composition_info_content' style=''>
-          <p>
-            <label>
-              Title:
-            </label>
-            <input data-bind="valueUpdate: 'afterkeydown',value: title" id='composition_title' />
-            <span class='requiredz'>
-              Required
-            </span>
-          </p>
+      <div data-bind='visible: editing_composition' id='composition_info'>
+        <p>
+          <label>
+            Title:
+          </label>
+          <input data-bind="valueUpdate: 'afterkeydown',value: title" id='composition_title' />
+          <span class='requiredz'>
+            Required
+          </span>
+          <button class='more_properties_button' onclick="$('#more_properties').toggle()">
+            More...
+          </button>
+        </p>
+        <div id='more_properties' style='display:none'>
           <p>
             <label>
               Author:
@@ -172,7 +171,8 @@
             </ul>
           </div>
         </div>
-      </fieldset>
+      </div>
+      <br />
       <br />
       <div class='composition' data-bind='visible:editing_composition'>
         <div class='controls'>
@@ -226,7 +226,7 @@
               </span>
               <textarea class='entry_area' cols='33' data-bind="attr: {id: entry_area_id()},style: {width: $parent.composition_textarea_width},css: {'line_has_warnings': line_has_warnings,'parse_failed': $data.parse_failed},visible: editing(), value: source " rows='6' spellcheck='false'></textarea>
             </div>
-            <div class='rendered_html' data-bind='afterRender:line_dom_fixes,html:rendered_in_html, visible: not_editing, event: { dblclick: edit},clickBubble:false, css: {editing:editing,not_editing:not_editing,line_has_warnings: line_has_warnings,line_parse_failed: line_parse_failed},style: {width: $parent.composition_textarea_width}' style='display:inline-block'></div>
+            <div class='rendered_html' data-bind='rendered_doremi_script:rendered_in_html, visible: not_editing, event: { dblclick: edit},clickBubble:false, css: {editing:editing,not_editing:not_editing,line_has_warnings: line_has_warnings,line_parse_failed: line_parse_failed},style: {width: $parent.composition_textarea_width}' style='display:inline-block'></div>
           </div>
         </div>
       </div>
