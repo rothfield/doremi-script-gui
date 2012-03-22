@@ -13,10 +13,6 @@ window.LineViewModel = function(line_param) {
   self = this;
   self.line_id = ko.observable(unique_id++);
   self.index = ko.observable(line_param.index);
-  self.line_dom_fixes = function(lines) {
-    console.log('line_dom_fixes');
-    return alert('line_dom_fixes');
-  };
   self.div_line_id = ko.computed(function() {
     return "div_line_" + (self.index());
   });
@@ -56,7 +52,7 @@ window.LineViewModel = function(line_param) {
     return true;
   };
   self.edit = function(my_model, event) {
-    var dom_id, line, selector, val, _i, _len, _ref;
+    var $textarea, dom_id, line, selector, val, _i, _len, _ref;
     $(".stave_wrapper").disableContextMenu();
     if (window.the_composition.editing_a_line()) {
       return false;
@@ -82,11 +78,13 @@ window.LineViewModel = function(line_param) {
     $("textarea#" + dom_id).focus();
     val = self.source();
     selector = "textarea#" + dom_id;
-    $(selector).select_range(val.length, val.length);
-    $("textarea#" + dom_id).select_range(val.length, val.length);
-    $.scrollTo(selector, 500, {
-      offset: -50
-    });
+    $textarea = $(selector);
+    $textarea.select_range(val.length, val.length);
+    if (!window.elementInViewport($textarea[0])) {
+      $.scrollTo($textarea, 500, {
+        offset: -50
+      });
+    }
     return true;
   };
   self.entry_area_id = ko.observable("entry_area_" + unique_id);

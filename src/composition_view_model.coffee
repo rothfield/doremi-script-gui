@@ -11,7 +11,7 @@ window.CompositionViewModel = (my_doremi_source) ->
   self.disable_context_menu=ko.observable(false) # for debugging only
 
   self.handle_link_click = (x,y) ->
-    console.log "handle_link_click",x,y
+    console.log "handle_link_click",x,y if debug
     target=y.target #TODO: crossbrowser here?
     if target.href.indexOf("#") isnt -1
       alert("Please click the Update all button first")
@@ -156,7 +156,6 @@ window.CompositionViewModel = (my_doremi_source) ->
     self.composition_musicxml_source_visible(!self.composition_musicxml_source_visible())
 
   self.toggle_composition_lilypond_source_visible = () ->
-    #console.log "toggle"
     self.composition_lilypond_source_visible(!self.composition_lilypond_source_visible())
     return
     if self.composition_lilypond_source_visible
@@ -244,14 +243,13 @@ window.CompositionViewModel = (my_doremi_source) ->
     self.generate_staff_notation_aux(my_model)
 
   self.generate_staff_notation_aux = (my_model,dont="false") ->
-    console.log "generate_staff_notation"
+    console.log "generate_staff_notation" if debug
     # self.compute_doremi_source()
     self.redraw()
     # generate staff notation by converting doremi_script
     # to lilypond and call a web service
     self.generating_staff_notation(true)
     lilypond_source=self.composition_lilypond_source()
-    #console.log "lilypond_source",lilypond_source
     ts= new Date().getTime()
     url='/lilypond_server/lilypond_to_jpg'
     timeout_in_seconds=60
@@ -346,7 +344,6 @@ window.CompositionViewModel = (my_doremi_source) ->
       att="Source" if att is "source"
       att="TimeSignature" if att is "time_signature"
       if att is "apply_hyphenated_lyrics"
-        console.log("486--")
         att="ApplyHyphenatedLyrics"
       #att="ApplyHyphenatedLyrics" if att is "apply_hyphenated_lyrics"
       att="StaffNotationURL" if att is "staff_notation_url"
@@ -420,9 +417,6 @@ window.CompositionViewModel = (my_doremi_source) ->
     self.editing_a_line(false)
     self.editing_composition(true)
     self.not_editing_a_line(true)
-    #self.redraw()
-    #seconds= 0.5
-    #setTimeout("dom_fixes()",0.5*1000)  # necessary?
 
   self.delete_line = (which_line) ->
     which_line.source("")
@@ -541,26 +535,21 @@ window.CompositionViewModel = (my_doremi_source) ->
     window.to_musicxml(self.composition_parsed_doremi_script())
 
   self.disable_generate_staff_notation= ko.computed () ->
-    console.log 'a'
     return true if self.editing_a_line()
-    console.log 'a'
     return true if self.composition_parse_failed()
-    console.log 'a'
     return true if self.title() is ""
-    console.log 'a'
     return true if self.lines().length is 0
-    console.log 'a'
     false
 
   self.generate_html_page_aux = () ->
     #window.generate_html_doc_ctr=3
-    console.log "generate_html_page_aux"
+    console.log "generate_html_page_aux" if debug
     #return if window.generate_html_doc_ctr > 0
     a=$('#styles_for_html_doc').html()
     b=$('#doremi_for_html_doc').html()
     c=$('#application_for_html_doc').html()
     css=a+b+c
-    console.log "in generate_html_page_aux, css is #{css}"
+    console.log "in generate_html_page_aux, css is #{css}" if debug
     js=$('#zepto_for_html_doc').html()
     js2=$('#dom_fixer_for_html_doc').html()
     all_js=js+js2
@@ -659,7 +648,9 @@ window.CompositionViewModel = (my_doremi_source) ->
         ctr=0
         if parsed_lines.length isnt view_lines.length
           console.log "Info:assertion failed parsed_lines.length isnt view_lines.length"
+          #self.lines([])
           self.my_init(doremi_source)
+          self.redraw()
           return # runs finally section below
         for parsed_line in parsed_lines
           view_line=view_lines[ctr]
@@ -676,9 +667,6 @@ window.CompositionViewModel = (my_doremi_source) ->
        console.log "Error in redraw #{err}" #if debug
     finally
       self.hide_show_hyphenated_lyrics()
-      fun = () ->
-        #dom_fixes()
-      #setTimeout(fun,300)
       app.setup_context_menu()
 
 

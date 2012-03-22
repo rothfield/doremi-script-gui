@@ -7,10 +7,6 @@ window.LineViewModel = (line_param= {source: EMPTY_LINE_SOURCE,rendered_in_html:
 
   self.index= ko.observable(line_param.index) # 0 and up
   
-  self.line_dom_fixes = (lines) ->
-    # Gets called after rendering by knockout.
-    console.log('line_dom_fixes')
-    alert('line_dom_fixes')
   self.div_line_id= ko.computed( () ->
     return "div_line_#{self.index()}"
   )
@@ -64,9 +60,10 @@ window.LineViewModel = (line_param= {source: EMPTY_LINE_SOURCE,rendered_in_html:
     $("textarea#"+dom_id).focus()
     val=self.source()
     selector="textarea#"+dom_id
-    $(selector).select_range(val.length,val.length)
-    $("textarea#"+dom_id).select_range(val.length,val.length)
-    $.scrollTo(selector, 500,{offset:-50})
+    $textarea=$(selector)
+    $textarea.select_range(val.length,val.length)
+    if ! window.elementInViewport($textarea[0])
+      $.scrollTo($textarea, 500,{offset:-50})
     true
   
   self.entry_area_id= ko.observable("entry_area_#{unique_id}")

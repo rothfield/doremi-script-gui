@@ -243,6 +243,9 @@
     if (item.my_type === "pitch") {
       return draw_pitch(item);
     }
+    if (item.my_type === "ignored_whitespace") {
+      return "";
+    }
     if (item.my_type === "begin_beat") {
       return "";
     }

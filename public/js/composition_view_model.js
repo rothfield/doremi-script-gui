@@ -12,7 +12,9 @@ window.CompositionViewModel = function(my_doremi_source) {
   self.disable_context_menu = ko.observable(false);
   self.handle_link_click = function(x, y) {
     var target;
-    console.log("handle_link_click", x, y);
+    if (debug) {
+      console.log("handle_link_click", x, y);
+    }
     target = y.target;
     if (target.href.indexOf("#") !== -1) {
       alert("Please click the Update all button first");
@@ -284,7 +286,9 @@ window.CompositionViewModel = function(my_doremi_source) {
     if (dont == null) {
       dont = "false";
     }
-    console.log("generate_staff_notation");
+    if (debug) {
+      console.log("generate_staff_notation");
+    }
     self.redraw();
     self.generating_staff_notation(true);
     lilypond_source = self.composition_lilypond_source();
@@ -387,7 +391,6 @@ window.CompositionViewModel = function(my_doremi_source) {
           att = "TimeSignature";
         }
         if (att === "apply_hyphenated_lyrics") {
-          console.log("486--");
           att = "ApplyHyphenatedLyrics";
         }
         if (att === "staff_notation_url") {
@@ -669,33 +672,32 @@ window.CompositionViewModel = function(my_doremi_source) {
     return window.to_musicxml(self.composition_parsed_doremi_script());
   };
   self.disable_generate_staff_notation = ko.computed(function() {
-    console.log('a');
     if (self.editing_a_line()) {
       return true;
     }
-    console.log('a');
     if (self.composition_parse_failed()) {
       return true;
     }
-    console.log('a');
     if (self.title() === "") {
       return true;
     }
-    console.log('a');
     if (self.lines().length === 0) {
       return true;
     }
-    console.log('a');
     return false;
   });
   self.generate_html_page_aux = function() {
     var a, all_js, b, c, composition, css, full_url, js, js2;
-    console.log("generate_html_page_aux");
+    if (debug) {
+      console.log("generate_html_page_aux");
+    }
     a = $('#styles_for_html_doc').html();
     b = $('#doremi_for_html_doc').html();
     c = $('#application_for_html_doc').html();
     css = a + b + c;
-    console.log("in generate_html_page_aux, css is " + css);
+    if (debug) {
+      console.log("in generate_html_page_aux, css is " + css);
+    }
     js = $('#zepto_for_html_doc').html();
     js2 = $('#dom_fixer_for_html_doc').html();
     all_js = js + js2;
@@ -767,7 +769,7 @@ window.CompositionViewModel = function(my_doremi_source) {
     return $.ajax(params);
   };
   self.redraw = __bind(function() {
-    var composition_view, count_before, ctr, debug, doremi_source, fun, parsed, parsed_line, parsed_lines, source, view_line, view_lines, warnings, _i, _j, _len, _len2, _ref, _results, _results2;
+    var composition_view, count_before, ctr, debug, doremi_source, parsed, parsed_line, parsed_lines, source, view_line, view_lines, warnings, _i, _j, _len, _len2, _ref, _results, _results2;
     try {
       debug = false;
       doremi_source = self.compute_doremi_source();
@@ -821,6 +823,7 @@ window.CompositionViewModel = function(my_doremi_source) {
         if (parsed_lines.length !== view_lines.length) {
           console.log("Info:assertion failed parsed_lines.length isnt view_lines.length");
           self.my_init(doremi_source);
+          self.redraw();
           return;
         }
         _results2 = [];
@@ -844,7 +847,6 @@ window.CompositionViewModel = function(my_doremi_source) {
       return console.log("Error in redraw " + err);
     } finally {
       self.hide_show_hyphenated_lyrics();
-      fun = function() {};
       app.setup_context_menu();
     }
   }, this);

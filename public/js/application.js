@@ -1,14 +1,33 @@
+var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; };
 $(document).ready(function() {
-  var app, debug, initialData, setup_downloadify;
+  var app, check_for_opening_url, debug, getParameterByName, initialData, load_composition_from_url, load_html_doc_components, setup_downloadify, simple_hash, url;
   debug = false;
   window.doremi_script_gui_app = {};
   app = window.doremi_script_gui_app;
+  simple_hash = function(str) {
+    var ch, index, num, _len, _ref;
+    if (!(str != null)) {
+      return 0;
+    }
+    num = 0;
+    _ref = str.split('');
+    for (index = 0, _len = _ref.length; index < _len; index++) {
+      ch = _ref[index];
+      num = num + ch.charCodeAt(0);
+    }
+    return "" + num;
+  };
   ko.bindingHandlers.rendered_doremi_script = {
     update: function(element, value_accessor, all_bindings_accessor) {
-      var value;
-      value = ko.utils.unwrapObservable(value_accessor());
-      $(element).html(value);
-      return dom_fixes($(element));
+      var new_hash, new_value, old_hash;
+      old_hash = $(element).attr('data-hash');
+      new_value = ko.utils.unwrapObservable(value_accessor());
+      new_hash = simple_hash(new_value);
+      if (old_hash !== new_hash) {
+        $(element).html(new_value);
+        dom_fixes($(element));
+        return $(element).attr('data-hash', new_hash);
+      }
     }
   };
   app.setup_context_menu = function() {
@@ -134,12 +153,53 @@ $(document).ready(function() {
     $('div.stave').attr('data-dom-fixed', "false");
     return window.the_composition.redraw();
   });
+  getParameterByName = function(name) {
+    var regex, regexS, results;
+    name = name.replace(/[\[]/, "\\\[").replace(/[\]]/, "\\\]");
+    regexS = "[\\?&]" + name + "=([^&#]*)";
+    regex = new RegExp(regexS);
+    results = regex.exec(window.location.search);
+    if (results === null) {
+      return "";
+    }
+    return decodeURIComponent(results[1].replace(/\+/g, " "));
+  };
+  check_for_opening_url = function() {
+    return load_url(getParameterByName('url'));
+  };
+  load_composition_from_url = function(url) {
+    var params;
+    if (url === "") {
+      return;
+    }
+    params = {
+      type: 'GET',
+      url: url,
+      dataType: 'text',
+      success: __bind(function(doremi_script_source) {
+        return app.the_composition.my_init(doremi_script_source);
+      }, this),
+      error: function(data) {
+        return alert("Unable to load url " + url);
+      }
+    };
+    return $.ajax(params);
+  };
   setup_downloadify();
   $('#composition_title').focus();
-  console.log("before get_css");
-  app.the_composition.get_application_css();
-  app.the_composition.get_styles_css();
-  app.the_composition.get_doremi_css();
-  app.the_composition.get_zepto();
-  return app.the_composition.get_dom_fixer();
+  if (false) {
+    console.log("before get_css");
+  }
+  load_html_doc_components = function() {
+    app.the_composition.get_application_css();
+    app.the_composition.get_styles_css();
+    app.the_composition.get_doremi_css();
+    app.the_composition.get_zepto();
+    return app.the_composition.get_dom_fixer();
+  };
+  load_html_doc_components();
+  url = getParameterByName('url');
+  if (url !== "") {
+    return load_composition_from_url(url);
+  }
 });

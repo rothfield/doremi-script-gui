@@ -2,13 +2,23 @@ $(document).ready ->
   debug=false
   window.doremi_script_gui_app={}
   app=window.doremi_script_gui_app
-
+  simple_hash = (str) ->
+    return 0 if !str?
+    num=0
+    for ch, index in str.split ''
+      num=num + ch.charCodeAt(0)
+    "#{num}"
+      
   ko.bindingHandlers.rendered_doremi_script =
     update: (element,value_accessor,all_bindings_accessor) ->
-      value=ko.utils.unwrapObservable(value_accessor())
-      $(element).html(value)
-      dom_fixes($(element))
-      
+      old_hash=$(element).attr('data-hash')
+      new_value=ko.utils.unwrapObservable(value_accessor())
+      new_hash=simple_hash(new_value)
+      if old_hash isnt new_hash
+        $(element).html(new_value)
+        dom_fixes($(element))
+        $(element).attr('data-hash',new_hash)
+
   app.setup_context_menu = () ->
      composition=app.the_composition
      if composition.disable_context_menu()
@@ -98,6 +108,7 @@ $(document).ready ->
   ko.applyBindings(window.the_composition,$('html')[0])
   
   $(window).resize(() ->
+    # redraw the composition
     console.log("resize")
     window.the_composition.composition_stave_width(window.the_composition.calculate_stave_width())
     window.the_composition.composition_textarea_width(window.the_composition.calculate_textarea_width())
@@ -105,14 +116,44 @@ $(document).ready ->
     window.the_composition.redraw()
   )
 
+
+  getParameterByName= (name) ->
+    name = name.replace(/[\[]/, "\\\[").replace(/[\]]/, "\\\]")
+    regexS = "[\\?&]" + name + "=([^&#]*)"
+    regex = new RegExp(regexS)
+    results = regex.exec(window.location.search)
+    if(results is null)
+        return ""
+    return decodeURIComponent(results[1].replace(/\+/g, " "))
+
+  check_for_opening_url=() ->
+    load_url(getParameterByName('url'))
+
+  load_composition_from_url= (url) ->
+    return if url is ""
+    params=
+      type:'GET'
+      url:url
+      dataType:'text'
+      success: (doremi_script_source) =>
+        app.the_composition.my_init(doremi_script_source)
+      error: (data) ->
+        alert("Unable to load url #{url}")
+    $.ajax(params)
+
   setup_downloadify()
   $('#composition_title').focus()
 
-  console.log("before get_css")
-  app.the_composition.get_application_css()
-  app.the_composition.get_styles_css()
-  app.the_composition.get_doremi_css()
-  #app.the_composition.all_css_for_html_doc=a+b+c
-  app.the_composition.get_zepto()
-  app.the_composition.get_dom_fixer()
+  console.log("before get_css") if false
+  # these are used for creating html_doc. Review whether still needed.
+  load_html_doc_components= () ->
+    app.the_composition.get_application_css()
+    app.the_composition.get_styles_css()
+    app.the_composition.get_doremi_css()
+    app.the_composition.get_zepto()
+    app.the_composition.get_dom_fixer()
 
+  load_html_doc_components()
+  url= getParameterByName('url')
+  if url isnt ""
+    load_composition_from_url(url)

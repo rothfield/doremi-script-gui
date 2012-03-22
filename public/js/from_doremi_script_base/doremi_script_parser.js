@@ -82,6 +82,7 @@ DoremiScriptParser = (function(){
         "FINAL_BARLINE": parse_FINAL_BARLINE,
         "FORWARD_SLASH_CHAR": parse_FORWARD_SLASH_CHAR,
         "HEADER_SECTION": parse_HEADER_SECTION,
+        "IGNORED_WHITE_SPACE": parse_IGNORED_WHITE_SPACE,
         "KOMMAL_INDICATOR": parse_KOMMAL_INDICATOR,
         "LEFT_REPEAT": parse_LEFT_REPEAT,
         "LINE": parse_LINE,
@@ -856,8 +857,12 @@ DoremiScriptParser = (function(){
               var result11 = parse_LOWER_OCTAVE_LINE();
             }
             if (result5 !== null) {
+              var result6 = [];
               var result10 = parse_LYRICS_LINE();
-              var result6 = result10 !== null ? result10 : '';
+              while (result10 !== null) {
+                result6.push(result10);
+                var result10 = parse_LYRICS_LINE();
+              }
               if (result6 !== null) {
                 var result7 = parse_LINE_END();
                 if (result7 !== null) {
@@ -4208,7 +4213,7 @@ DoremiScriptParser = (function(){
           if (result2 !== null) {
             var result0 = result2;
           } else {
-            var result1 = parse_WHITE_SPACE();
+            var result1 = parse_IGNORED_WHITE_SPACE();
             if (result1 !== null) {
               var result0 = result1;
             } else {
@@ -8450,6 +8455,51 @@ DoremiScriptParser = (function(){
         }
         var result2 = result1 !== null
           ? (function(spaces) { return { my_type: "whitespace",
+                               source: spaces.join("")
+                               }
+                               })(result1)
+          : null;
+        if (result2 !== null) {
+          var result0 = result2;
+        } else {
+          var result0 = null;
+          pos = savedPos0;
+        }
+        reportMatchFailures = savedReportMatchFailures;
+        if (reportMatchFailures && result0 === null) {
+          matchFailed("white space");
+        }
+        
+        cache[cacheKey] = {
+          nextPos: pos,
+          result:  result0
+        };
+        return result0;
+      }
+      
+      function parse_IGNORED_WHITE_SPACE() {
+        var cacheKey = 'IGNORED_WHITE_SPACE@' + pos;
+        var cachedResult = cache[cacheKey];
+        if (cachedResult) {
+          pos = cachedResult.nextPos;
+          return cachedResult.result;
+        }
+        
+        var savedReportMatchFailures = reportMatchFailures;
+        reportMatchFailures = false;
+        var savedPos0 = pos;
+        var result3 = parse_SPACE();
+        if (result3 !== null) {
+          var result1 = [];
+          while (result3 !== null) {
+            result1.push(result3);
+            var result3 = parse_SPACE();
+          }
+        } else {
+          var result1 = null;
+        }
+        var result2 = result1 !== null
+          ? (function(spaces) { return { my_type: "ignored_whitespace",
                                source: spaces.join("")
                                }
                                })(result1)

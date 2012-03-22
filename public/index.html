@@ -226,7 +226,7 @@
               </span>
               <textarea class='entry_area' cols='33' data-bind="attr: {id: entry_area_id()},style: {width: $parent.composition_textarea_width},css: {'line_has_warnings': line_has_warnings,'parse_failed': $data.parse_failed},visible: editing(), value: source " rows='6' spellcheck='false'></textarea>
             </div>
-            <div class='rendered_html' data-bind='rendered_doremi_script:rendered_in_html, visible: not_editing, event: { dblclick: edit},clickBubble:false, css: {editing:editing,not_editing:not_editing,line_has_warnings: line_has_warnings,line_parse_failed: line_parse_failed},style: {width: $parent.composition_textarea_width}' style='display:inline-block'></div>
+            <div class='rendered_html' data-bind='rendered_doremi_script:rendered_in_html, visible: not_editing, event: { click: edit},clickBubble:false, css: {editing:editing,not_editing:not_editing,line_has_warnings: line_has_warnings,line_parse_failed: line_parse_failed},style: {width: $parent.composition_textarea_width}' style='display:inline-block'></div>
           </div>
         </div>
       </div>
@@ -264,6 +264,7 @@
     window.module=undefined;
     </script>
     <script src='js/from_doremi_script_base/tree_iterators.js' type='text/javascript'></script>
+    <script src='js/elementInViewport.js' type='text/javascript'></script>
     <script src='js/from_doremi_script_base/parser_helper.js' type='text/javascript'></script>
     <script src='js/from_doremi_script_base/to_lilypond.js' type='text/javascript'></script>
     <script src='js/from_doremi_script_base/to_musicxml.js' type='text/javascript'></script>

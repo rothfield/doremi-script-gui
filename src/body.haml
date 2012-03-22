@@ -146,7 +146,7 @@
           %span.show_warnings{"data-bind" => "visible: line_has_warnings, attr: {title: line_warnings}"} 
             W
           %textarea.entry_area{:spellcheck => "false",:rows => "6", :cols => "33", "data-bind" => "attr: {id: entry_area_id()},style: {width: $parent.composition_textarea_width},css: {'line_has_warnings': line_has_warnings,'parse_failed': $data.parse_failed},visible: editing(), value: source "}
-        %div.rendered_html{"style" => "display:inline-block", "data-bind" => "rendered_doremi_script:rendered_in_html, visible: not_editing, event: { dblclick: edit},clickBubble:false, css: {editing:editing,not_editing:not_editing,line_has_warnings: line_has_warnings,line_parse_failed: line_parse_failed},style: {width: $parent.composition_textarea_width}"}
+        %div.rendered_html{"style" => "display:inline-block", "data-bind" => "rendered_doremi_script:rendered_in_html, visible: not_editing, event: { click: edit},clickBubble:false, css: {editing:editing,not_editing:not_editing,line_has_warnings: line_has_warnings,line_parse_failed: line_parse_failed},style: {width: $parent.composition_textarea_width}"}
 
   %div.bottom_controls{"data-bind" => "visible: editing_composition"}
     %button.controls{"data-bind" => "click: add_line, enable: not_editing_a_line"}
