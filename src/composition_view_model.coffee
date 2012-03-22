@@ -126,6 +126,7 @@ window.CompositionViewModel = (my_doremi_source) ->
   self.doremi_source_url=ko.computed(()->
     base_url=self.base_url()
     return "/#" if  !base_url
+    base_url=base_url.replace('compositions','compositions2')
     "#{base_url}.doremi_script.txt"
   )
 

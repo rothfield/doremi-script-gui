@@ -159,6 +159,7 @@ window.CompositionViewModel = function(my_doremi_source) {
     if (!base_url) {
       return "/#";
     }
+    base_url = base_url.replace('compositions', 'compositions2');
     return "" + base_url + ".doremi_script.txt";
   });
   self.composition_lilypond_source_visible = ko.observable(false);
