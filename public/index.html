@@ -225,10 +225,7 @@
                 <img data-bind='visible:editing(),click: close_edit,clickBubble:false' src='images/close_box.gif' title='Close' />
               </a>
               <span class='show_warnings' data-bind='visible: line_has_warnings, attr: {title: line_warnings}'>
-                W
-              </span>
-              <span class='revert' data-bind='click:revert_edit' title='Abandon changes in this line'>
-                Revert
+                Warnings
               </span>
               <textarea class='entry_area' cols='33' data-bind="event: {keypress:handle_keypress},attr: {id: entry_area_id()},style: {width: $parent.composition_textarea_width},css: {'line_has_warnings': line_has_warnings,'parse_failed': $data.parse_failed},visible: editing(), value: source " rows='6' spellcheck='false'></textarea>
             </div>
