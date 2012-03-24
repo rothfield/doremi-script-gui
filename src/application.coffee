@@ -137,6 +137,7 @@ $(document).ready ->
       dataType:'text'
       success: (doremi_script_source) =>
         app.the_composition.my_init(doremi_script_source)
+        app.the_composition.redraw()
       error: (data) ->
         alert("Unable to load url #{url}")
     $.ajax(params)

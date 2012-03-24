@@ -19,15 +19,14 @@
       Help 
     %a{:target => "_blank","href" => 'http://github.com/rothfield/doremi-script-gui'}
       Development
-  %br
   %div#help_content
   %div#composition_info{"data-bind" => 'visible: editing_composition'}
     %p
       %label
         Title:
       %input#composition_title{"data-bind" => "valueUpdate: 'afterkeydown',value: title"}/
-      %span.requiredz
-        Required
+      %span.required
+        * 
       %button.more_properties_button{"onclick" => "$('#more_properties').toggle()"}
         More...
     %div#more_properties{"style" => 'display:none'}
@@ -43,6 +42,10 @@
         %label
           Mode:
         %select{"data-bind" => "options: modes, value: mode"}
+      %p
+        %label
+          Notes Used:
+        %input{"data-bind" => "value: notes_used, valueUpdate: 'afterkeydown'"}/
       %p
         %label
           Time Signature:
@@ -108,8 +111,6 @@
             %a#download_mid.generated_by_lilypond{"data-bind" => "click:handle_link_click,enable: links_enabled,attr: {href: midi_url }",:href => "/#", :target => "_blank", :title => "Play midi file"} midi
           %li
             %a#download_doremi_source{"data-bind" => "click:handle_link_click,enable: links_enabled,attr: {href: doremi_source_url }",:href => "/#", :target => "_blank", :title => ""} Doremi-Script Source
-  %br
-  %br
   .composition{"data-bind" => "visible:editing_composition"}
     %div.controls
       %div.composition_controls
@@ -142,10 +143,10 @@
       %div.stave_wrapper{"data-bind" => "attr: {id: stave_id},css:{editing:editing}"}
         %div.entry_area_wrapper{"data-bind" => 'visible:editing'}
           %a.close_box
-            %img{:src => 'images/close_box.gif',"data-bind" => "visible:editing(),click: close_edit,clickBubble:false"} 
+            %img{"title" => 'Close',:src => 'images/close_box.gif',"data-bind" => "visible:editing(),click: close_edit,clickBubble:false"} 
           %span.show_warnings{"data-bind" => "visible: line_has_warnings, attr: {title: line_warnings}"} 
-            W
-          %textarea.entry_area{:spellcheck => "false",:rows => "6", :cols => "33", "data-bind" => "attr: {id: entry_area_id()},style: {width: $parent.composition_textarea_width},css: {'line_has_warnings': line_has_warnings,'parse_failed': $data.parse_failed},visible: editing(), value: source "}
+            Warnings
+          %textarea.entry_area{:spellcheck => "false",:rows => "6", :cols => "33", "data-bind" => "event: {keypress:handle_keypress},attr: {id: entry_area_id()},style: {width: $parent.composition_textarea_width},css: {'line_has_warnings': line_has_warnings,'parse_failed': $data.parse_failed},visible: editing(), value: source "}
         %div.rendered_html{"style" => "display:inline-block", "data-bind" => "rendered_doremi_script:rendered_in_html, visible: not_editing, event: { click: edit},clickBubble:false, css: {editing:editing,not_editing:not_editing,line_has_warnings: line_has_warnings,line_parse_failed: line_parse_failed},style: {width: $parent.composition_textarea_width}"}
 
   %div.bottom_controls{"data-bind" => "visible: editing_composition"}

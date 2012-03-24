@@ -97,7 +97,7 @@
     if (item.octave === 2) {
       upper_sym = ":";
     }
-    return "<span class=\"" + (class_for_octave(item.octave)) + " upper_octave_indicator\">" + upper_sym + "</span>";
+    return "<span data-column=\"" + item.column + "\" class=\"" + (class_for_octave(item.octave)) + " upper_octave_indicator\">" + upper_sym + "</span>";
   };
   draw_syllable = function(item) {
     if (!(item.syllable != null)) {
@@ -106,7 +106,7 @@
     if (item.syllable === '') {
       return '';
     }
-    return "<span class=\"syllable\">" + item.syllable + "</span>";
+    return "<span data-column=\"" + item.column + "\" class=\"syllable\">" + item.syllable + "</span>";
   };
   draw_lower_octave_symbol = function(item) {
     var bull, lower_sym;
@@ -129,7 +129,7 @@
     if (item.octave === -2) {
       lower_sym = ":";
     }
-    return "<span class=\"" + (class_for_octave(item.octave)) + "\">" + lower_sym + "</span>";
+    return "<span data-column=\"" + item.column + "\" class=\"" + (class_for_octave(item.octave)) + "\">" + lower_sym + "</span>";
   };
   class_for_octave = function(octave_num) {
     if (!(octave_num != null)) {
@@ -143,10 +143,10 @@
     }
     return "octave0";
   };
-  draw_ornament_item = function(item) {
-    return "<span class=\"ornament_item " + (class_for_octave(item.octave)) + "\">" + item.source + "</span>";
+  draw_ornament_item = function(item, parent_note) {
+    return "<span data-column=\"" + parent_note.column + "\" class=\"ornament_item " + (class_for_octave(item.octave)) + "\">" + item.source + "</span>";
   };
-  draw_ornament = function(ornament) {
+  draw_ornament = function(ornament, parent_item) {
     var orn_item, x;
     x = ((function() {
       var _i, _len, _ref, _results;
@@ -154,14 +154,14 @@
       _results = [];
       for (_i = 0, _len = _ref.length; _i < _len; _i++) {
         orn_item = _ref[_i];
-        _results.push(draw_ornament_item(orn_item));
+        _results.push(draw_ornament_item(orn_item, parent_item));
       }
       return _results;
     })()).join('');
     id_ctr++;
-    return "<span id=\"" + id_ctr + "\" class=\"upper_attribute ornament placement_" + ornament.placement + "\">" + x + "</span>";
+    return "<span data-column=\"" + ornament.column + "\" id=\"" + id_ctr + "\" class=\"upper_attribute ornament placement_" + ornament.placement + "\">" + x + "</span>";
   };
-  draw_pitch_sign = function(my_source) {
+  draw_pitch_sign = function(my_source, item) {
     var simple, snip;
     snip = "";
     if (my_source.length === 1) {
@@ -170,7 +170,7 @@
     if (my_source[1] === "#") {
       simple = lookup_simple("#");
       my_source = my_source[0];
-      snip = "<span data-fallback-if-no-utf8-chars='" + simple + "' class='pitch_sign sharp'>" + (lookup_html_entity('#')) + "</span>";
+      snip = "<span data-column='" + item.column + "' data-fallback-if-no-utf8-chars='" + simple + "' class='pitch_sign sharp'>" + (lookup_html_entity('#')) + "</span>";
     }
     if (my_source[1] === "b") {
       my_source = my_source[0];
@@ -189,7 +189,7 @@
     if (pitch.numerator != null) {
       title = "" + pitch.numerator + "/" + pitch.denominator + " of a beat";
     }
-    _ref = draw_pitch_sign(my_source), pitch_sign = _ref[0], my_source = _ref[1];
+    _ref = draw_pitch_sign(my_source, pitch), pitch_sign = _ref[0], my_source = _ref[1];
     has_pitch_sign = (pitch_sign !== '' ? "has_pitch_sign" : "");
     upper_octave_symbol_html = draw_upper_octave_symbol(pitch);
     lower_octave_symbol_html = draw_lower_octave_symbol(pitch);
@@ -211,14 +211,14 @@
             if (attribute.my_type === "begin_slur") {
               id_ctr++;
               last_slur_id = id_ctr;
-              return "<span id=\"" + id_ctr + "\" class=\"slur\">&nbsp;&nbsp;</span>";
+              return "<span data-column=\"" + pitch.column + "\" id=\"" + id_ctr + "\" class=\"slur\">&nbsp;&nbsp;</span>";
             }
             if (attribute.my_type === "end_slur") {
               data1 = "data-begin-slur-id='" + last_slur_id + "'";
               return "";
             }
             if (attribute.my_type === "ornament") {
-              return draw_ornament(attribute);
+              return draw_ornament(attribute, pitch);
             }
             my_item = attribute;
             my_source2 = lookup_html_entity(my_item.source);
@@ -230,13 +230,13 @@
             if (!my_source2) {
               my_source2 = my_item.source;
             }
-            return "<span " + data + " class=\"upper_attribute " + my_item.my_type + "\">" + my_source2 + "</span>";
+            return "<span data-column=\"" + pitch.column + "\" " + data + " class=\"upper_attribute " + my_item.my_type + "\">" + my_source2 + "</span>";
           }, this)(attribute));
         }
         return _results;
       }).call(this)).join('');
     }
-    return "<span title=\"" + title + "\" class=\"note_wrapper\" " + data1 + ">" + upper_attributes_html + upper_octave_symbol_html + lower_octave_symbol_html + syl_html + pitch_sign + "<span class=\"note " + has_pitch_sign + " " + pitch.my_type + "\">" + my_source + "</span></span>";
+    return "<span data-column=\"" + pitch.column + "\" title=\"" + title + "\" class=\"note_wrapper\" " + data1 + ">" + upper_attributes_html + upper_octave_symbol_html + lower_octave_symbol_html + syl_html + pitch_sign + "<span data-column=\"" + pitch.column + "\" class=\"note " + has_pitch_sign + " " + pitch.my_type + "\">" + my_source + "</span></span>";
   };
   draw_item = function(item) {
     var attribute, data1, fallback, my_source, simple, source2, title, upper_attributes_html;
@@ -291,14 +291,14 @@
               console.log("begin slur");
               id_ctr++;
               last_slur_id = id_ctr;
-              return "<span id=\"" + id_ctr + "\" class=\"slur\">&nbsp;&nbsp;</span>";
+              return "<span data-column=\"" + item.column + "\" id=\"" + id_ctr + "\" class=\"slur\">&nbsp;&nbsp;</span>";
             }
             if (attribute.my_type === "end_slur") {
               data1 = "data-begin-slur-id='" + last_slur_id + "'";
               return "";
             }
             if (attribute.my_type === "ornament") {
-              return draw_ornament(attribute);
+              return draw_ornament(attribute, item);
             }
             my_item = attribute;
             data = "";
@@ -310,13 +310,13 @@
             if (!my_source2) {
               my_source2 = my_item.source;
             }
-            return "<span " + data + " class=\"upper_attribute " + my_item.my_type + "\">" + my_source2 + "</span>";
+            return "<span data-column=\"" + item.column + "\" " + data + " class=\"upper_attribute " + my_item.my_type + "\">" + my_source2 + "</span>";
           }, this)(attribute));
         }
         return _results;
       }).call(this)).join('');
     }
-    return "<span title=\"" + title + "\" class=\"note_wrapper\" " + data1 + ">" + upper_attributes_html + "<span " + fallback + " class=\"note " + item.my_type + "\" >" + my_source + "</span></span>";
+    return "<span title=\"" + title + "\" data-column=\"" + item.column + "\" class=\"note_wrapper\" " + data1 + ">" + upper_attributes_html + "<span data-column=\"" + item.column + "\" " + fallback + " class=\"note " + item.my_type + "\" >" + my_source + "</span></span>";
   };
   draw_beat = function(beat) {
     var extra, item, looped_class, x;
@@ -335,7 +335,7 @@
     if (beat.subdivisions > 1) {
       extra = "data-subdivisions=" + beat.subdivisions + " ";
     }
-    return "<span " + extra + "class='beat " + looped_class + "'>" + x + "</span>";
+    return "<span data-column=\"" + beat.column + "\" " + extra + "class='beat " + looped_class + "'>" + x + "</span>";
   };
   to_html_doc = function(composition, full_url, css, js) {
     var rendered_composition;

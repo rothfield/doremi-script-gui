@@ -47,12 +47,9 @@ window.CompositionViewModel = (my_doremi_source) ->
   self.selected_composition = ko.observable() # nothing selected by default
   self.staff_notation_url=ko.observable(NONE_URL)
   self.apply_hyphenated_lyrics=ko.observable(false)
-  self.apply_hyphenated_lyrics.subscribe((newValue)->
-    #set_timeout("composition.self.redraw()
-    setTimeout("window.the_composition.redraw()",1000)
-  )
   self.toggle_apply_hyphenated_lyrics=  (x) ->
     self.apply_hyphenated_lyrics(!self.apply_hyphenated_lyrics())
+    self.redraw() # TODO: review
 
   self.composition_parse_tree_text=ko.observable("")
   self.open_file_visible=ko.observable(false)
@@ -129,7 +126,7 @@ window.CompositionViewModel = (my_doremi_source) ->
     base_url=base_url.replace('compositions','compositions2')
     "#{base_url}.doremi_script.txt"
   )
-
+  self.notes_used=ko.observable("SP")
   self.composition_lilypond_source_visible=ko.observable(false)
   self.composition_musicxml_source_visible=ko.observable(false)
   self.parsed_doremi_script_visible=ko.observable(false)
@@ -311,24 +308,32 @@ window.CompositionViewModel = (my_doremi_source) ->
       "apply_hyphenated_lyrics"
     ]
 
+
+  self.capitalize_first_letter = (string) ->
+    string.charAt(0).toUpperCase() + string.slice(1)
+
+
+  self.ruby_style_to_capitalized= (str) ->
+    ary=str.split('_')
+    ary2=(self.capitalize_first_letter item for item in ary)
+    ary2.join ''
+    
+
   self.compute_doremi_source = () ->
-    # TODO: use computed???
-    # Turn the data on the web page into a doremi_script format
-    #
+    # Turn the data on the web page into doremi_script format
+    # Note that a doremi-script text file starts like this:
+    # id: 1327249816068
+    # Title: aardvark
+    # Filename: untitled
+    # Key: D
+    # Mode: phrygian
+    # Author: Traditional
+    # Source: AAK
+    # TimeSignature: 4/4
+    # ApplyHyphenatedLyrics: true
+    # StaffNotationURL: http://ragapedia.local/compositions/aardvark.jpg
+    # 
     console.log "compute_doremi_source" if debug
-    # list dependencies
-    self.id()
-    self.title()
-    self.filename()
-    self.raga()
-    self.key()
-    self.mode()
-    self.author()
-    self.source()
-    self.time_signature()
-    self.apply_hyphenated_lyrics()
-    self.staff_notation_url()
-    self.lines()
     keys_to_use=self.attribute_keys
     keys=["id","title","filename","raga","key",
           "mode","author",
@@ -336,21 +341,13 @@ window.CompositionViewModel = (my_doremi_source) ->
           "staff_notation_url"]
     atts= for att in keys
       value=self[att]()
-      att="Filename" if att is "filename"
-      att="Title" if att is "title"
-      att="Raga" if att is "raga"
-      att="Key" if att is "key"
-      att="Mode" if att is "mode"
-      att="Author" if att is "author"
-      att="Source" if att is "source"
-      att="TimeSignature" if att is "time_signature"
-      if att is "apply_hyphenated_lyrics"
-        att="ApplyHyphenatedLyrics"
-      #att="ApplyHyphenatedLyrics" if att is "apply_hyphenated_lyrics"
-      att="StaffNotationURL" if att is "staff_notation_url"
+      capitalized_att=self.ruby_style_to_capitalized att
+      if att is 'id'
+        capitalized_att='id'
+      console.log "capitalized_att", capitalized_att
       continue if value is ""
-      continue if !value
-      "#{att}: #{value}"
+      continue if !value?
+      "#{capitalized_att}: #{value}"
     atts_str=atts.join("\n")
     lines=(line.source() for line in self.lines())
     # lines have a blank line between them
@@ -418,6 +415,7 @@ window.CompositionViewModel = (my_doremi_source) ->
     self.editing_a_line(false)
     self.editing_composition(true)
     self.not_editing_a_line(true)
+    self.redraw()
 
   self.delete_line = (which_line) ->
     which_line.source("")

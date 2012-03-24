@@ -30,6 +30,9 @@
     },
     assign_lyrics: function(sargam, lyrics) {
       var item, slurring_state, syls, _i, _len, _ref, _results;
+      if (debug) {
+        console.log("entering assign_lyrics", sargam, lyrics);
+      }
       if (!(lyrics != null)) {
         return;
       }
@@ -75,6 +78,9 @@
     },
     parse_lyrics_section: function(lyrics_lines) {
       var all_words, ary, hy_ary, hyphenated_line, hyphenated_source, hyphenated_words, hyphenated_words_str, item, line, regex, result, soft_hyphen, source, without_dashes, word;
+      if (debug) {
+        console.log("parse_lyrics_section");
+      }
       if (lyrics_lines === "") {
         source = "";
       } else {
@@ -221,7 +227,9 @@
             return;
           }
           if (!slurring_state) {
-            item.syllable = syls.shift();
+            if (!(item.syllable != null)) {
+              item.syllable = syls.shift();
+            }
           }
           if (item_has_attribute(item, 'begin_slur')) {
             slurring_state = true;
@@ -235,6 +243,9 @@
     },
     assign_syllables_from_lyrics_sections: function(composition) {
       var line, syls, _i, _len, _ref, _results;
+      if (!composition.apply_hyphenated_lyrics) {
+        return;
+      }
       syls = [];
       _ref = composition.lines;
       _results = [];

@@ -177,7 +177,8 @@ $(document).ready(function() {
       url: url,
       dataType: 'text',
       success: __bind(function(doremi_script_source) {
-        return app.the_composition.my_init(doremi_script_source);
+        app.the_composition.my_init(doremi_script_source);
+        return app.the_composition.redraw();
       }, this),
       error: function(data) {
         return alert("Unable to load url " + url);

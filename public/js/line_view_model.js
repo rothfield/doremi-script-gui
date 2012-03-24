@@ -32,9 +32,76 @@ window.LineViewModel = function(line_param) {
   self.stave_height = ko.observable("161px");
   self.source = ko.observable(line_param.source);
   self.rendered_in_html = ko.observable(line_param.rendered_in_html);
+  self.revert_edit = function(my_model, event) {
+    return true;
+  };
+  self.get_current_line_of_text_area = function(obj) {
+    return self.get_current_line_of(obj.value, obj.selectionStart, obj.selectionEnd);
+  };
+  self.get_current_line_of = function(val, sel_start, sel_end) {
+    var index_of_end_of_line, line, pos_of_start_of_line, start_of_line_to_end, to_left_of_cursor, to_right_of_cursor;
+    to_left_of_cursor = val.slice(0, sel_start);
+    to_right_of_cursor = val.slice(sel_end);
+    pos_of_start_of_line = to_left_of_cursor.lastIndexOf('\n');
+    if (pos_of_start_of_line === -1) {
+      start_of_line_to_end = val;
+    } else {
+      start_of_line_to_end = val.slice(pos_of_start_of_line + 1);
+    }
+    index_of_end_of_line = start_of_line_to_end.indexOf('\n');
+    if (index_of_end_of_line === -1) {
+      line = start_of_line_to_end;
+    } else {
+      line = start_of_line_to_end.slice(0, index_of_end_of_line);
+    }
+    return line;
+  };
+  self.handle_keypress = function(my_model, event) {
+    var char, el, hash, index_of_end_of_line, line, pos_of_start_of_line, sel_end, sel_start, start_of_line_to_end, to_left_of_cursor, to_right_of_cursor, val, _ref;
+    if (debug) {
+      console.log("in handle_key_stroke", my_model, event);
+    }
+    el = event.srcElement;
+    val = el.value;
+    sel_start = el.selectionStart;
+    sel_end = el.selectionEnd;
+    to_left_of_cursor = val.slice(0, sel_start);
+    to_right_of_cursor = val.slice(sel_end);
+    pos_of_start_of_line = to_left_of_cursor.lastIndexOf('\n');
+    if (pos_of_start_of_line === -1) {
+      start_of_line_to_end = val;
+    } else {
+      start_of_line_to_end = val.slice(pos_of_start_of_line + 1);
+    }
+    index_of_end_of_line = start_of_line_to_end.indexOf('\n');
+    if (index_of_end_of_line === -1) {
+      line = start_of_line_to_end;
+    } else {
+      line = start_of_line_to_end.slice(0, index_of_end_of_line);
+    }
+    line = self.get_current_line_of_text_area(el);
+    if ((_ref = event.which) === 115 || _ref === 112) {
+      if (line.indexOf('|') > -1) {
+        hash = {
+          112: "P",
+          115: "S"
+        };
+        char = hash[event.which];
+        event.preventDefault();
+        el.value = "" + to_left_of_cursor + char + to_right_of_cursor;
+        el.setSelectionRange(sel_start + 1, sel_start + 1);
+        el.focus();
+        return true;
+      }
+    }
+    return true;
+  };
   self.close_edit = function(my_model, event) {
-    var index;
+    var $textarea, dom_id, index;
     index = my_model.index();
+    dom_id = self.entry_area_id();
+    $textarea = $("textarea#" + dom_id);
+    self.source($textarea.val());
     self.editing(false);
     self.not_editing(true);
     window.the_composition.editing_a_line(false);
@@ -52,7 +119,7 @@ window.LineViewModel = function(line_param) {
     return true;
   };
   self.edit = function(my_model, event) {
-    var $textarea, dom_id, line, selector, val, _i, _len, _ref;
+    var $textarea, dom_id, line, _i, _len, _ref;
     $(".stave_wrapper").disableContextMenu();
     if (window.the_composition.editing_a_line()) {
       return false;
@@ -72,20 +139,37 @@ window.LineViewModel = function(line_param) {
     window.the_composition.not_editing_a_line(false);
     window.the_composition.edit_line_open(true);
     dom_id = self.entry_area_id();
-    if (debug) {
-      console.log("dom_id is " + dom_id);
-    }
-    $("textarea#" + dom_id).focus();
-    val = self.source();
-    selector = "textarea#" + dom_id;
-    $textarea = $(selector);
-    $textarea.select_range(val.length, val.length);
+    $textarea = $("textarea#" + dom_id);
+    self.set_edit_cursor($textarea);
     if (!window.elementInViewport($textarea[0])) {
       $.scrollTo($textarea, 500, {
         offset: -50
       });
     }
     return true;
+  };
+  self.set_edit_cursor = function($textarea) {
+    var column, index, regular_expression_to_find_line_with_barline, result, source, where;
+    if (!($textarea != null)) {
+      return;
+    }
+    source = self.source();
+    regular_expression_to_find_line_with_barline = /^.*\|.*$/m;
+    result = source.match(regular_expression_to_find_line_with_barline);
+    index = 0;
+    if (result) {
+      index = result.index;
+    }
+    if (typeof event !== "undefined" && event !== null) {
+      column = $(event.srcElement).data("column");
+    }
+    if (!(column != null) && (result != null)) {
+      where = index + result.input.length;
+    } else {
+      where = index + column + 1;
+    }
+    $textarea.select_range(where, where);
+    return null;
   };
   self.entry_area_id = ko.observable("entry_area_" + unique_id);
   self.stave_id = ko.observable("stave_" + unique_id);

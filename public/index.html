@@ -39,7 +39,6 @@
           Development
         </a>
       </div>
-      <br />
       <div id='help_content'></div>
       <div data-bind='visible: editing_composition' id='composition_info'>
         <p>
@@ -47,8 +46,8 @@
             Title:
           </label>
           <input data-bind="valueUpdate: 'afterkeydown',value: title" id='composition_title' />
-          <span class='requiredz'>
-            Required
+          <span class='required'>
+            *
           </span>
           <button class='more_properties_button' onclick="$('#more_properties').toggle()">
             More...
@@ -72,6 +71,12 @@
               Mode:
             </label>
             <select data-bind='options: modes, value: mode'></select>
+          </p>
+          <p>
+            <label>
+              Notes Used:
+            </label>
+            <input data-bind="value: notes_used, valueUpdate: 'afterkeydown'" />
           </p>
           <p>
             <label>
@@ -172,8 +177,6 @@
           </div>
         </div>
       </div>
-      <br />
-      <br />
       <div class='composition' data-bind='visible:editing_composition'>
         <div class='controls'>
           <div class='composition_controls'>
@@ -219,12 +222,15 @@
           <div class='stave_wrapper' data-bind='attr: {id: stave_id},css:{editing:editing}'>
             <div class='entry_area_wrapper' data-bind='visible:editing'>
               <a class='close_box'>
-                <img data-bind='visible:editing(),click: close_edit,clickBubble:false' src='images/close_box.gif' />
+                <img data-bind='visible:editing(),click: close_edit,clickBubble:false' src='images/close_box.gif' title='Close' />
               </a>
               <span class='show_warnings' data-bind='visible: line_has_warnings, attr: {title: line_warnings}'>
                 W
               </span>
-              <textarea class='entry_area' cols='33' data-bind="attr: {id: entry_area_id()},style: {width: $parent.composition_textarea_width},css: {'line_has_warnings': line_has_warnings,'parse_failed': $data.parse_failed},visible: editing(), value: source " rows='6' spellcheck='false'></textarea>
+              <span class='revert' data-bind='click:revert_edit' title='Abandon changes in this line'>
+                Revert
+              </span>
+              <textarea class='entry_area' cols='33' data-bind="event: {keypress:handle_keypress},attr: {id: entry_area_id()},style: {width: $parent.composition_textarea_width},css: {'line_has_warnings': line_has_warnings,'parse_failed': $data.parse_failed},visible: editing(), value: source " rows='6' spellcheck='false'></textarea>
             </div>
             <div class='rendered_html' data-bind='rendered_doremi_script:rendered_in_html, visible: not_editing, event: { click: edit},clickBubble:false, css: {editing:editing,not_editing:not_editing,line_has_warnings: line_has_warnings,line_parse_failed: line_parse_failed},style: {width: $parent.composition_textarea_width}' style='display:inline-block'></div>
           </div>

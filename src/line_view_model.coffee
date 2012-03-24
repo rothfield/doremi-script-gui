@@ -25,8 +25,75 @@ window.LineViewModel = (line_param= {source: EMPTY_LINE_SOURCE,rendered_in_html:
   self.source= ko.observable(line_param.source) # doremi_source for self line
   self.rendered_in_html= ko.observable(line_param.rendered_in_html)
 
+  self.revert_edit= (my_model,event) ->
+    return true
+  self.get_current_line_of_text_area = (obj) ->
+    self.get_current_line_of(obj.value,obj.selectionStart,obj.selectionEnd)
+
+  self.get_current_line_of = (val,sel_start,sel_end) ->
+    # doesn't use dom
+    # extract current line from some text given start and
+    # end positions representing current section
+    to_left_of_cursor=val.slice(0,sel_start)
+    to_right_of_cursor=val.slice(sel_end)
+    pos_of_start_of_line=to_left_of_cursor.lastIndexOf('\n')
+    if pos_of_start_of_line is -1
+      start_of_line_to_end=val
+    else
+      start_of_line_to_end=val.slice(pos_of_start_of_line+1)
+    index_of_end_of_line=start_of_line_to_end.indexOf('\n')
+    if index_of_end_of_line is -1
+      line=start_of_line_to_end
+    else
+      line=start_of_line_to_end.slice(0,index_of_end_of_line)
+    line
+
+  self.handle_keypress = (my_model,event) ->
+    # Note that if we return true, it means we intercepted the event
+    # and that we have to manually set the source. Otherwise the textarea
+    # value doesn't get saved....
+    # The purpose of this code is to filter the characters as the
+    # user types to make it easier to enter notes. For example, if the
+    # user is entering the main line of sargam, then it is nice to automatically convert a "s" or "p" that the user types into uppercase "S" or "P".
+    # For now use a primitive test to see if the user is "in" a sargam line.
+    # In the future, can add feature to constrain to notes in mode or a "NotesUsed" attribute
+    console.log "in handle_key_stroke",my_model,event if debug
+    el=event.srcElement
+    val=el.value
+    sel_start=el.selectionStart
+    sel_end=el.selectionEnd
+    to_left_of_cursor=val.slice(0,sel_start)
+    to_right_of_cursor=val.slice(sel_end)
+    pos_of_start_of_line=to_left_of_cursor.lastIndexOf('\n')
+    if pos_of_start_of_line is -1
+      start_of_line_to_end=val
+    else
+      start_of_line_to_end=val.slice(pos_of_start_of_line+1)
+    index_of_end_of_line=start_of_line_to_end.indexOf('\n')
+    if index_of_end_of_line is -1
+      line=start_of_line_to_end
+    else
+      line=start_of_line_to_end.slice(0,index_of_end_of_line)
+    line=self.get_current_line_of_text_area(el)
+    if event.which in [115,112]
+       if (line.indexOf('|') > -1)
+         hash=
+           112:"P"
+           115:"S"
+         char=hash[event.which]
+         event.preventDefault()
+         el.value="#{to_left_of_cursor}#{char}#{to_right_of_cursor}"
+         el.setSelectionRange(sel_start+1,sel_start+1)
+         el.focus()
+         # NO. self.source(el.value)
+         return true
+    true
+
   self.close_edit= (my_model, event) ->
     index=my_model.index()
+    dom_id=self.entry_area_id()
+    $textarea= $("textarea#"+dom_id)
+    self.source($textarea.val()) # TODO: review
     self.editing(false)
     self.not_editing(true)
     window.the_composition.editing_a_line(false)
@@ -52,20 +119,41 @@ window.LineViewModel = (line_param= {source: EMPTY_LINE_SOURCE,rendered_in_html:
       line.not_editing(true) #TODO: unfunkify
     self.editing(true)
     self.not_editing(false)
+    # TODO: unfunkify
     window.the_composition.editing_a_line(true)
     window.the_composition.not_editing_a_line(false)
     window.the_composition.edit_line_open(true)
     dom_id=self.entry_area_id()
-    console.log("dom_id is #{dom_id}") if debug
-    $("textarea#"+dom_id).focus()
-    val=self.source()
-    selector="textarea#"+dom_id
-    $textarea=$(selector)
-    $textarea.select_range(val.length,val.length)
+    $textarea= $("textarea#"+dom_id)
+    self.set_edit_cursor($textarea)
     if ! window.elementInViewport($textarea[0])
       $.scrollTo($textarea, 500,{offset:-50})
     true
-  
+
+  self.set_edit_cursor = ($textarea) ->
+    return if !$textarea?
+    # set textarea cursor to right of clicked element
+    # if clicked on element has data-column attribute
+    # otherwise at end of line
+    # Sadly won't work if there are upper attributes...
+    # Could parse source to look for line that has barline at beginning...
+    # Find the beginning of the main line. That'll look like
+    # 1) | or | SS or maybe SrGmP
+    source=self.source()
+    regular_expression_to_find_line_with_barline=/^.*\|.*$/m
+    result=source.match regular_expression_to_find_line_with_barline
+    index=0
+    if result
+      index=result.index
+    if event?
+      column= $(event.srcElement).data("column")
+    if !column? and result?
+      where=index+result.input.length
+    else
+      where=index+ column + 1
+    $textarea.select_range(where,where)
+    null
+ 
   self.entry_area_id= ko.observable("entry_area_#{unique_id}")
   self.stave_id= ko.observable("stave_#{unique_id}")
   self.context_menu_id= ko.observable("context_menu_#{unique_id}")

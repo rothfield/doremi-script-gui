@@ -58,11 +58,9 @@ window.CompositionViewModel = function(my_doremi_source) {
   self.selected_composition = ko.observable();
   self.staff_notation_url = ko.observable(NONE_URL);
   self.apply_hyphenated_lyrics = ko.observable(false);
-  self.apply_hyphenated_lyrics.subscribe(function(newValue) {
-    return setTimeout("window.the_composition.redraw()", 1000);
-  });
   self.toggle_apply_hyphenated_lyrics = function(x) {
-    return self.apply_hyphenated_lyrics(!self.apply_hyphenated_lyrics());
+    self.apply_hyphenated_lyrics(!self.apply_hyphenated_lyrics());
+    return self.redraw();
   };
   self.composition_parse_tree_text = ko.observable("");
   self.open_file_visible = ko.observable(false);
@@ -162,6 +160,7 @@ window.CompositionViewModel = function(my_doremi_source) {
     base_url = base_url.replace('compositions', 'compositions2');
     return "" + base_url + ".doremi_script.txt";
   });
+  self.notes_used = ko.observable("SP");
   self.composition_lilypond_source_visible = ko.observable(false);
   self.composition_musicxml_source_visible = ko.observable(false);
   self.parsed_doremi_script_visible = ko.observable(false);
@@ -342,23 +341,28 @@ window.CompositionViewModel = function(my_doremi_source) {
     return true;
   };
   self.attribute_keys = ["id", "filename", "raga", "author", "source", "time_signature", "notes_used", "title", "key", "mode", "staff_notation_url", "apply_hyphenated_lyrics"];
+  self.capitalize_first_letter = function(string) {
+    return string.charAt(0).toUpperCase() + string.slice(1);
+  };
+  self.ruby_style_to_capitalized = function(str) {
+    var ary, ary2, item;
+    ary = str.split('_');
+    ary2 = (function() {
+      var _i, _len, _results;
+      _results = [];
+      for (_i = 0, _len = ary.length; _i < _len; _i++) {
+        item = ary[_i];
+        _results.push(self.capitalize_first_letter(item));
+      }
+      return _results;
+    })();
+    return ary2.join('');
+  };
   self.compute_doremi_source = function() {
-    var att, atts, atts_str, keys, keys_to_use, line, lines, lines_str, value;
+    var att, atts, atts_str, capitalized_att, keys, keys_to_use, line, lines, lines_str, value;
     if (debug) {
       console.log("compute_doremi_source");
     }
-    self.id();
-    self.title();
-    self.filename();
-    self.raga();
-    self.key();
-    self.mode();
-    self.author();
-    self.source();
-    self.time_signature();
-    self.apply_hyphenated_lyrics();
-    self.staff_notation_url();
-    self.lines();
     keys_to_use = self.attribute_keys;
     keys = ["id", "title", "filename", "raga", "key", "mode", "author", "source", "time_signature", "apply_hyphenated_lyrics", "staff_notation_url"];
     atts = (function() {
@@ -367,43 +371,18 @@ window.CompositionViewModel = function(my_doremi_source) {
       for (_i = 0, _len = keys.length; _i < _len; _i++) {
         att = keys[_i];
         value = self[att]();
-        if (att === "filename") {
-          att = "Filename";
+        capitalized_att = self.ruby_style_to_capitalized(att);
+        if (att === 'id') {
+          capitalized_att = 'id';
         }
-        if (att === "title") {
-          att = "Title";
-        }
-        if (att === "raga") {
-          att = "Raga";
-        }
-        if (att === "key") {
-          att = "Key";
-        }
-        if (att === "mode") {
-          att = "Mode";
-        }
-        if (att === "author") {
-          att = "Author";
-        }
-        if (att === "source") {
-          att = "Source";
-        }
-        if (att === "time_signature") {
-          att = "TimeSignature";
-        }
-        if (att === "apply_hyphenated_lyrics") {
-          att = "ApplyHyphenatedLyrics";
-        }
-        if (att === "staff_notation_url") {
-          att = "StaffNotationURL";
-        }
+        console.log("capitalized_att", capitalized_att);
         if (value === "") {
           continue;
         }
-        if (!value) {
+        if (!(value != null)) {
           continue;
         }
-        _results.push("" + att + ": " + value);
+        _results.push("" + capitalized_att + ": " + value);
       }
       return _results;
     })();
@@ -508,7 +487,8 @@ window.CompositionViewModel = function(my_doremi_source) {
     self.calculate_staff_notation_url_with_time_stamp();
     self.editing_a_line(false);
     self.editing_composition(true);
-    return self.not_editing_a_line(true);
+    self.not_editing_a_line(true);
+    return self.redraw();
   };
   self.delete_line = function(which_line) {
     which_line.source("");
