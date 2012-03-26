@@ -1,4 +1,18 @@
 %div#help{"data-bind" => "visible: help_visible,event:{dblclick:toggle_help_visible}" }
+  %div{:style => 'border:1px solid black;'}
+    %a{:href => '#', :onclick=>"$('#videos_container').toggle();return true;"}
+      Screencasts(Videos)
+    %div#videos_container{:style => 'display:none'}
+      %br
+      %h4
+        Basic Usage - (no soundtrack yet)
+      %video{:src => "http://sonic.net/~jroth/doremi-script.webm", :poster=>"http://sonic.net/~jroth/screencast.jpg", :controls=> 'controls'} 
+        Your browser doesn't support this video format. Try Firefox or Chrome
+      %br
+      %h4
+        Advanced- Ornaments, Grace notes, Syllabization, Devanagri,  - Coming soon
+      %video{:src => "http://video.webmfiles.org/doremi-script2.webm", :poster=>"http://sonic.net/~jroth/screencast.jpg", :controls=> 'controls'} 
+        Your browser doesn't support this video format. Try Firefox or Chrome
   = render_file('example.haml')
   %h1 DoremiScript
   %p
