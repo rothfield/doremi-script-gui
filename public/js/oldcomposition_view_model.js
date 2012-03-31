@@ -1,11 +1,13 @@
-var NONE_URL;
+var EMPTY_LINE_SOURCE, NONE_URL, unique_id;
 var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; };
 NONE_URL = "images/none.png";
+unique_id = 1000;
+EMPTY_LINE_SOURCE = "| ";
 window.CompositionViewModel = function(my_doremi_source) {
-  var app, att, debug, links_enabled, self, _i, _len, _ref;
-  debug = false;
+  var app, help_visible_fun, links_enabled, self;
   app = window.doremi_script_gui_app;
   self = this;
+  self.last_line_opened = null;
   self.help_visible = ko.observable(false);
   self.disable_context_menu = ko.observable(false);
   self.handle_link_click = function(x, y) {
@@ -20,6 +22,10 @@ window.CompositionViewModel = function(my_doremi_source) {
     }
     return true;
   };
+  self.toggle_disable_context_menu = function(event) {
+    self.disable_context_menu(!this.disable_context_menu());
+    return self.my_init(self.doremi_source());
+  };
   self.toggle_help_visible = function(event) {
     if (debug) {
       console.log("toggle_help_visible");
@@ -31,10 +37,25 @@ window.CompositionViewModel = function(my_doremi_source) {
       return $('#help_content').html('');
     }
   };
+  self.help_visible_action = ko.computed(help_visible_fun = function() {
+    if (debug) {
+      console.log("help_visible_action");
+    }
+    if (self.document != null) {
+      return;
+    }
+    if (self.help_visible()) {
+      return $("#help_button").text("Hide Help");
+    } else {
+      return $("#help_button").text("Help");
+    }
+  });
   self.editing_a_line = ko.observable(false);
   self.not_editing_a_line = ko.observable(true);
   self.editing_composition = ko.observable(false);
+  self.last_doremi_source = "";
   self.lines = ko.observableArray([]);
+  self.selected_composition = ko.observable();
   self.staff_notation_url = ko.observable(NONE_URL);
   self.apply_hyphenated_lyrics = ko.observable(false);
   self.toggle_apply_hyphenated_lyrics = function(x) {
@@ -140,7 +161,6 @@ window.CompositionViewModel = function(my_doremi_source) {
     return "" + base_url + ".doremi_script.txt";
   });
   self.notes_used = ko.observable("SP");
-  self.force_notes_used = ko.observable(false);
   self.composition_lilypond_source_visible = ko.observable(false);
   self.composition_musicxml_source_visible = ko.observable(false);
   self.parsed_doremi_script_visible = ko.observable(false);
@@ -153,12 +173,15 @@ window.CompositionViewModel = function(my_doremi_source) {
   self.toggle_title_visible = function(event) {
     return self.show_title(!this.show_title());
   };
+  self.toggle_composition_select_visible = function(event) {
+    self.composition_select_visible(!this.composition_select_visible());
+    return self.refresh_compositions_in_local_storage();
+  };
   self.toggle_open_file_visible = function() {
     return self.open_file_visible(!self.open_file_visible());
   };
   self.toggle_parsed_doremi_script_visible = function() {
-    self.parsed_doremi_script_visible(!self.parsed_doremi_script_visible());
-    return self.parse();
+    return self.parsed_doremi_script_visible(!self.parsed_doremi_script_visible());
   };
   self.toggle_staff_notation_visible = function() {
     return self.staff_notation_visible(!self.staff_notation_visible());
@@ -167,11 +190,21 @@ window.CompositionViewModel = function(my_doremi_source) {
     return self.composition_musicxml_source_visible(!self.composition_musicxml_source_visible());
   };
   self.toggle_composition_lilypond_source_visible = function() {
-    return self.composition_lilypond_source_visible(!self.composition_lilypond_source_visible());
+    var parsed;
+    self.composition_lilypond_source_visible(!self.composition_lilypond_source_visible());
+    return;
+    if (self.composition_lilypond_source_visible) {
+      parsed = self.composition_parsed_doremi_script();
+      if (parsed != null) {
+        return self.composition_lilypond_source(to_lilypond(parsed));
+      } else {
+        return self.composition_lilypond_source("");
+      }
+    }
   };
+  self.composition_as_html = ko.observable("");
   self.toggle_doremi_source_visible = function() {
-    self.doremi_source_visible(!self.doremi_source_visible());
-    return self.composition_parse();
+    return self.doremi_source_visible(!self.doremi_source_visible());
   };
   self.toggle_composition_info_visible = function() {
     return self.composition_info_visible(!self.composition_info_visible());
@@ -200,16 +233,17 @@ window.CompositionViewModel = function(my_doremi_source) {
     return self.staff_notation_url_with_time_stamp(x);
   };
   self.modes = ["ionian", "dorian", "phrygian", "lydian", "mixolydian", "aeolian", "locrian"];
-  self.true_false_options = ["false", "true"];
   self.mode = ko.observable("");
   self.download_doremi_source_file = function(my_model) {
-    var my_data, obj, timeout_in_seconds, url;
-    self.doremi_source(self.compute_doremi_source());
+    var lilypond_source, my_data, obj, src, timeout_in_seconds, url;
     url = '/doremi_script_server/save_to_server';
+    lilypond_source = self.composition_lilypond_source();
     timeout_in_seconds = 60;
+    src = self.doremi_source();
     my_data = {
+      lilypond: self.composition_lilypond_source(),
       fname: "" + (self.title()) + "_" + (self.author()) + "_" + (self.id()),
-      doremi_source: self.doremi_source()
+      doremi_source: src
     };
     obj = {
       dataType: "json",
@@ -248,7 +282,7 @@ window.CompositionViewModel = function(my_doremi_source) {
     return self.generate_staff_notation_aux(my_model);
   };
   self.generate_staff_notation_aux = function(my_model, dont) {
-    var my_data, obj, timeout_in_seconds, ts, url;
+    var lilypond_source, my_data, obj, src, timeout_in_seconds, ts, url;
     if (dont == null) {
       dont = "false";
     }
@@ -257,13 +291,16 @@ window.CompositionViewModel = function(my_doremi_source) {
     }
     self.redraw();
     self.generating_staff_notation(true);
+    lilypond_source = self.composition_lilypond_source();
     ts = new Date().getTime();
     url = '/lilypond_server/lilypond_to_jpg';
     timeout_in_seconds = 60;
+    src = self.doremi_source();
     my_data = {
       fname: app.sanitize(self.title()),
+      lilypond: lilypond_source,
       html_doc: self.generate_html_page_aux(),
-      doremi_source: self.doremi_source,
+      doremi_source: src,
       musicxml_source: self.get_musicxml_source(),
       dont_generate_staff_notation: dont
     };
@@ -303,14 +340,7 @@ window.CompositionViewModel = function(my_doremi_source) {
     $.ajax(obj);
     return true;
   };
-  self.attribute_keys = ["id", "filename", "raga", "author", "source", "time_signature", "notes_used", "force_notes_used", "title", "key", "mode", "staff_notation_url", "apply_hyphenated_lyrics"];
-  _ref = self.attribute_keys;
-  for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-    att = _ref[_i];
-    self[att].subscribe(function(new_value) {
-      return self.doremi_source(self.compute_doremi_source());
-    });
-  }
+  self.attribute_keys = ["id", "filename", "raga", "author", "source", "time_signature", "notes_used", "title", "key", "mode", "staff_notation_url", "apply_hyphenated_lyrics"];
   self.capitalize_first_letter = function(string) {
     return string.charAt(0).toUpperCase() + string.slice(1);
   };
@@ -318,10 +348,10 @@ window.CompositionViewModel = function(my_doremi_source) {
     var ary, ary2, item;
     ary = str.split('_');
     ary2 = (function() {
-      var _j, _len2, _results;
+      var _i, _len, _results;
       _results = [];
-      for (_j = 0, _len2 = ary.length; _j < _len2; _j++) {
-        item = ary[_j];
+      for (_i = 0, _len = ary.length; _i < _len; _i++) {
+        item = ary[_i];
         _results.push(self.capitalize_first_letter(item));
       }
       return _results;
@@ -334,72 +364,12 @@ window.CompositionViewModel = function(my_doremi_source) {
       console.log("compute_doremi_source");
     }
     keys_to_use = self.attribute_keys;
-    keys = ["id", "title", "filename", "raga", "key", "mode", "author", "source", "time_signature", "apply_hyphenated_lyrics", "staff_notation_url", "notes_used", "force_notes_used"];
-    atts = (function() {
-      var _j, _len2, _results;
-      _results = [];
-      for (_j = 0, _len2 = keys.length; _j < _len2; _j++) {
-        att = keys[_j];
-        value = self[att]();
-        capitalized_att = self.ruby_style_to_capitalized(att);
-        if (debug) {
-          console.log("capitalized_att", capitalized_att);
-        }
-        if (att === 'id') {
-          capitalized_att = 'id';
-          continue;
-        }
-        if (!(value != null) || value === "") {
-          continue;
-        }
-        _results.push("" + capitalized_att + ": " + value);
-      }
-      return _results;
-    })();
-    atts_str = atts.join("\n");
-    lines = (function() {
-      var _j, _len2, _ref2, _results;
-      _ref2 = self.lines();
-      _results = [];
-      for (_j = 0, _len2 = _ref2.length; _j < _len2; _j++) {
-        line = _ref2[_j];
-        _results.push(line.source());
-      }
-      return _results;
-    })();
-    lines_str = lines.join("\n\n");
-    return atts_str + "\n\n" + lines_str;
-  };
-  self.doremi_source = ko.observable(null);
-  self.composition_parse = function() {
-    var ret_val, source;
-    self.doremi_source(self.compute_doremi_source());
-    ret_val = null;
-    try {
-      source = self.doremi_source();
-      ret_val = DoremiScriptParser.parse(source);
-    } catch (err) {
-      if (debug) {
-        console.log("composition.parse- error is " + err);
-      }
-      ret_val = null;
-    } finally {
-
-    }
-    return ret_val;
-  };
-  self.compute_doremi_source = function() {
-    var att, atts, atts_str, capitalized_att, keys, keys_to_use, line, lines, lines_str, value;
-    if (debug) {
-      console.log("compute_doremi_source");
-    }
-    keys_to_use = self.attribute_keys;
     keys = ["id", "title", "filename", "raga", "key", "mode", "author", "source", "time_signature", "apply_hyphenated_lyrics", "staff_notation_url"];
     atts = (function() {
-      var _j, _len2, _results;
+      var _i, _len, _results;
       _results = [];
-      for (_j = 0, _len2 = keys.length; _j < _len2; _j++) {
-        att = keys[_j];
+      for (_i = 0, _len = keys.length; _i < _len; _i++) {
+        att = keys[_i];
         value = self[att]();
         capitalized_att = self.ruby_style_to_capitalized(att);
         if (att === 'id') {
@@ -418,11 +388,11 @@ window.CompositionViewModel = function(my_doremi_source) {
     })();
     atts_str = atts.join("\n");
     lines = (function() {
-      var _j, _len2, _ref2, _results;
-      _ref2 = self.lines();
+      var _i, _len, _ref, _results;
+      _ref = self.lines();
       _results = [];
-      for (_j = 0, _len2 = _ref2.length; _j < _len2; _j++) {
-        line = _ref2[_j];
+      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+        line = _ref[_i];
         _results.push(line.source());
       }
       return _results;
@@ -430,12 +400,26 @@ window.CompositionViewModel = function(my_doremi_source) {
     lines_str = lines.join("\n\n");
     return atts_str + "\n\n" + lines_str;
   };
+  self.doremi_source = ko.computed(self.compute_doremi_source);
+  self.composition_parse = function() {
+    var ret_val, source;
+    ret_val = null;
+    try {
+      source = self.doremi_source();
+      ret_val = DoremiScriptParser.parse(source);
+    } catch (err) {
+      if (debug) {
+        console.log("composition.parse- error is " + err);
+      }
+      ret_val = null;
+    } finally {
+
+    }
+    return ret_val;
+  };
   self.composition_parsed_doremi_script = ko.observable(null);
   self.composition_musicxml_source = ko.computed(function() {
     var parsed;
-    if (debug) {
-      console.log("in composition_musicxml_source");
-    }
     parsed = self.composition_parsed_doremi_script();
     if (!(parsed != null)) {
       return "";
@@ -444,9 +428,6 @@ window.CompositionViewModel = function(my_doremi_source) {
   });
   self.composition_lilypond_source = ko.computed(function() {
     var parsed;
-    if (debug) {
-      console.log("in composition_lilypond_source");
-    }
     parsed = self.composition_parsed_doremi_script();
     if (!(parsed != null)) {
       return "";
@@ -465,7 +446,7 @@ window.CompositionViewModel = function(my_doremi_source) {
     return parse_tree.warnings.length > 0;
   });
   self.my_init = function(doremi_source_param) {
-    var fct, key, my_lines, parsed, parsed_line, val, _j, _len2, _ref2;
+    var fct, key, my_lines, parsed, parsed_line, val, _i, _len, _ref;
     $('img.staff_notation').attr('src', NONE_URL);
     self.staff_notation_url(NONE_URL);
     self.calculate_staff_notation_url_with_time_stamp();
@@ -474,6 +455,7 @@ window.CompositionViewModel = function(my_doremi_source) {
     }
     parsed = DoremiScriptParser.parse(doremi_source_param);
     self.composition_parsed_doremi_script(parsed);
+    self.last_doremi_source = "";
     if (!parsed) {
       alert("Something bad happened, parse failed");
       return;
@@ -481,9 +463,9 @@ window.CompositionViewModel = function(my_doremi_source) {
     if (!(parsed.id != null)) {
       parsed.id = new Date().getTime();
     }
-    _ref2 = self.attribute_keys;
-    for (_j = 0, _len2 = _ref2.length; _j < _len2; _j++) {
-      key = _ref2[_j];
+    _ref = self.attribute_keys;
+    for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+      key = _ref[_i];
       val = parsed[key];
       fct = self[key];
       fct(val);
@@ -492,11 +474,11 @@ window.CompositionViewModel = function(my_doremi_source) {
       console.log("Loading lines");
     }
     my_lines = (function() {
-      var _k, _len3, _ref3, _results;
-      _ref3 = parsed.lines;
+      var _j, _len2, _ref2, _results;
+      _ref2 = parsed.lines;
       _results = [];
-      for (_k = 0, _len3 = _ref3.length; _k < _len3; _k++) {
-        parsed_line = _ref3[_k];
+      for (_j = 0, _len2 = _ref2.length; _j < _len2; _j++) {
+        parsed_line = _ref2[_j];
         _results.push(new LineViewModel(parsed_line));
       }
       return _results;
@@ -517,7 +499,9 @@ window.CompositionViewModel = function(my_doremi_source) {
     if (debug) {
       console.log("add_line");
     }
-    self.lines.push(x = new LineViewModel());
+    self.lines.push(x = new LineViewModel({
+      source: EMPTY_LINE_SOURCE
+    }));
     if (debug) {
       console.log('add line x is', x);
     }
@@ -543,21 +527,23 @@ window.CompositionViewModel = function(my_doremi_source) {
       console.log("insert_line, line_model,index", line_model, index);
     }
     number_of_elements_to_remove = 0;
-    self.lines.splice(index, number_of_elements_to_remove, x = new LineViewModel());
+    self.lines.splice(index, number_of_elements_to_remove, x = new LineViewModel({
+      source: EMPTY_LINE_SOURCE
+    }));
     self.re_index_lines();
     x.edit();
     return true;
   };
   self.re_index_lines = function() {
-    var ctr, line, _j, _len2, _ref2, _results;
+    var ctr, line, _i, _len, _ref, _results;
     ctr = 0;
     if (debug) {
       console.log("re_index_lines");
     }
-    _ref2 = self.lines();
+    _ref = self.lines();
     _results = [];
-    for (_j = 0, _len2 = _ref2.length; _j < _len2; _j++) {
-      line = _ref2[_j];
+    for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+      line = _ref[_i];
       line.index(ctr);
       _results.push(ctr = ctr + 1);
     }
@@ -570,7 +556,9 @@ window.CompositionViewModel = function(my_doremi_source) {
     }
     index = line_model.index();
     number_of_elements_to_remove = 0;
-    self.lines.splice(index + 1, number_of_elements_to_remove, x = new LineViewModel());
+    self.lines.splice(index + 1, number_of_elements_to_remove, x = new LineViewModel({
+      source: EMPTY_LINE_SOURCE
+    }));
     self.re_index_lines();
     x.edit();
     return true;
@@ -598,6 +586,7 @@ window.CompositionViewModel = function(my_doremi_source) {
     if (debug) {
       console.log("in close");
     }
+    self.last_doremi_source = "";
     self.lines.remove(function() {
       return true;
     });
@@ -612,10 +601,10 @@ window.CompositionViewModel = function(my_doremi_source) {
     return self.close();
   };
   self.print_composition = function() {
-    var line, _j, _len2, _ref2;
-    _ref2 = self.lines();
-    for (_j = 0, _len2 = _ref2.length; _j < _len2; _j++) {
-      line = _ref2[_j];
+    var line, _i, _len, _ref;
+    _ref = self.lines();
+    for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+      line = _ref[_i];
       line.editing(false);
     }
     return window.print();
@@ -633,6 +622,33 @@ window.CompositionViewModel = function(my_doremi_source) {
     self.editing_composition(true);
     return self.help_visible(false);
   };
+  self.refresh_compositions_in_local_storage = function() {
+    var Item, ctr, items, key;
+    Item = function(key, doremi_script) {
+      var ary;
+      this.key = key;
+      ary = /Title: ([^\n]+)\n/.exec(doremi_script);
+      this.title = !(ary != null) ? "untitled" : ary[1];
+      return this;
+    };
+    items = [];
+    ctr = 0;
+    if (localStorage.length > 0) {
+      while (ctr < localStorage.length) {
+        key = localStorage.key(ctr);
+        if (debug) {
+          console.log("key is", key);
+        }
+        if (key.indexOf("composition_") === 0) {
+          items.push(new Item(key, localStorage[key]));
+        }
+        ctr++;
+      }
+    }
+    items;
+    return self.compositions_in_local_storage(items);
+  };
+  self.compositions_in_local_storage = ko.observable([]);
   self.get_musicxml_source = function() {
     return window.to_musicxml(self.composition_parsed_doremi_script());
   };
@@ -734,16 +750,17 @@ window.CompositionViewModel = function(my_doremi_source) {
     return $.ajax(params);
   };
   self.redraw = __bind(function() {
-    var composition_view, count_before, ctr, parsed, parsed_line, parsed_lines, source, view_line, view_lines, warnings, _j, _k, _len2, _len3, _ref2, _results, _results2;
+    var composition_view, count_before, ctr, debug, doremi_source, parsed, parsed_line, parsed_lines, source, view_line, view_lines, warnings, _i, _j, _len, _len2, _ref, _results, _results2;
     try {
       debug = false;
-      self.doremi_source(self.compute_doremi_source());
+      doremi_source = self.compute_doremi_source();
       count_before = self.lines().length;
       if (debug) {
         console.log("redraw after compute_do_remi_source");
       }
       composition_view = self;
       self.edit_line_open(false);
+      composition_view.last_doremi_source = composition_view.doremi_source();
       parsed = composition_view.composition_parse();
       if ((parsed != null) && parsed.lines.length !== count_before) {
         if (debug) {
@@ -755,13 +772,11 @@ window.CompositionViewModel = function(my_doremi_source) {
           console.log("Parse failed");
         }
         composition_view.composition_parse_failed(true);
-        _ref2 = composition_view.lines();
+        _ref = composition_view.lines();
         _results = [];
-        for (_j = 0, _len2 = _ref2.length; _j < _len2; _j++) {
-          view_line = _ref2[_j];
-          if (debug) {
-            console.log("composition parse failed, checking " + (view_line.source()));
-          }
+        for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+          view_line = _ref[_i];
+          console.log("composition parse failed, checking " + (view_line.source()));
           try {
             source = view_line.source();
             if (/^\s*$/.test(source) || source === "") {
@@ -776,9 +791,7 @@ window.CompositionViewModel = function(my_doremi_source) {
             view_line.line_has_warnings(false);
             view_line.line_warnings([]);
             view_line.rendered_in_html("<pre>Didn't parse\n" + (view_line.source()) + "</pre>");
-            if (debug) {
-              console.log(view_line.rendered_in_html());
-            }
+            console.log(view_line.rendered_in_html());
           }
         }
         return _results;
@@ -789,16 +802,14 @@ window.CompositionViewModel = function(my_doremi_source) {
         view_lines = composition_view.lines();
         ctr = 0;
         if (parsed_lines.length !== view_lines.length) {
-          if (debug) {
-            console.log("Info:assertion failed parsed_lines.length isnt view_lines.length");
-          }
+          console.log("Info:assertion failed parsed_lines.length isnt view_lines.length");
           self.my_init(doremi_source);
           self.redraw();
           return;
         }
         _results2 = [];
-        for (_k = 0, _len3 = parsed_lines.length; _k < _len3; _k++) {
-          parsed_line = parsed_lines[_k];
+        for (_j = 0, _len2 = parsed_lines.length; _j < _len2; _j++) {
+          parsed_line = parsed_lines[_j];
           view_line = view_lines[ctr];
           if (/^\s*$/.test(view_line.source())) {
             view_line.rendered_in_html('(empty line)');

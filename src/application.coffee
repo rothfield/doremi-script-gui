@@ -2,6 +2,7 @@ $(document).ready ->
   debug=false
   window.doremi_script_gui_app={}
   app=window.doremi_script_gui_app
+
   simple_hash = (str) ->
     return 0 if !str?
     num=0
@@ -26,12 +27,8 @@ $(document).ready ->
      console.log('setup_context_menu') if debug
      fun = (action, original_element, pos) ->
        el=$(original_element).parentsUntil('div.stave_wrapper').last().parent()
-       #console.log("els",els)
        return if el.size is 0
-       #el=$(els[0]).parent().parent().parent()
-       console.log("el",el)
        stave_id=$(el).attr("id")
-       console.log "el",el
        found=null
        found=line for line in app.the_composition.lines() when line.stave_id() is stave_id
        console.log(action,el,pos) if debug
@@ -49,7 +46,9 @@ $(document).ready ->
        if (action is "append")
          app.the_composition.composition_append_line(found)
          return
+
      $(".note_wrapper").contextMenu({ menu: 'my_menu' }, fun)
+
      $(".lyrics_section").contextMenu({ menu: 'my_menu' }, fun)
 
   app.sanitize= (name)->
@@ -81,8 +80,6 @@ $(document).ready ->
         app.the_composition.doremi_source()
 
     app.params_for_download_sargam.onError = () ->
-      # onError: Called when the Download button is clicked but your data callback returns "".
-      
     app.params_for_download_sargam.filename = () ->
       "#{app.sanitize(app.the_composition.title())}.doremi_script.txt"
     $("#download_lilypond").downloadify(app.params_for_download_lilypond)
@@ -109,7 +106,6 @@ $(document).ready ->
   
   $(window).resize(() ->
     # redraw the composition
-    console.log("resize")
     window.the_composition.composition_stave_width(window.the_composition.calculate_stave_width())
     window.the_composition.composition_textarea_width(window.the_composition.calculate_textarea_width())
     $('div.stave').attr('data-dom-fixed',"false")
@@ -118,6 +114,7 @@ $(document).ready ->
 
 
   getParameterByName= (name) ->
+    # get parameter from url
     name = name.replace(/[\[]/, "\\\[").replace(/[\]]/, "\\\]")
     regexS = "[\\?&]" + name + "=([^&#]*)"
     regex = new RegExp(regexS)
@@ -126,10 +123,8 @@ $(document).ready ->
         return ""
     return decodeURIComponent(results[1].replace(/\+/g, " "))
 
-  check_for_opening_url=() ->
-    load_url(getParameterByName('url'))
-
   load_composition_from_url= (url) ->
+    # Load a doremi-script file from an URL
     return if url is ""
     params=
       type:'GET'
@@ -143,11 +138,11 @@ $(document).ready ->
     $.ajax(params)
 
   setup_downloadify()
+
   $('#composition_title').focus()
 
-  console.log("before get_css") if false
-  # these are used for creating html_doc. Review whether still needed.
   load_html_doc_components= () ->
+    # these are used for creating html_doc
     app.the_composition.get_application_css()
     app.the_composition.get_styles_css()
     app.the_composition.get_doremi_css()

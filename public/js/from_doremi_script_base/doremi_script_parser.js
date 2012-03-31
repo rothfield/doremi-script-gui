@@ -97,7 +97,6 @@ DoremiScriptParser = (function(){
         "LYRICS_SECTION": parse_LYRICS_SECTION,
         "MEASURE": parse_MEASURE,
         "MORDENT": parse_MORDENT,
-        "NON_BARLINE": parse_NON_BARLINE,
         "NUMBER_A": parse_NUMBER_A,
         "NUMBER_AFLAT": parse_NUMBER_AFLAT,
         "NUMBER_ASHARP": parse_NUMBER_ASHARP,
@@ -147,6 +146,7 @@ DoremiScriptParser = (function(){
         "SARGAM_NI": parse_SARGAM_NI,
         "SARGAM_NI_FLAT": parse_SARGAM_NI_FLAT,
         "SARGAM_NI_SHARP": parse_SARGAM_NI_SHARP,
+        "SARGAM_NON_BARLINE": parse_SARGAM_NON_BARLINE,
         "SARGAM_ORNAMENT": parse_SARGAM_ORNAMENT,
         "SARGAM_PA": parse_SARGAM_PA,
         "SARGAM_PA_FLAT": parse_SARGAM_PA_FLAT,
@@ -743,9 +743,18 @@ DoremiScriptParser = (function(){
           pos = savedPos1;
         }
         var result2 = result1 !== null
-          ? (function(key_chars, blanks, value_chars) { return { my_type:"attribute",
+          ? (function(key_chars, blanks, value_chars) { 
+                 value=this.trim(value_chars.join(''));
+                 // true and false get read as boolean ala json
+                 if (value ==="true") {
+                   value=true;
+                 }
+                 if (value ==="false") {
+                   value=false;
+                 }
+                 return { my_type:"attribute",
                           key: key_chars.join(''),
-                          value:this.trim(value_chars.join('')),
+                          value:value,
                           source: "todo"
                           }})(result1[0], result1[3], result1[4])
           : null;
@@ -828,11 +837,11 @@ DoremiScriptParser = (function(){
           var result16 = parse_UPPER_OCTAVE_LINE();
         }
         if (result3 !== null) {
-          var result15 = parse_DEVANAGRI_LINE();
+          var result15 = parse_SARGAM_LINE();
           if (result15 !== null) {
             var result4 = result15;
           } else {
-            var result14 = parse_SARGAM_LINE();
+            var result14 = parse_NUMBER_LINE();
             if (result14 !== null) {
               var result4 = result14;
             } else {
@@ -840,7 +849,7 @@ DoremiScriptParser = (function(){
               if (result13 !== null) {
                 var result4 = result13;
               } else {
-                var result12 = parse_NUMBER_LINE();
+                var result12 = parse_DEVANAGRI_LINE();
                 if (result12 !== null) {
                   var result4 = result12;
                 } else {
@@ -1036,11 +1045,11 @@ DoremiScriptParser = (function(){
         
         var savedPos0 = pos;
         var savedPos1 = pos;
-        var result14 = parse_DEVANAGRI_LINE();
+        var result14 = parse_SARGAM_LINE();
         if (result14 !== null) {
           var result3 = result14;
         } else {
-          var result13 = parse_SARGAM_LINE();
+          var result13 = parse_NUMBER_LINE();
           if (result13 !== null) {
             var result3 = result13;
           } else {
@@ -1048,7 +1057,7 @@ DoremiScriptParser = (function(){
             if (result12 !== null) {
               var result3 = result12;
             } else {
-              var result11 = parse_NUMBER_LINE();
+              var result11 = parse_DEVANAGRI_LINE();
               if (result11 !== null) {
                 var result3 = result11;
               } else {
@@ -2631,12 +2640,12 @@ DoremiScriptParser = (function(){
         var result10 = parse_BARLINE();
         var result3 = result10 !== null ? result10 : '';
         if (result3 !== null) {
-          var result9 = parse_NON_BARLINE();
+          var result9 = parse_SARGAM_NON_BARLINE();
           if (result9 !== null) {
             var result4 = [];
             while (result9 !== null) {
               result4.push(result9);
-              var result9 = parse_NON_BARLINE();
+              var result9 = parse_SARGAM_NON_BARLINE();
             }
           } else {
             var result4 = null;
@@ -2889,8 +2898,8 @@ DoremiScriptParser = (function(){
         return result0;
       }
       
-      function parse_NON_BARLINE() {
-        var cacheKey = 'NON_BARLINE@' + pos;
+      function parse_SARGAM_NON_BARLINE() {
+        var cacheKey = 'SARGAM_NON_BARLINE@' + pos;
         var cachedResult = cache[cacheKey];
         if (cachedResult) {
           pos = cachedResult.nextPos;

@@ -5,10 +5,7 @@ unique_id = 1000;
 window.LineViewModel = function(line_param) {
   var self;
   if (line_param == null) {
-    line_param = {
-      source: EMPTY_LINE_SOURCE,
-      rendered_in_html: "(Empty Line)"
-    };
+    line_param = DoremiScriptLineParser.parse("| ");
   }
   self = this;
   self.line_id = ko.observable(unique_id++);
@@ -19,6 +16,7 @@ window.LineViewModel = function(line_param) {
   if (debug) {
     console.log("LineViewModel");
   }
+  self.zparsed_line = ko.observable(line_param);
   self.line_parsed_doremi_script = ko.observable(null);
   self.line_parse_failed = ko.observable(false);
   self.line_warnings = ko.observable([]);
@@ -57,9 +55,10 @@ window.LineViewModel = function(line_param) {
     return line;
   };
   self.handle_keypress = function(my_model, event) {
-    var char, el, hash, index_of_end_of_line, line, pos_of_start_of_line, sel_end, sel_start, start_of_line_to_end, to_left_of_cursor, to_right_of_cursor, val, _ref;
+    var char, do_filtering, el, hash, index_of_end_of_line, let_default_action_proceed, line, pos_of_start_of_line, sel_end, sel_start, start_of_line_to_end, to_left_of_cursor, to_right_of_cursor, val, _ref;
+    let_default_action_proceed = true;
     if (debug) {
-      console.log("in handle_key_stroke", my_model, event);
+      console.log("in handle_keypress", my_model, event);
     }
     el = event.srcElement;
     val = el.value;
@@ -80,20 +79,27 @@ window.LineViewModel = function(line_param) {
       line = start_of_line_to_end.slice(0, index_of_end_of_line);
     }
     line = self.get_current_line_of_text_area(el);
-    if ((_ref = event.which) === 115 || _ref === 112) {
-      if (line.indexOf('|') > -1) {
-        hash = {
-          112: "P",
-          115: "S"
-        };
-        char = hash[event.which];
-        event.preventDefault();
-        el.value = "" + to_left_of_cursor + char + to_right_of_cursor;
-        el.setSelectionRange(sel_start + 1, sel_start + 1);
-        el.focus();
-        return true;
+    do_filtering = true;
+    char = String.fromCharCode(event.which);
+    if ((self.parsed_line() != null) && self.parsed_line().kind !== "latin_sargam") {
+      do_filtering = false;
+    }
+    if (do_filtering) {
+      if ((_ref = event.which) === 115 || _ref === 112) {
+        if (line.indexOf('|') > -1) {
+          hash = {
+            112: "P",
+            115: "S"
+          };
+          char = hash[event.which];
+        }
       }
     }
+    event.preventDefault();
+    el.value = "" + to_left_of_cursor + char + to_right_of_cursor;
+    self.source(el.value);
+    el.setSelectionRange(sel_start + 1, sel_start + 1);
+    el.focus();
     return true;
   };
   self.close_edit = function(my_model, event) {
@@ -148,6 +154,17 @@ window.LineViewModel = function(line_param) {
     }
     return true;
   };
+  self.parsed_line = ko.computed(function() {
+    self.source();
+    try {
+      return DoremiScriptLineParser.parse(self.source());
+    } catch (err) {
+      self.line_parse_failed(true);
+      self.line_has_warnings(false);
+      self.line_warnings([]);
+      return {};
+    }
+  });
   self.set_edit_cursor = function($textarea) {
     var column, index, regular_expression_to_find_line_with_barline, result, source, where;
     if (!($textarea != null)) {

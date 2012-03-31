@@ -1,6 +1,6 @@
 var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; };
 $(document).ready(function() {
-  var app, check_for_opening_url, debug, getParameterByName, initialData, load_composition_from_url, load_html_doc_components, setup_downloadify, simple_hash, url;
+  var app, debug, getParameterByName, initialData, load_composition_from_url, load_html_doc_components, setup_downloadify, simple_hash, url;
   debug = false;
   window.doremi_script_gui_app = {};
   app = window.doremi_script_gui_app;
@@ -45,9 +45,7 @@ $(document).ready(function() {
       if (el.size === 0) {
         return;
       }
-      console.log("el", el);
       stave_id = $(el).attr("id");
-      console.log("el", el);
       found = null;
       _ref = app.the_composition.lines();
       for (_i = 0, _len = _ref.length; _i < _len; _i++) {
@@ -147,7 +145,6 @@ $(document).ready(function() {
   window.the_composition.help_visible(false);
   ko.applyBindings(window.the_composition, $('html')[0]);
   $(window).resize(function() {
-    console.log("resize");
     window.the_composition.composition_stave_width(window.the_composition.calculate_stave_width());
     window.the_composition.composition_textarea_width(window.the_composition.calculate_textarea_width());
     $('div.stave').attr('data-dom-fixed', "false");
@@ -163,9 +160,6 @@ $(document).ready(function() {
       return "";
     }
     return decodeURIComponent(results[1].replace(/\+/g, " "));
-  };
-  check_for_opening_url = function() {
-    return load_url(getParameterByName('url'));
   };
   load_composition_from_url = function(url) {
     var params;
@@ -188,9 +182,6 @@ $(document).ready(function() {
   };
   setup_downloadify();
   $('#composition_title').focus();
-  if (false) {
-    console.log("before get_css");
-  }
   load_html_doc_components = function() {
     app.the_composition.get_application_css();
     app.the_composition.get_styles_css();

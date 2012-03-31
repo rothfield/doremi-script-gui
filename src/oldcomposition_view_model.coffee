@@ -1,10 +1,11 @@
 NONE_URL="images/none.png"
+unique_id=1000
 # NOTE: space after barline is significant, parser fails without it
-
+EMPTY_LINE_SOURCE ="| "
 window.CompositionViewModel = (my_doremi_source) ->
-  debug=false
   app=window.doremi_script_gui_app
   self = this
+  self.last_line_opened=null
   self.help_visible=ko.observable(false)
 
   self.disable_context_menu=ko.observable(false) # for debugging only
@@ -16,6 +17,10 @@ window.CompositionViewModel = (my_doremi_source) ->
       alert("Please click the Update all button first")
       return false
     true
+  self.toggle_disable_context_menu= (event) ->
+    self.disable_context_menu(!this.disable_context_menu())
+    self.my_init(self.doremi_source())
+
 
   self.toggle_help_visible= (event) ->
     console.log "toggle_help_visible" if debug
@@ -24,16 +29,27 @@ window.CompositionViewModel = (my_doremi_source) ->
       $('#help_content').html($('#help-tpl').html())
     else
       $('#help_content').html('')
+  self.help_visible_action = ko.computed( help_visible_fun= () ->
+    console.log "help_visible_action" if debug
+    return if self.document?
+    if self.help_visible()
+      $("#help_button").text("Hide Help")
+    else
+      $("#help_button").text("Help")
+    )
+
 
   self.editing_a_line= ko.observable(false)
   self.not_editing_a_line= ko.observable(true)
   self.editing_composition=ko.observable(false)
+  self.last_doremi_source = ""
   self.lines = ko.observableArray([])
+  self.selected_composition = ko.observable() # nothing selected by default
   self.staff_notation_url=ko.observable(NONE_URL)
   self.apply_hyphenated_lyrics=ko.observable(false)
   self.toggle_apply_hyphenated_lyrics=  (x) ->
     self.apply_hyphenated_lyrics(!self.apply_hyphenated_lyrics())
-    self.redraw()
+    self.redraw() # TODO: review
 
   self.composition_parse_tree_text=ko.observable("")
   self.open_file_visible=ko.observable(false)
@@ -67,7 +83,6 @@ window.CompositionViewModel = (my_doremi_source) ->
   self.composition_stave_width= ko.observable(self.calculate_stave_width())
   self.composition_textarea_width= ko.observable(self.calculate_textarea_width())
   self.base_url=ko.observable(null)
-
   self.links_enabled=ko.computed( links_enabled= () ->
     console.log "links_enabled" if debug
     url=self.base_url()
@@ -111,10 +126,7 @@ window.CompositionViewModel = (my_doremi_source) ->
     base_url=base_url.replace('compositions','compositions2')
     "#{base_url}.doremi_script.txt"
   )
-
   self.notes_used=ko.observable("SP")
-  self.force_notes_used=ko.observable(false)
-  
   self.composition_lilypond_source_visible=ko.observable(false)
   self.composition_musicxml_source_visible=ko.observable(false)
   self.parsed_doremi_script_visible=ko.observable(false)
@@ -127,12 +139,14 @@ window.CompositionViewModel = (my_doremi_source) ->
 
   self.toggle_title_visible= (event) ->
     self.show_title(!this.show_title())
+  self.toggle_composition_select_visible= (event) ->
+    self.composition_select_visible(!this.composition_select_visible())
+    self.refresh_compositions_in_local_storage()
 
   self.toggle_open_file_visible = () ->
     self.open_file_visible(!self.open_file_visible())
   self.toggle_parsed_doremi_script_visible = () ->
     self.parsed_doremi_script_visible(!self.parsed_doremi_script_visible())
-    self.parse()
   self.toggle_staff_notation_visible = () ->
     self.staff_notation_visible(!self.staff_notation_visible())
 
@@ -141,10 +155,20 @@ window.CompositionViewModel = (my_doremi_source) ->
 
   self.toggle_composition_lilypond_source_visible = () ->
     self.composition_lilypond_source_visible(!self.composition_lilypond_source_visible())
+    return
+    if self.composition_lilypond_source_visible
+      parsed=self.composition_parsed_doremi_script()
+      if parsed?
+        self.composition_lilypond_source(to_lilypond(parsed))
+      else
+        self.composition_lilypond_source("")
 
+
+  self.composition_as_html = ko.observable("")
+     
   self.toggle_doremi_source_visible = () ->
     self.doremi_source_visible(!self.doremi_source_visible())
-    self.composition_parse()
+
   self.toggle_composition_info_visible = () ->
     self.composition_info_visible(!self.composition_info_visible())
     
@@ -172,20 +196,21 @@ window.CompositionViewModel = (my_doremi_source) ->
     x="#{self.staff_notation_url()}?ts=#{time_stamp}"
     #TODO: clumsy
     self.staff_notation_url_with_time_stamp(x)
-
   self.modes=["ionian","dorian","phrygian","lydian","mixolydian","aeolian","locrian"]
-  self.true_false_options=["false","true"]
+
   self.mode= ko.observable("")
 
 
   self.download_doremi_source_file = (my_model) ->
-    self.doremi_source(self.compute_doremi_source())
     # First save file to server
     url='/doremi_script_server/save_to_server'
+    lilypond_source=self.composition_lilypond_source()
     timeout_in_seconds=60
+    src=self.doremi_source()
     my_data =
+      lilypond:self.composition_lilypond_source()
       fname: "#{self.title()}_#{self.author()}_#{self.id()}"
-      doremi_source: self.doremi_source()
+      doremi_source: src
     obj=
       dataType : "json",
       timeout : timeout_in_seconds * 1000  # milliseconds
@@ -217,20 +242,22 @@ window.CompositionViewModel = (my_doremi_source) ->
 
   self.generate_staff_notation_aux = (my_model,dont="false") ->
     console.log "generate_staff_notation" if debug
+    # self.compute_doremi_source()
     self.redraw()
     # generate staff notation by converting doremi_script
     # to lilypond and call a web service
-    # TODO: 
-    # ?? get rid of lilypond_source param and musicxml_source
-    # I don't trust any lilypond...
     self.generating_staff_notation(true)
+    lilypond_source=self.composition_lilypond_source()
     ts= new Date().getTime()
     url='/lilypond_server/lilypond_to_jpg'
     timeout_in_seconds=60
+    src=self.doremi_source()
     my_data =
       fname: app.sanitize(self.title())
+      #"#{self.title()}_#{self.author()}_#{self.id()}"
+      lilypond: lilypond_source
       html_doc: self.generate_html_page_aux()
-      doremi_source: self.doremi_source
+      doremi_source: src
       musicxml_source: self.get_musicxml_source()
       dont_generate_staff_notation:dont
     obj=
@@ -274,7 +301,6 @@ window.CompositionViewModel = (my_doremi_source) ->
       "source"
       "time_signature"
       "notes_used"
-      "force_notes_used"
       "title"
       "key"
       "mode"
@@ -282,10 +308,6 @@ window.CompositionViewModel = (my_doremi_source) ->
       "apply_hyphenated_lyrics"
     ]
 
-  for att in self.attribute_keys
-    self[att].subscribe((new_value) ->
-      self.doremi_source(self.compute_doremi_source())
-    )
 
   self.capitalize_first_letter = (string) ->
     string.charAt(0).toUpperCase() + string.slice(1)
@@ -297,57 +319,6 @@ window.CompositionViewModel = (my_doremi_source) ->
     ary2.join ''
     
 
-  self.compute_doremi_source = () ->
-    # Turn the data on the web page into doremi_script format
-    # Note that a doremi-script text file starts like this:
-    # id: 1327249816068
-    # Title: aardvark
-    # Filename: untitled
-    # Key: D
-    # Mode: phrygian
-    # Author: Traditional
-    # Source: AAK
-    # TimeSignature: 4/4
-    # ApplyHyphenatedLyrics: true
-    # StaffNotationURL: http://ragapedia.local/compositions/aardvark.jpg
-    # 
-    console.log "compute_doremi_source" if debug
-    keys_to_use=self.attribute_keys
-    # TODO: dry with other list of attributes
-    keys=["id","title","filename","raga","key",
-          "mode","author",
-          "source","time_signature","apply_hyphenated_lyrics",
-          "staff_notation_url","notes_used","force_notes_used"]
-    atts= for att in keys
-      value=self[att]()
-      capitalized_att=self.ruby_style_to_capitalized att
-      console.log "capitalized_att", capitalized_att if debug
-      if att is 'id'
-        capitalized_att='id'
-        continue
-      continue if !value? or  value is ""
-      "#{capitalized_att}: #{value}"
-    atts_str=atts.join("\n")
-    lines=(line.source() for line in self.lines())
-    # lines have a blank line between them
-    lines_str=lines.join("\n\n")
-    atts_str+"\n\n"+ lines_str
-
-  self.doremi_source= ko.observable(null)
-
-  self.composition_parse = () ->
-    self.doremi_source(self.compute_doremi_source())
-    ret_val=null
-    try
-      source=self.doremi_source()
-      ret_val=DoremiScriptParser.parse(source)
-    catch err
-      console.log "composition.parse- error is #{err}" if debug
-      ret_val=null
-    finally
-    ret_val
-
- 
   self.compute_doremi_source = () ->
     # Turn the data on the web page into doremi_script format
     # Note that a doremi-script text file starts like this:
@@ -383,19 +354,30 @@ window.CompositionViewModel = (my_doremi_source) ->
     lines_str=lines.join("\n\n")
     atts_str+"\n\n"+ lines_str
 
-  #composition_view.composition_parsed_doremi_script(parsed)
+  self.doremi_source= ko.computed(self.compute_doremi_source)
+  self.composition_parse = () ->
+    #console.log "entering composition_parse"
+    ret_val=null
+    try
+      source=self.doremi_source()
+      ret_val=DoremiScriptParser.parse(source)
+    catch err
+      console.log "composition.parse- error is #{err}" if debug
+      ret_val=null
+    finally
+    ret_val
 
   self.composition_parsed_doremi_script=ko.observable(null)
 
   self.composition_musicxml_source=ko.computed(() ->
-    console.log "in composition_musicxml_source" if debug
+    #console.log "in composition_musicxml_source"
     parsed=self.composition_parsed_doremi_script()
     return "" if !parsed?
     to_musicxml(parsed)
   
   )
   self.composition_lilypond_source=ko.computed(() ->
-    console.log "in composition_lilypond_source" if debug
+    #console.log "in composition_lilypond_source"
     parsed=self.composition_parsed_doremi_script()
     return "" if !parsed?
     to_lilypond(parsed)
@@ -410,11 +392,12 @@ window.CompositionViewModel = (my_doremi_source) ->
   self.my_init = (doremi_source_param) ->
     $('img.staff_notation').attr('src',NONE_URL)
     # Initialize composition with doremi_script_source
-    self.staff_notation_url(NONE_URL)
+    self.staff_notation_url(NONE_URL) # TODO: use computed observables
     self.calculate_staff_notation_url_with_time_stamp()
     console.log("composition.my_init",doremi_source_param) if debug
     parsed=DoremiScriptParser.parse(doremi_source_param)
     self.composition_parsed_doremi_script(parsed)
+    self.last_doremi_source=""
     if !parsed
       alert("Something bad happened, parse failed")
       return
@@ -439,7 +422,7 @@ window.CompositionViewModel = (my_doremi_source) ->
     self.redraw()
   self.add_line = () ->
     console.log "add_line" if debug
-    self.lines.push(x=new LineViewModel())
+    self.lines.push(x=new LineViewModel(source: EMPTY_LINE_SOURCE))
     console.log('add line x is',x) if debug
     self.re_index_lines()
     self.redraw()
@@ -458,8 +441,7 @@ window.CompositionViewModel = (my_doremi_source) ->
     index=line_model.index()
     console.log "insert_line, line_model,index",line_model,index if debug
     number_of_elements_to_remove=0
-    self.lines.splice(index,
-                      number_of_elements_to_remove,x=new LineViewModel())
+    self.lines.splice(index,number_of_elements_to_remove,x=new LineViewModel(source: EMPTY_LINE_SOURCE))
     self.re_index_lines()
     x.edit()
     return true
@@ -478,7 +460,7 @@ window.CompositionViewModel = (my_doremi_source) ->
     console.log "composition_append_line" if debug
     index=line_model.index()
     number_of_elements_to_remove=0
-    self.lines.splice(index+1,number_of_elements_to_remove,x=new LineViewModel())
+    self.lines.splice(index+1,number_of_elements_to_remove,x=new LineViewModel({source: EMPTY_LINE_SOURCE}))
     self.re_index_lines()
     x.edit()
     return true
@@ -502,6 +484,7 @@ window.CompositionViewModel = (my_doremi_source) ->
   self.close = () ->
     self.editing_composition(false)
     console.log "in close" if debug
+    self.last_doremi_source=""
     self.lines.remove( ()-> true)
     console.log "after close, lines are",self.lines() if debug
   self.gui_close = () ->
@@ -525,6 +508,28 @@ window.CompositionViewModel = (my_doremi_source) ->
     self.help_visible(false)
     #$('#composition_title').focus()
 
+  self.refresh_compositions_in_local_storage  = () ->
+    Item = (key, doremi_script) ->
+      # For list of compositions in local storage, grab the key and title
+      @key = key
+      # Grab the Title from the doremi script source
+      ary= /Title: ([^\n]+)\n/.exec(doremi_script)
+      @title= if !ary? then "untitled" else ary[1]
+      this
+    items=[]
+    ctr=0
+    if localStorage.length > 0
+      while ctr < localStorage.length
+        key=localStorage.key(ctr)
+        console.log "key is",key if debug
+        if key.indexOf("composition_") is 0  # key starts with composition_
+           items.push new Item(key,localStorage[key])
+        ctr++
+    items
+    self.compositions_in_local_storage(items)
+
+  self.compositions_in_local_storage = ko.observable([])
+    
   self.get_musicxml_source = () ->
     window.to_musicxml(self.composition_parsed_doremi_script())
 
@@ -602,12 +607,13 @@ window.CompositionViewModel = (my_doremi_source) ->
 
     try
       debug=false
-      self.doremi_source(self.compute_doremi_source())
+      doremi_source=self.compute_doremi_source()
       count_before=self.lines().length
       console.log "redraw after compute_do_remi_source" if debug
       
       composition_view=self
       self.edit_line_open(false)
+      composition_view.last_doremi_source = composition_view.doremi_source()
       parsed=composition_view.composition_parse()
       if parsed? and parsed.lines.length isnt count_before
         console.log("# of items changed!!") if debug
@@ -618,7 +624,7 @@ window.CompositionViewModel = (my_doremi_source) ->
         # to find which line or lines
         # didn't parse.
         for view_line in composition_view.lines()
-          console.log "composition parse failed, checking #{view_line.source()}" if debug
+          console.log "composition parse failed, checking #{view_line.source()}"
           try
             source=view_line.source()
             if /^\s*$/.test(source) or source is ""
@@ -632,7 +638,7 @@ window.CompositionViewModel = (my_doremi_source) ->
             view_line.line_has_warnings(false)
             view_line.line_warnings([])
             view_line.rendered_in_html("<pre>Didn't parse\n#{view_line.source()}</pre>")
-            console.log(view_line.rendered_in_html()) if debug
+            console.log(view_line.rendered_in_html())
       else # parse (on whole input) succeeded.
         composition_view.composition_parse_failed(false)
         composition_view.composition_parsed_doremi_script(parsed)
@@ -640,7 +646,7 @@ window.CompositionViewModel = (my_doremi_source) ->
         view_lines=composition_view.lines()
         ctr=0
         if parsed_lines.length isnt view_lines.length
-          console.log "Info:assertion failed parsed_lines.length isnt view_lines.length" if debug
+          console.log "Info:assertion failed parsed_lines.length isnt view_lines.length"
           #self.lines([])
           self.my_init(doremi_source)
           self.redraw()

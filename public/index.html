@@ -68,9 +68,9 @@
           </p>
           <p>
             <label>
-              Mode:
+              Force Notes Used:
             </label>
-            <select data-bind='options: modes, value: mode'></select>
+            <select data-bind='options: true_false_options, value: force_notes_used'></select>
           </p>
           <p>
             <label>
@@ -177,22 +177,23 @@
           </div>
         </div>
       </div>
-      <div class='composition' data-bind='visible:editing_composition'>
-        <div class='controls'>
-          <div class='composition_controls'>
-            <button data-bind='disable: disable_generate_staff_notation,click: generate_staff_notation'>
-              Generate staff notation
-            </button>
-            <button data-bind='css: {button_on:staff_notation_visible},click: toggle_staff_notation_visible'>
-              Show Staff Notation
-            </button>
-            <button data-bind='css: {button_on:show_title},click: toggle_title_visible'>
-              Show Title
-            </button>
-            <button data-bind='css: {button_on:show_hyphenated_lyrics},click: toggle_hyphenated_lyrics_visible'>
-              Show Hyphenated Lyrics
-            </button>
-          </div>
+      <div class='composition' data-bind='visible:editing_composition'></div>
+      <br>
+        <div class='composition_controls'>
+          <button data-bind='disable: disable_generate_staff_notation,click: generate_staff_notation'>
+            Generate staff notation
+          </button>
+          <button data-bind='css: {button_on:staff_notation_visible},click: toggle_staff_notation_visible'>
+            Show Staff Notation
+          </button>
+          <button data-bind='css: {button_on:show_title},click: toggle_title_visible'>
+            Show Title
+          </button>
+          <button data-bind='css: {button_on:show_hyphenated_lyrics},click: toggle_hyphenated_lyrics_visible'>
+            Show Hyphenated Lyrics
+          </button>
+        </div>
+        <div>
           <img alt='spinner' class='spinner' data-bind='visible: generating_staff_notation' src='images/musical-notes-animated.gif' width='50' />
         </div>
         <div class='staff_notation_div' data-bind='visible: staff_notation_visible'>
@@ -227,12 +228,12 @@
               <span class='show_warnings' data-bind='visible: line_has_warnings, attr: {title: line_warnings}'>
                 Warnings
               </span>
-              <textarea class='entry_area' cols='33' data-bind="event: {keypress:handle_keypress},attr: {id: entry_area_id()},style: {width: $parent.composition_textarea_width},css: {'line_has_warnings': line_has_warnings,'parse_failed': $data.parse_failed},visible: editing(), value: source " rows='6' spellcheck='false'></textarea>
+              <textarea class='entry_area' cols='33' data-bind="valueUpdate:'afterkeydown',event: {keypress:handle_keypress},attr: {id: entry_area_id()},style: {width: $parent.composition_textarea_width},css: {'line_has_warnings': line_has_warnings,'parse_failed': $data.parse_failed},visible: editing(), value: source " rows='6' spellcheck='false'></textarea>
             </div>
             <div class='rendered_html' data-bind='rendered_doremi_script:rendered_in_html, visible: not_editing, event: { click: edit},clickBubble:false, css: {editing:editing,not_editing:not_editing,line_has_warnings: line_has_warnings,line_parse_failed: line_parse_failed},style: {width: $parent.composition_textarea_width}' style='display:inline-block'></div>
           </div>
         </div>
-      </div>
+      </br>
       <div class='bottom_controls' data-bind='visible: editing_composition'>
         <button class='controls' data-bind='click: add_line, enable: not_editing_a_line'>
           New Line
