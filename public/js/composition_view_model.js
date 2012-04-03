@@ -139,8 +139,6 @@ window.CompositionViewModel = function(my_doremi_source) {
     base_url = base_url.replace('compositions', 'compositions2');
     return "" + base_url + ".doremi_script.txt";
   });
-  self.notes_used = ko.observable("SP");
-  self.force_notes_used = ko.observable(false);
   self.composition_lilypond_source_visible = ko.observable(false);
   self.composition_musicxml_source_visible = ko.observable(false);
   self.parsed_doremi_script_visible = ko.observable(false);
@@ -158,7 +156,7 @@ window.CompositionViewModel = function(my_doremi_source) {
   };
   self.toggle_parsed_doremi_script_visible = function() {
     self.parsed_doremi_script_visible(!self.parsed_doremi_script_visible());
-    return self.parse();
+    return self.redraw();
   };
   self.toggle_staff_notation_visible = function() {
     return self.staff_notation_visible(!self.staff_notation_visible());
@@ -183,8 +181,9 @@ window.CompositionViewModel = function(my_doremi_source) {
   self.source = ko.observable("");
   self.filename = ko.observable("");
   self.time_signature = ko.observable("");
-  self.notes_used = ko.observable("");
   self.title = ko.observable("");
+  self.notes_used = ko.observable("SP");
+  self.force_notes_used = ko.observable(false);
   self.generating_staff_notation = ko.observable(false);
   self.staff_notation_url = ko.observable(NONE_URL);
   self.keys = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B", "Db", "Eb", "Gb", "Ab", "Bb"];
@@ -304,13 +303,6 @@ window.CompositionViewModel = function(my_doremi_source) {
     return true;
   };
   self.attribute_keys = ["id", "filename", "raga", "author", "source", "time_signature", "notes_used", "force_notes_used", "title", "key", "mode", "staff_notation_url", "apply_hyphenated_lyrics"];
-  _ref = self.attribute_keys;
-  for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-    att = _ref[_i];
-    self[att].subscribe(function(new_value) {
-      return self.doremi_source(self.compute_doremi_source());
-    });
-  }
   self.capitalize_first_letter = function(string) {
     return string.charAt(0).toUpperCase() + string.slice(1);
   };
@@ -318,10 +310,10 @@ window.CompositionViewModel = function(my_doremi_source) {
     var ary, ary2, item;
     ary = str.split('_');
     ary2 = (function() {
-      var _j, _len2, _results;
+      var _i, _len, _results;
       _results = [];
-      for (_j = 0, _len2 = ary.length; _j < _len2; _j++) {
-        item = ary[_j];
+      for (_i = 0, _len = ary.length; _i < _len; _i++) {
+        item = ary[_i];
         _results.push(self.capitalize_first_letter(item));
       }
       return _results;
@@ -336,10 +328,10 @@ window.CompositionViewModel = function(my_doremi_source) {
     keys_to_use = self.attribute_keys;
     keys = ["id", "title", "filename", "raga", "key", "mode", "author", "source", "time_signature", "apply_hyphenated_lyrics", "staff_notation_url", "notes_used", "force_notes_used"];
     atts = (function() {
-      var _j, _len2, _results;
+      var _i, _len, _results;
       _results = [];
-      for (_j = 0, _len2 = keys.length; _j < _len2; _j++) {
-        att = keys[_j];
+      for (_i = 0, _len = keys.length; _i < _len; _i++) {
+        att = keys[_i];
         value = self[att]();
         capitalized_att = self.ruby_style_to_capitalized(att);
         if (debug) {
@@ -358,11 +350,11 @@ window.CompositionViewModel = function(my_doremi_source) {
     })();
     atts_str = atts.join("\n");
     lines = (function() {
-      var _j, _len2, _ref2, _results;
-      _ref2 = self.lines();
+      var _i, _len, _ref, _results;
+      _ref = self.lines();
       _results = [];
-      for (_j = 0, _len2 = _ref2.length; _j < _len2; _j++) {
-        line = _ref2[_j];
+      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+        line = _ref[_i];
         _results.push(line.source());
       }
       return _results;
@@ -387,48 +379,6 @@ window.CompositionViewModel = function(my_doremi_source) {
 
     }
     return ret_val;
-  };
-  self.compute_doremi_source = function() {
-    var att, atts, atts_str, capitalized_att, keys, keys_to_use, line, lines, lines_str, value;
-    if (debug) {
-      console.log("compute_doremi_source");
-    }
-    keys_to_use = self.attribute_keys;
-    keys = ["id", "title", "filename", "raga", "key", "mode", "author", "source", "time_signature", "apply_hyphenated_lyrics", "staff_notation_url"];
-    atts = (function() {
-      var _j, _len2, _results;
-      _results = [];
-      for (_j = 0, _len2 = keys.length; _j < _len2; _j++) {
-        att = keys[_j];
-        value = self[att]();
-        capitalized_att = self.ruby_style_to_capitalized(att);
-        if (att === 'id') {
-          capitalized_att = 'id';
-        }
-        console.log("capitalized_att", capitalized_att);
-        if (value === "") {
-          continue;
-        }
-        if (!(value != null)) {
-          continue;
-        }
-        _results.push("" + capitalized_att + ": " + value);
-      }
-      return _results;
-    })();
-    atts_str = atts.join("\n");
-    lines = (function() {
-      var _j, _len2, _ref2, _results;
-      _ref2 = self.lines();
-      _results = [];
-      for (_j = 0, _len2 = _ref2.length; _j < _len2; _j++) {
-        line = _ref2[_j];
-        _results.push(line.source());
-      }
-      return _results;
-    })();
-    lines_str = lines.join("\n\n");
-    return atts_str + "\n\n" + lines_str;
   };
   self.composition_parsed_doremi_script = ko.observable(null);
   self.composition_musicxml_source = ko.computed(function() {
@@ -465,7 +415,7 @@ window.CompositionViewModel = function(my_doremi_source) {
     return parse_tree.warnings.length > 0;
   });
   self.my_init = function(doremi_source_param) {
-    var fct, key, my_lines, parsed, parsed_line, val, _j, _len2, _ref2;
+    var fct, key, my_lines, parsed, parsed_line, val, _i, _len, _ref;
     $('img.staff_notation').attr('src', NONE_URL);
     self.staff_notation_url(NONE_URL);
     self.calculate_staff_notation_url_with_time_stamp();
@@ -481,9 +431,9 @@ window.CompositionViewModel = function(my_doremi_source) {
     if (!(parsed.id != null)) {
       parsed.id = new Date().getTime();
     }
-    _ref2 = self.attribute_keys;
-    for (_j = 0, _len2 = _ref2.length; _j < _len2; _j++) {
-      key = _ref2[_j];
+    _ref = self.attribute_keys;
+    for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+      key = _ref[_i];
       val = parsed[key];
       fct = self[key];
       fct(val);
@@ -492,11 +442,11 @@ window.CompositionViewModel = function(my_doremi_source) {
       console.log("Loading lines");
     }
     my_lines = (function() {
-      var _k, _len3, _ref3, _results;
-      _ref3 = parsed.lines;
+      var _j, _len2, _ref2, _results;
+      _ref2 = parsed.lines;
       _results = [];
-      for (_k = 0, _len3 = _ref3.length; _k < _len3; _k++) {
-        parsed_line = _ref3[_k];
+      for (_j = 0, _len2 = _ref2.length; _j < _len2; _j++) {
+        parsed_line = _ref2[_j];
         _results.push(new LineViewModel(parsed_line));
       }
       return _results;
@@ -549,15 +499,15 @@ window.CompositionViewModel = function(my_doremi_source) {
     return true;
   };
   self.re_index_lines = function() {
-    var ctr, line, _j, _len2, _ref2, _results;
+    var ctr, line, _i, _len, _ref, _results;
     ctr = 0;
     if (debug) {
       console.log("re_index_lines");
     }
-    _ref2 = self.lines();
+    _ref = self.lines();
     _results = [];
-    for (_j = 0, _len2 = _ref2.length; _j < _len2; _j++) {
-      line = _ref2[_j];
+    for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+      line = _ref[_i];
       line.index(ctr);
       _results.push(ctr = ctr + 1);
     }
@@ -612,10 +562,10 @@ window.CompositionViewModel = function(my_doremi_source) {
     return self.close();
   };
   self.print_composition = function() {
-    var line, _j, _len2, _ref2;
-    _ref2 = self.lines();
-    for (_j = 0, _len2 = _ref2.length; _j < _len2; _j++) {
-      line = _ref2[_j];
+    var line, _i, _len, _ref;
+    _ref = self.lines();
+    for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+      line = _ref[_i];
       line.editing(false);
     }
     return window.print();
@@ -734,7 +684,7 @@ window.CompositionViewModel = function(my_doremi_source) {
     return $.ajax(params);
   };
   self.redraw = __bind(function() {
-    var composition_view, count_before, ctr, parsed, parsed_line, parsed_lines, source, view_line, view_lines, warnings, _j, _k, _len2, _len3, _ref2, _results, _results2;
+    var composition_view, count_before, ctr, parsed, parsed_line, parsed_lines, source, view_line, view_lines, warnings, _i, _j, _len, _len2, _ref, _results, _results2;
     try {
       debug = false;
       self.doremi_source(self.compute_doremi_source());
@@ -755,10 +705,10 @@ window.CompositionViewModel = function(my_doremi_source) {
           console.log("Parse failed");
         }
         composition_view.composition_parse_failed(true);
-        _ref2 = composition_view.lines();
+        _ref = composition_view.lines();
         _results = [];
-        for (_j = 0, _len2 = _ref2.length; _j < _len2; _j++) {
-          view_line = _ref2[_j];
+        for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+          view_line = _ref[_i];
           if (debug) {
             console.log("composition parse failed, checking " + (view_line.source()));
           }
@@ -797,8 +747,8 @@ window.CompositionViewModel = function(my_doremi_source) {
           return;
         }
         _results2 = [];
-        for (_k = 0, _len3 = parsed_lines.length; _k < _len3; _k++) {
-          parsed_line = parsed_lines[_k];
+        for (_j = 0, _len2 = parsed_lines.length; _j < _len2; _j++) {
+          parsed_line = parsed_lines[_j];
           view_line = view_lines[ctr];
           if (/^\s*$/.test(view_line.source())) {
             view_line.rendered_in_html('(empty line)');
@@ -820,6 +770,14 @@ window.CompositionViewModel = function(my_doremi_source) {
       app.setup_context_menu();
     }
   }, this);
+  _ref = self.attribute_keys;
+  for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+    att = _ref[_i];
+    self[att].subscribe(function(new_value) {
+      self.doremi_source(self.compute_doremi_source());
+      return self.redraw();
+    });
+  }
   if (my_doremi_source != null) {
     self.my_init(my_doremi_source);
   }

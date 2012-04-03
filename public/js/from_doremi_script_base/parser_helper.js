@@ -319,7 +319,7 @@
       x = get_composition_attribute(this.composition_data, "NotesUsed");
       this.composition_data.notes_used = x || "";
       x = get_composition_attribute(this.composition_data, "ForceNotesUsed");
-      this.composition_data.notes_used = x || false;
+      this.composition_data.force_notes_used = x || false;
       x = get_composition_attribute(this.composition_data, "id");
       if (x != null) {
         this.composition_data.id = parseInt(x);

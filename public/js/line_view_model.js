@@ -55,7 +55,7 @@ window.LineViewModel = function(line_param) {
     return line;
   };
   self.handle_keypress = function(my_model, event) {
-    var char, do_filtering, el, hash, index_of_end_of_line, let_default_action_proceed, line, pos_of_start_of_line, sel_end, sel_start, start_of_line_to_end, to_left_of_cursor, to_right_of_cursor, val, _ref;
+    var char, char2, do_filtering, el, hash, index_of_end_of_line, let_default_action_proceed, line, parent, parent_parsed, pos_of_start_of_line, sel_end, sel_start, start_of_line_to_end, to_left_of_cursor, to_right_of_cursor, val, _ref;
     let_default_action_proceed = true;
     if (debug) {
       console.log("in handle_keypress", my_model, event);
@@ -93,6 +93,14 @@ window.LineViewModel = function(line_param) {
           };
           char = hash[event.which];
         }
+      }
+      console.log("debug here");
+      parent = window.the_composition;
+      parent_parsed = parent.composition_parsed_doremi_script();
+      if ((parent_parsed != null) && parent_parsed.force_notes_used) {
+        hash = parent_parsed.force_notes_used_hash;
+        char2 = hash[String.fromCharCode(event.which)];
+        char = char2 || char;
       }
     }
     event.preventDefault();

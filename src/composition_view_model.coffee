@@ -112,8 +112,6 @@ window.CompositionViewModel = (my_doremi_source) ->
     "#{base_url}.doremi_script.txt"
   )
 
-  self.notes_used=ko.observable("SP")
-  self.force_notes_used=ko.observable(false)
   
   self.composition_lilypond_source_visible=ko.observable(false)
   self.composition_musicxml_source_visible=ko.observable(false)
@@ -130,9 +128,11 @@ window.CompositionViewModel = (my_doremi_source) ->
 
   self.toggle_open_file_visible = () ->
     self.open_file_visible(!self.open_file_visible())
+
   self.toggle_parsed_doremi_script_visible = () ->
     self.parsed_doremi_script_visible(!self.parsed_doremi_script_visible())
-    self.parse()
+    self.redraw()
+
   self.toggle_staff_notation_visible = () ->
     self.staff_notation_visible(!self.staff_notation_visible())
 
@@ -155,8 +155,9 @@ window.CompositionViewModel = (my_doremi_source) ->
   self.source=ko.observable("") # IE AAK
   self.filename=ko.observable("")
   self.time_signature=ko.observable("")
-  self.notes_used=ko.observable("")
   self.title=ko.observable("")
+  self.notes_used=ko.observable("SP")
+  self.force_notes_used=ko.observable(false)
   self.generating_staff_notation=ko.observable(false)
   self.staff_notation_url=ko.observable(NONE_URL)
   
@@ -282,10 +283,6 @@ window.CompositionViewModel = (my_doremi_source) ->
       "apply_hyphenated_lyrics"
     ]
 
-  for att in self.attribute_keys
-    self[att].subscribe((new_value) ->
-      self.doremi_source(self.compute_doremi_source())
-    )
 
   self.capitalize_first_letter = (string) ->
     string.charAt(0).toUpperCase() + string.slice(1)
@@ -348,40 +345,6 @@ window.CompositionViewModel = (my_doremi_source) ->
     ret_val
 
  
-  self.compute_doremi_source = () ->
-    # Turn the data on the web page into doremi_script format
-    # Note that a doremi-script text file starts like this:
-    # id: 1327249816068
-    # Title: aardvark
-    # Filename: untitled
-    # Key: D
-    # Mode: phrygian
-    # Author: Traditional
-    # Source: AAK
-    # TimeSignature: 4/4
-    # ApplyHyphenatedLyrics: true
-    # StaffNotationURL: http://ragapedia.local/compositions/aardvark.jpg
-    # 
-    console.log "compute_doremi_source" if debug
-    keys_to_use=self.attribute_keys
-    keys=["id","title","filename","raga","key",
-          "mode","author",
-          "source","time_signature","apply_hyphenated_lyrics",
-          "staff_notation_url"]
-    atts= for att in keys
-      value=self[att]()
-      capitalized_att=self.ruby_style_to_capitalized att
-      if att is 'id'
-        capitalized_att='id'
-      console.log "capitalized_att", capitalized_att
-      continue if value is ""
-      continue if !value?
-      "#{capitalized_att}: #{value}"
-    atts_str=atts.join("\n")
-    lines=(line.source() for line in self.lines())
-    # lines have a blank line between them
-    lines_str=lines.join("\n\n")
-    atts_str+"\n\n"+ lines_str
 
   #composition_view.composition_parsed_doremi_script(parsed)
 
@@ -598,8 +561,8 @@ window.CompositionViewModel = (my_doremi_source) ->
         window.generate_html_doc_ctr--
     $.ajax(params)
 
-  self.redraw= () =>
-
+  self.redraw = () =>
+    # TODO: factor parsing out to self.parse()
     try
       debug=false
       self.doremi_source(self.compute_doremi_source())
@@ -662,6 +625,11 @@ window.CompositionViewModel = (my_doremi_source) ->
       self.hide_show_hyphenated_lyrics()
       app.setup_context_menu()
 
+  for att in self.attribute_keys
+    self[att].subscribe((new_value) ->
+      self.doremi_source(self.compute_doremi_source())
+      self.redraw() # TODO: review
+    )
 
   self.my_init(my_doremi_source) if my_doremi_source?
   self

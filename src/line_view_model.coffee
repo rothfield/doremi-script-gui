@@ -90,6 +90,13 @@ window.LineViewModel = (line_param= DoremiScriptLineParser.parse("| ")) ->
              112:"P"
              115:"S"
            char=hash[event.which]
+      console.log "debug here"
+      parent=window.the_composition # TODO- add pointer to parent to line
+      parent_parsed=parent.composition_parsed_doremi_script()
+      if parent_parsed? and parent_parsed.force_notes_used
+        hash=parent_parsed.force_notes_used_hash
+        char2=hash[String.fromCharCode(event.which)]
+        char= char2 || char
     event.preventDefault()
     el.value="#{to_left_of_cursor}#{char}#{to_right_of_cursor}"
     self.source(el.value)

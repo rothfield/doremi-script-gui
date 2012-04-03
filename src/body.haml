@@ -33,7 +33,7 @@
       %p
         %label
           Author:
-        %input{"data-bind" => "value: author, valueUpdate: 'afterkeydown'"}/
+        %input{"data-bind" => "value: author, valueUpdate: 'afterkeydown'"}
       %p
         %label
           Key:
@@ -45,7 +45,8 @@
       %p
         %label
           Notes Used:
-        %input{"data-bind" => "value: notes_used, valueUpdate: 'afterkeydown'"}/
+        %input{"title" => 'For latin sargam only', "data-bind" => "value: notes_used, valueUpdate: 'afterkeydown'"}
+        
       %p
         %label
           Time Signature:
