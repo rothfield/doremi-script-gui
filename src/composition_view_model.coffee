@@ -230,7 +230,7 @@ window.CompositionViewModel = (my_doremi_source) ->
     timeout_in_seconds=60
     my_data =
       fname: app.sanitize(self.title())
-      html_doc: self.generate_html_page_aux()
+      html_doc: "stub" #self.generate_html_page_aux()
       doremi_source: self.doremi_source
       musicxml_source: self.get_musicxml_source()
       dont_generate_staff_notation:dont
