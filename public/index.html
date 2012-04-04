@@ -45,7 +45,7 @@
           <label>
             Title:
           </label>
-          <input data-bind="valueUpdate: 'afterkeydown',value: title" id='composition_title' />
+          <input data-bind="valueUpdate: 'change',value: title" id='composition_title' />
           <span class='required'>
             *
           </span>
@@ -58,7 +58,7 @@
             <label>
               Author:
             </label>
-            <input data-bind="value: author, valueUpdate: 'afterkeydown'" />
+            <input data-bind="value: author, valueUpdate: 'change'" />
           </p>
           <p>
             <label>
@@ -76,25 +76,25 @@
             <label>
               Notes Used:
             </label>
-            <input data-bind="value: notes_used, valueUpdate: 'afterkeydown'" title='For latin sargam only' />
+            <input data-bind="value: notes_used, valueUpdate: 'change'" title='For latin sargam only' />
           </p>
           <p>
             <label>
               Time Signature:
             </label>
-            <input data-bind="value: time_signature,valueUpdate: 'afterkeydown'" />
+            <input data-bind="value: time_signature,valueUpdate: 'change'" />
           </p>
           <p>
             <label>
               Source:
             </label>
-            <input data-bind="value: source,valueUpdate: 'afterkeydown'" />
+            <input data-bind="value: source,valueUpdate: 'change'" />
           </p>
           <p>
             <label>
               Raga:
             </label>
-            <input data-bind="value: raga,valueUpdate: 'afterkeydown'" />
+            <input data-bind="value: raga,valueUpdate: 'change'" />
           </p>
           <p>
             <label>

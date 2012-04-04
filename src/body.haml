@@ -24,7 +24,7 @@
     %p
       %label
         Title:
-      %input#composition_title{"data-bind" => "valueUpdate: 'afterkeydown',value: title"}/
+      %input#composition_title{"data-bind" => "valueUpdate: 'change',value: title"}/
       %span.required
         * 
       %button.more_properties_button{"onclick" => "$('#more_properties').toggle()"}
@@ -33,7 +33,7 @@
       %p
         %label
           Author:
-        %input{"data-bind" => "value: author, valueUpdate: 'afterkeydown'"}
+        %input{"data-bind" => "value: author, valueUpdate: 'change'"}
       %p
         %label
           Key:
@@ -45,20 +45,20 @@
       %p
         %label
           Notes Used:
-        %input{"title" => 'For latin sargam only', "data-bind" => "value: notes_used, valueUpdate: 'afterkeydown'"}
+        %input{"title" => 'For latin sargam only', "data-bind" => "value: notes_used, valueUpdate: 'change'"}
         
       %p
         %label
           Time Signature:
-        %input{"data-bind" => "value: time_signature,valueUpdate: 'afterkeydown'"}/
+        %input{"data-bind" => "value: time_signature,valueUpdate: 'change'"}/
       %p
         %label
           Source:
-        %input{"data-bind" => "value: source,valueUpdate: 'afterkeydown'"}/
+        %input{"data-bind" => "value: source,valueUpdate: 'change'"}/
       %p
         %label
           Raga:
-        %input{"data-bind" => "value: raga,valueUpdate: 'afterkeydown'"}/
+        %input{"data-bind" => "value: raga,valueUpdate: 'change'"}/
       %p
         %label
           Apply Hyphenated Lyrics:
