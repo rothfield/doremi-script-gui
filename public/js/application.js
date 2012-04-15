@@ -1,6 +1,6 @@
 var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; };
 $(document).ready(function() {
-  var app, debug, getParameterByName, initialData, load_composition_from_url, load_html_doc_components, setup_downloadify, simple_hash, url;
+  var app, debug, getParameterByName, initialData, load_composition_from_url, load_html_doc_components, root, setup_downloadify, simple_hash, url;
   debug = false;
   window.doremi_script_gui_app = {};
   app = window.doremi_script_gui_app;
@@ -190,7 +190,19 @@ $(document).ready(function() {
   };
   load_html_doc_components();
   url = getParameterByName('url');
+  root = function() {
+    $('div#intro').show();
+    return $('div#composition_form').hide();
+  };
   if (url !== "") {
-    return load_composition_from_url(url);
+    load_composition_from_url(url);
   }
+  Path.map("#/new_composition").to(function() {
+    console.log("new_composition route");
+    $('div#intro').hide();
+    $('div#composition_form').show();
+    return app.the_composition.new_composition();
+  });
+  Path.root("#/root");
+  return Path.listen();
 });

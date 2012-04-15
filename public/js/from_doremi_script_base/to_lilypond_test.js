@@ -1,5 +1,5 @@
 (function() {
-  var Logger, debug, parser, root, sys, test_data, test_to_lilypond, to_lilypond, utils, _;
+  var Logger, debug, display_success, line_to_lilypond, parser, root, sys, test_data, test_to_lilypond, to_lilypond, utils, _;
   root = typeof exports !== "undefined" && exports !== null ? exports : this;
   debug = false;
   if (typeof global !== "undefined" && global !== null) {
@@ -27,6 +27,7 @@
   }
 });;
   to_lilypond = require('./to_lilypond.js').to_lilypond;
+  line_to_lilypond = require('./to_lilypond.js').line_to_lilypond;
   parser = DoremiScriptParser;
   test_to_lilypond = function(str, test, msg) {
     var composition, lily;
@@ -55,5 +56,78 @@
     };
     _.each_slice(test_data, 3, fun);
     return test.done();
+  };
+  exports.test_after_ornament = function(test) {
+    var composition, expected, lily, str;
+    _console.level = Logger.INFO;
+    str = '   R\n| G ';
+    composition = parser.parse(str);
+    _.debug("test_to_lilypond:composition is " + composition);
+    _.debug("test_to_lilypond, str is \n" + str + "\n");
+    lily = line_to_lilypond(composition.lines[0]);
+    _.debug(lily);
+    expected = "\\afterGrace e'4( { d'32) }";
+    test.ok(lily.indexOf(expected) > -1, "FAILED*** Expected output of \n\n" + str + "\n\n to include " + expected + ". Output was\n-------------- \n\n" + lily + "\n\n-----------");
+    display_success(str, expected);
+    return test.done();
+  };
+  exports.test_after_ornament_with_tied_pitch = function(test) {
+    var composition, expected, lily, str;
+    _console.level = Logger.INFO;
+    str = '    RG\n| -G   -- ';
+    composition = parser.parse(str);
+    _.debug("test_to_lilypond:composition is " + composition);
+    _.debug("test_to_lilypond, str is \n" + str + "\n");
+    lily = line_to_lilypond(composition.lines[0]);
+    _.debug(lily);
+    expected = 'r8 \\afterGrace e\'8( { d\'32[ e\'32] } e\'4) ';
+    test.ok(lily.indexOf(expected) > -1, "FAILED*** Expected output of \n\n" + str + "\n\n to include " + expected + ". Output was\n-------------- \n\n" + lily + "\n\n-----------");
+    display_success(str, expected);
+    return test.done();
+  };
+  exports.test_after_ornament_gets_beamed_and_slurred = function(test) {
+    var composition, expected, lily, str;
+    _console.level = Logger.INFO;
+    str = '   RG\n| G ';
+    composition = parser.parse(str);
+    _.debug("test_to_lilypond:composition is " + composition);
+    _.debug("test_to_lilypond, str is \n" + str + "\n");
+    lily = line_to_lilypond(composition.lines[0]);
+    _.debug(lily);
+    expected = "\\afterGrace e'4( { d'32[ e'32)] }";
+    test.ok(lily.indexOf(expected) > -1, "FAILED*** Expected output of \n\n" + str + "\n\n to include " + expected + ". Output was\n-------------- \n\n" + lily + "\n\n-----------");
+    display_success(str, expected);
+    return test.done();
+  };
+  exports.test_after_ornaments_with_slurred_notes = function(test) {
+    var composition, expected, lily, str;
+    _console.level = Logger.INFO;
+    str = '    RG\n| (G    m)';
+    composition = parser.parse(str);
+    _.debug("test_to_lilypond:composition is " + composition);
+    _.debug("test_to_lilypond, str is \n" + str + "\n");
+    lily = line_to_lilypond(composition.lines[0]);
+    _.debug(lily);
+    expected = '\\afterGrace e\'4( { d\'32[ e\'32] } f\'4)';
+    test.ok(lily.indexOf(expected) > -1, "FAILED*** Expected output of \n\n" + str + "\n\n to include " + expected + ". Output was\n-------------- \n\n" + lily + "\n\n-----------");
+    display_success(str, expected);
+    return test.done();
+  };
+  exports.test_after_ornaments_within_slurred_phrase_should_not_include_slurs = function(test) {
+    var composition, expected, lily, str;
+    _console.level = Logger.INFO;
+    str = '     <Gm>\n| (P m   G R)';
+    composition = parser.parse(str);
+    _.debug("test_to_lilypond:composition is " + composition);
+    _.debug("test_to_lilypond, str is \n" + str + "\n");
+    lily = line_to_lilypond(composition.lines[0]);
+    _.debug(lily);
+    expected = 'g\'4( \\afterGrace f\'4 { e\'32[ f\'32] } e\'4 d\'4)';
+    test.ok(lily.indexOf(expected) > -1, "FAILED*** Expected output of \n\n" + str + "\n\n to include " + expected + ". Output was\n-------------- \n\n" + lily + "\n\n-----------");
+    display_success(str, expected);
+    return test.done();
+  };
+  display_success = function(str, expected) {
+    return _.info("✔ Testing \n\n" + str + "\n\n ->\n " + expected);
   };
 }).call(this);

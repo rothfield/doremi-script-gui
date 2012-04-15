@@ -559,7 +559,8 @@ window.CompositionViewModel = function(my_doremi_source) {
     if (self.ask_user_if_they_want_to_save()) {
       return;
     }
-    return self.close();
+    self.close();
+    return window.location = '#root';
   };
   self.print_composition = function() {
     var line, _i, _len, _ref;
@@ -572,6 +573,7 @@ window.CompositionViewModel = function(my_doremi_source) {
   };
   self.new_composition = function() {
     var initialData;
+    console.log("cvm new_composition");
     if (self.ask_user_if_they_want_to_save()) {
       return;
     }

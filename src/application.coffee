@@ -150,5 +150,22 @@ $(document).ready ->
 
   load_html_doc_components()
   url= getParameterByName('url')
+  root = () ->
+    $('div#intro').show()
+    $('div#composition_form').hide()
   if url isnt ""
     load_composition_from_url(url)
+  # Here we set a "root route".  You may have noticed that when you landed on this
+  # page you were automatically "redirected" to the "#/users" route.  The definition  below 
+  # tells PathJS to load this route automatically if one isn't provided.
+  Path.map("#/new_composition").to( () ->
+    console.log "new_composition route"
+    $('div#intro').hide()
+    $('div#composition_form').show()
+    app.the_composition.new_composition()
+  )
+  #.enter()
+
+  Path.root "#/root"
+  Path.listen()
+

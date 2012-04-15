@@ -471,11 +471,13 @@ window.CompositionViewModel = (my_doremi_source) ->
     if self.ask_user_if_they_want_to_save()
       return
     self.close()
+    window.location='#root'
 
   self.print_composition = () ->
     line.editing(false) for line in self.lines()
     window.print()
   self.new_composition = () ->
+    console.log "cvm new_composition"
     if self.ask_user_if_they_want_to_save()
       return
     initialData = ""

@@ -48,7 +48,7 @@
     test.ok(html.indexOf("note_wrapper") > -1, "failure");
     return test.done();
   };
-  test_data = ["P#", 'data-fallback-if-no-utf8-chars=\'#\'', "not expected", "S\n.", '<span class="lower_octave_1">&bull;</span>', "Testing html for lower octave span", 'C   C7\nS  -', '', 'Should display chord over dash', "C    C7\nS R- --", "C7", "had bug"];
+  test_data = ["P#", 'data-fallback-if-no-utf8-chars=\'#\'', "not expected", "S\n.", '<span data-column="0" class="lower_octave_1">&bull;</span>', "Testing html for lower octave span", 'C   C7\nS  -', '', 'Should display chord over dash', "C    C7\nS R- --", "C7", "had bug"];
   exports.test_all = function(test) {
     var fun;
     console.log("test_all");

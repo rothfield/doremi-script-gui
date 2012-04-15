@@ -316,8 +316,6 @@
       this.composition_data.force_notes_used_hash = hash;
       x = get_composition_attribute(this.composition_data, "TimeSignature");
       this.composition_data.time_signature = x || "4/4";
-      x = get_composition_attribute(this.composition_data, "NotesUsed");
-      this.composition_data.notes_used = x || "";
       x = get_composition_attribute(this.composition_data, "ForceNotesUsed");
       this.composition_data.force_notes_used = x || false;
       x = get_composition_attribute(this.composition_data, "id");

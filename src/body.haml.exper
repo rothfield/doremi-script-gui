@@ -1,0 +1,161 @@
+.bodyArea
+  %h1.title
+    Doremi-Script - Easy to write textual Music Notation- ALPHA (works best with Firefox)
+  %div.controls
+    / downloadify save button
+    %span#save{"data-bind" => "visible: saveable"}
+      Save(requires Flash)
+    / %a{"href" => "#new_composition", "data-bind" => "click: new_composition"}
+    %a{"href" => "#/new_composition"}
+      New Composition
+    %button{"data-bind" => "visible: editing_composition,click: print_composition"}
+      Print 
+    %span.open_file
+      / uses html5 open file
+      %label Open:
+      %input#file{:name => "files[]", :type => "file"}
+    %button{"data-bind" => "visible: editing_composition,click: gui_close"}
+      Close 
+    %button{"id" => "help_button", "data-bind" => "css: {button_on:help_visible},click: toggle_help_visible"} 
+      Help 
+    %a{:target => "_blank","href" => 'http://github.com/rothfield/doremi-script-gui'}
+      Development
+  %div#help_content
+  %div#output
+    %div#intro
+      Welcome!
+    %div#composition_form
+      %div#composition_info{"data-bind" => 'visible: editing_composition'}
+        %p
+          %label
+            Title:
+          %input#composition_title{"data-bind" => "valueUpdate: 'change',value: title"}/
+          %span.required
+            * 
+          %button.more_properties_button{"onclick" => "$('#more_properties').toggle()"}
+            More...
+        %div#more_properties{"style" => 'display:none'}
+          %p
+            %label
+              Author:
+            %input{"data-bind" => "value: author, valueUpdate: 'change'"}
+          %p
+            %label
+              Key:
+            %select{"data-bind" => "options: keys, value: key"}
+          %p
+            %label
+              Force Notes Used:
+            %select{"data-bind" => "options: true_false_options, value: force_notes_used"}
+          %p
+            %label
+              Notes Used:
+            %input{"title" => 'For latin sargam only', "data-bind" => "value: notes_used, valueUpdate: 'change'"}
+            
+          %p
+            %label
+              Time Signature:
+            %input{"data-bind" => "value: time_signature,valueUpdate: 'change'"}/
+          %p
+            %label
+              Source:
+            %input{"data-bind" => "value: source,valueUpdate: 'change'"}/
+          %p
+            %label
+              Raga:
+            %input{"data-bind" => "value: raga,valueUpdate: 'change'"}/
+          %p
+            %label
+              Apply Hyphenated Lyrics:
+            %span.apply_hyphenated_lyrics{"data-bind" => "text: apply_hyphenated_lyrics,click: toggle_apply_hyphenated_lyrics"}
+          %p
+            %label
+              Staff Notation URL:
+            %span{"data-bind" => "text: staff_notation_url"} 
+          %p
+            %label
+              ID#:
+            %span{"data-bind" => "text: id"} 
+          %div
+            %button{"data-bind" => "css: {button_on:doremi_source_visible},click: toggle_doremi_source_visible"} 
+              DoremiScript Source
+            %div.doremi_source_div.like_pre{"data-bind" => "text:doremi_source,visible: doremi_source_visible,event:{dblclick:toggle_doremi_source_visible}, css: {composition_parse_failed: composition_parse_failed}"}
+          %div
+            %button{"data-bind" => "css: {button_on:parsed_doremi_script_visible},click: toggle_parsed_doremi_script_visible"} 
+              Parsed DoremiScript
+            %div.parsed_doremi_script_div.like_pre{"data-bind" => "text: composition_parsed_doremi_script,visible: parsed_doremi_script_visible,event:{dblclick:toggle_parsed_doremi_script_visible}"}
+          %div
+            %button{"data-bind" => "css: {button_on:composition_lilypond_source_visible},click: toggle_composition_lilypond_source_visible"} 
+              Lilypond source
+            %div.composition_lilypond_source_div.like_pre{"data-bind" => "visible: composition_lilypond_source_visible,text: composition_lilypond_source,event:{dblclick:toggle_composition_lilypond_source_visible}"}
+           
+          %div
+            %button{"data-bind" => "css: {button_on:composition_musicxml_source_visible},click: toggle_composition_musicxml_source_visible"} 
+              MusicXML Source 
+          %div.composition_musicxml_source_div.like_pre{"data-bind" => "visible: composition_musicxml_source_visible,text: composition_musicxml_source,event:{dblclick:toggle_composition_musicxml_source_visible}"}
+          %div.server_links
+            %h4
+              Links: Right click and select 'Save As' to save on your computer
+              or click to open in a new window.
+              (Click Update all button first to get latest)
+            %ul.server_links
+              %li
+                %button{"data-bind" => "disable: disable_generate_staff_notation,click: generate_all_but_staff_notation"}
+                  Update all except staff notation
+              %li
+                %a#download_ly.saved_to_server{:href => "/#", :target => "_blank", "data-bind" => "click:handle_link_click,enable: links_enabled,attr: {href: lilypond_url }"}
+                  Lilypond
+              %li.commented_out
+                %a#download_xml.saved_to_server{"data-bind" => "click:handle_link_click,enable: links_enabled,attr: {href: music_xml_url }", :href => "/#", :target => "_blank"} MusicXML
+              %li.commented_out
+                %a#download_html.saved_to_server{"data-bind" => "click:handle_link_click,enable: links_enabled,attr: {href: html_url }",:href => "/#", :target => "_blank"} HTML Page
+              %li
+                %a#download_jpeg.generated_by_lilypond{"data-bind" => "click:handle_link_click,enable: links_enabled,attr: {href: staff_notation_url }",:href => "/#", :target => "_blank"} jpeg 
+              %li
+                %a#download_pdf.generated_by_lilypond{"data-bind" => "click:handle_link_click,enable: links_enabled,attr: {href: pdf_url }",:href => "/#", :target => "_blank"} pdf
+              %li
+                %a#download_mid.generated_by_lilypond{"data-bind" => "click:handle_link_click,enable: links_enabled,attr: {href: midi_url }",:href => "/#", :target => "_blank", :title => "Play midi file"} midi
+              %li
+                %a#download_doremi_source{"data-bind" => "click:handle_link_click,enable: links_enabled,attr: {href: doremi_source_url }",:href => "/#", :target => "_blank", :title => ""} Doremi-Script Source
+        %br
+          %div.composition_controls
+            %button{"data-bind" => "disable: disable_generate_staff_notation,click: generate_staff_notation"}
+              Generate staff notation
+            %button{"data-bind" => "css: {button_on:staff_notation_visible},click: toggle_staff_notation_visible"} 
+              Show Staff Notation
+            %button{"data-bind" => "css: {button_on:show_title},click: toggle_title_visible"} 
+              Show Title
+            %button{"data-bind" => "css: {button_on:show_hyphenated_lyrics},click: toggle_hyphenated_lyrics_visible"} 
+              Show Hyphenated Lyrics
+          %div
+            %img.spinner{"alt" => 'spinner', "data-bind" => "visible: generating_staff_notation", "src" => "images/musical-notes-animated.gif", "width" => '50'}
+          %div.staff_notation_div{"data-bind" => "visible: staff_notation_visible"}
+            %img.staff_notation{"alt" => 'staff notation', "src" => 'images/none.png', "data-bind" => "attr: {src:staff_notation_url_with_time_stamp}"}
+          %br
+          %div.composition_headers{"data-bind" => "css:{hide_title:hide_title}"}
+            %h1.composition_title{"data-bind" => "text:title"}
+            %h2.composition_author{"data-bind" => "text:author"}
+            <!--  Each line consists of a textarea, some controls, and the rendered html. The textarea and controls are hidden unless the user is editting the line. When the user is editting the line, the rendered html is hidden -->
+          %ul.contextMenu{"data-bind" => 'enable: not_editing_a_line', :id => 'my_menu',:style => "top: 269px; left: 100px; display: none; "}
+            %li.edit
+              %a{:href => "#edit"} Edit
+            %li.cut.separator
+              %a{:href => "#insert"} Insert
+            %li.copy
+              %a{:href => "#append"} Append
+            %li.delete
+              %a{:href => "#delete"} Delete
+          .composition_body{"data-bind" => "foreach: lines"}
+            %div.stave_wrapper{"data-bind" => "attr: {id: stave_id},css:{editing:editing}"}
+              %div.entry_area_wrapper{"data-bind" => 'visible:editing'}
+                %a.close_box
+                  %img{"title" => 'Close',:src => 'images/close_box.gif',"data-bind" => "visible:editing(),click: close_edit,clickBubble:false"} 
+                %span.show_warnings{"data-bind" => "visible: line_has_warnings, attr: {title: line_warnings}"} 
+                  Warnings
+                %textarea.entry_area{:spellcheck => "false",:rows => "6", :cols => "33", "data-bind" => "valueUpdate:'afterkeydown',event: {keypress:handle_keypress},attr: {id: entry_area_id()},style: {width: $parent.composition_textarea_width},css: {'line_has_warnings': line_has_warnings,'parse_failed': $data.parse_failed},visible: editing(), value: source "}
+              %div.rendered_html{"style" => "display:inline-block", "data-bind" => "rendered_doremi_script:rendered_in_html, visible: not_editing, event: { click: edit},clickBubble:false, css: {editing:editing,not_editing:not_editing,line_has_warnings: line_has_warnings,line_parse_failed: line_parse_failed},style: {width: $parent.composition_textarea_width}"}
+      
+        %div.bottom_controls{"data-bind" => "visible: editing_composition"}
+          %button.controls{"data-bind" => "click: add_line, enable: not_editing_a_line"}
+            New Line
+    
