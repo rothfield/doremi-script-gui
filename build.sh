@@ -5,6 +5,7 @@ cp ../readme.html ../public/
 cd -
 coffee -o ./public/js/test -b -c test/*.coffee
 coffee -o ./public/js -b -c src/*.coffee
+#cp test/jquery.color.js public/js/test/
 cd test/
 echo "test"
 haml -r "./render_file.rb" test_layout.haml > ../public/test.html

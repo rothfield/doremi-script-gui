@@ -1,56 +1,5 @@
 $(document).ready(function() {
-  var generate_staff_notation_aux, helper, html, img, index, my_escape, parsed, record, recs, src, test_data;
-  my_escape = function(s) {
-    return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
-  };
-  generate_staff_notation_aux = function(doremi_source, index, dont) {
-    var my_data, obj, timeout_in_seconds, ts, url;
-    if (index == null) {
-      index = 0;
-    }
-    if (dont == null) {
-      dont = "false";
-    }
-    if (debug) {
-      console.log("generate_staff_notation");
-    }
-    ts = new Date().getTime();
-    url = '/lilypond_server/lilypond_to_jpg';
-    timeout_in_seconds = 60;
-    my_data = {
-      fname: "test_case_" + index,
-      html_doc: "stub",
-      doremi_source: doremi_source,
-      musicxml_source: "",
-      dont_generate_staff_notation: dont
-    };
-    obj = {
-      dataType: "json",
-      async: false,
-      timeout: timeout_in_seconds * 1000,
-      type: 'POST',
-      url: url,
-      data: my_data,
-      error: function(some_data) {
-        return alert("Couldn't connect to staff notation generator server at " + url);
-      },
-      success: function(some_data, text_status) {
-        var base_url, fname;
-        console.log("in success, index is ", index);
-        if (some_data.error) {
-          $('h1.progress').text("Error: Regenerating image " + index);
-          return;
-        }
-        fname = some_data.fname;
-        base_url = fname.slice(0, fname.lastIndexOf('.'));
-        if (debug) {
-          return console.log(base_url);
-        }
-      }
-    };
-    return $.ajax(obj);
-  };
-  _.debug = function() {};
+  var generate_staff_notation_aux, helper, hr, html, index, my_escape, parsed, record, recs, template, test_data;
   test_data = [];
   helper = function(doremi_source, comments) {
     if (comments == null) {
@@ -62,15 +11,96 @@ $(document).ready(function() {
       comments: comments
     });
   };
-  helper("S", "");
-  helper("Sr", "");
-  helper("Srg", "");
-  helper("Sr-g", "");
-  helper("<S R >", "");
-  helper("Happy birthday\n\n PP DP\n", "");
-  helper("Key: D\nMode: Major\n\nHappy birthday\n\n PP DP\n", "");
-  helper("   NRSNS\n   .  .\n| S \n", "");
+  helper("S");
+  helper("C");
+  helper("1");
+  helper("          . .\n| SRGM PDNS SndP mgrS | ");
+  helper("           . .\n| 1234# 5671 1765 4321");
+  helper("           . .\n| CDEF# GABC CBbAbG FEbDbC");
+  helper("1");
+  helper("Sr");
+  helper("CDb");
+  helper("12b");
+  helper("Sr-g");
+  helper("CDb-Eb");
+  helper("12b-3b");
+  helper("<S R >");
+  helper("<C D >");
+  helper("<1 2 >");
+  helper("Happy birthday\n\n PP DP\n");
+  helper("Key: D\nMode: Major\n\nHappy birthday\n\n PP DP\n");
+  helper("   NRSNS\n   .  .\n| S \n");
+  helper("  SNRSN\n   .  .\n|      S \n");
+  helper("|: S :| ");
+  helper("                    1.__    2.___\n|: - - mm | G S R | G -  :| S - -  |", "endings");
+  helper("S - - -", "should generate whole note rather than 4 tied quarters");
+  my_escape = function(s) {
+    return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+  };
+  generate_staff_notation_aux = function(doremi_source, index, async) {
+    var my_data, obj, selector, selector3, timeout_in_seconds, ts, url;
+    if (index == null) {
+      index = 0;
+    }
+    if (async == null) {
+      async = true;
+    }
+    selector = "img#staff_notation_jpg_" + index;
+    selector3 = "span#staff_notation_jpg_span_" + index;
+    $(selector3).show();
+    $(selector).css('visibility', 'hidden');
+    if (debug) {
+      console.log("generate_staff_notation");
+    }
+    ts = new Date().getTime();
+    url = '/lilypond_server/lilypond_to_jpg';
+    timeout_in_seconds = 60;
+    my_data = {
+      fname: "test_case_" + index,
+      html_doc: "stub",
+      doremi_source: doremi_source,
+      musicxml_source: "",
+      dont_generate_staff_notation: false
+    };
+    obj = {
+      dataType: "json",
+      async: async,
+      timeout: timeout_in_seconds * 1000,
+      type: 'POST',
+      url: url,
+      data: my_data,
+      error: function(some_data) {
+        return alert("Couldn't connect to staff notation generator server at " + url);
+      },
+      success: function(some_data, text_status) {
+        var base_url, fname, img, selector2;
+        $(selector3).hide();
+        $(selector).css('visibility', 'visible');
+        console.log("in success, index is ", index);
+        if (some_data.error) {
+          $('h1.progress').text("Error: Regenerating image " + index);
+          return;
+        }
+        selector = "img#staff_notation_jpg_" + index;
+        selector2 = "div#staff_notation_jpg_div_" + index;
+        img = $(selector)[0];
+        ts = new Date().getTime();
+        img.setAttribute('src', "" + (img.getAttribute('src')) + "_" + ts);
+        $(selector2).effect("highlight", {}, 1000);
+        fname = some_data.fname;
+        base_url = fname.slice(0, fname.lastIndexOf('.'));
+        return console.log(base_url, fname);
+      }
+    };
+    return $.ajax(obj);
+  };
+  _.debug = function() {};
   console.log(test_data);
+  _.templateSettings = {
+    evaluate: /\{\[([\s\S]+?)\]\}/g,
+    interpolate: /\{\{([\s\S]+?)\}\}/g
+  };
+  template = _.template("<p>Test Case {{index}}</p>\n<hr/>\n<p>{{comments}}</p>\n<pre title=\"doremi-script source\">{{doremi_source}}</pre>\n<hr/>\n<div title=\"doremi-script rendered in html\">\n{{html}}\n</div>\n<hr/>\n<div title=\"Staff notation generated by Lilypond\" id=\"staff_notation_jpg_div_{{index}}\">\n  <img id=\"staff_notation_jpg_{{index}}\" alt=\"staff notation\" \n  class=\"staff_notation\"\n  src=\"/compositions/test_case_{{index}}.jpg?ts=\">\n<span style=\"display:none\" id=\"staff_notation_jpg_span_{{index}}\">\nPlease wait...\n </span> \n</div>\n<button class='generate_staff_notation' data-index='{{index}}'>Regenerate staff notation</button>");
   recs = (function() {
     var _len, _results;
     _results = [];
@@ -78,14 +108,28 @@ $(document).ready(function() {
       record = test_data[index];
       parsed = DoremiScriptParser.parse(record.doremi_source);
       console.log("parsed", parsed);
-      img = "<img alt=\"staff notation\" class=\"staff_notation\" src=\"/compositions/test_case_" + index + ".jpg\">";
       html = to_html(parsed);
-      src = "<pre>" + (my_escape(record.doremi_source)) + "</pre>";
-      _results.push("" + src + "<hr/>" + html + "<hr/>" + img);
+      record = {
+        comments: record.comments,
+        html: html,
+        doremi_source: my_escape(record.doremi_source),
+        index: index
+      };
+      _results.push(template(record));
     }
     return _results;
   })();
-  $('content').html(recs.join("<hr style='height:4px;background-color:black;' />"));
+  hr = "<hr style='height:4px;background-color:black;' />";
+  $('content').html(hr + recs.join(hr));
+  $('button.generate_staff_notation').click(function(btn) {
+    var $btn;
+    $btn = $(this);
+    index = parseInt($btn.data('index'));
+    console.log("index", index);
+    record = test_data[index];
+    parsed = DoremiScriptParser.parse(record.doremi_source);
+    return generate_staff_notation_aux(record.doremi_source, index, true);
+  });
   $('button#regenerate_images').click(function() {
     var fun;
     $('h1.progress').text("Please wait");
@@ -94,7 +138,7 @@ $(document).ready(function() {
       for (index = 0, _len = test_data.length; index < _len; index++) {
         record = test_data[index];
         parsed = DoremiScriptParser.parse(record.doremi_source);
-        generate_staff_notation_aux(record.doremi_source, index);
+        generate_staff_notation_aux(record.doremi_source, index, false);
       }
       return $('h1.progress').text("Finished regenerating images");
     };

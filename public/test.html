@@ -7,29 +7,45 @@
     <link href='css/styles.css' rel='stylesheet' type='text/css' />
     <link href='css/doremi.css' rel='stylesheet' type='text/css' />
     <link href='css/jquery.contextMenu.css' rel='stylesheet' type='text/css' />
+    <link href='http://ajax.googleapis.com/ajax/libs/jqueryui/1.8/themes/base/jquery-ui.css' rel='stylesheet' type='text/css' />
   </head>
   <body>
+    <h1>
+      Doremi-Script Visual Test Suite
+    </h1>
+    <p>
+      This test suite displays the following
+      <ul>
+        <li>
+          Doremi-Script Source
+        </li>
+        <li>
+          Rendered Doremi-Script
+        </li>
+        <li>
+          Generated staff notation (via lilypond)
+        </li>
+      </ul>
+      <p></p>
+      Clicking the regenerate button will regenerate all the staff notation images(takes a long time). You can also regenerate individual test cases.
+    </p>
     <button id='regenerate_images'>
-      Regenerate images
+      Regenerate ALL images
     </button>
-    <h1 class='progress'></h1>
-    <pr></pr>
     <content></content>
+    <hr />
+    <span class="note testing_utf_support" id="utf_left_repeat" style="display: none; ">&#x1d106;</span>
+    <span id="utf_single_barline" class="note testing_utf_support" style="display: none; ">&#x1d100;</span>
     <script src='js/knockout-2.0.0.debug.js' type='text/javascript'></script>
     <script src='js/path.js' type='text/javascript'></script>
     <script src='js/jquery-1.7.1.min.js' type='text/javascript'></script>
-    <script src='js/jquery.contextMenu.js' type='text/javascript'></script>
-    <script src='js/jquery.scrollTo.js' type='text/javascript'></script>
     <script src='js/select_range.js' type='text/javascript'></script>
-    <script src='js/from_doremi_script_base/third_party/jquery.autogrow-textarea.js' type='text/javascript'></script>
     <script src='js/from_doremi_script_base/third_party/underscore.js' type='text/javascript'></script>
     <script src='js/from_doremi_script_base/underscore.logger.js' type='text/javascript'></script>
     <script src='js/from_doremi_script_base/shims.js' type='text/javascript'></script>
     <script src='js/from_doremi_script_base/all_items.js' type='text/javascript'></script>
     <script src='js/from_doremi_script_base/shared.js' type='text/javascript'></script>
     <script src='js/from_doremi_script_base/third_party/fraction.js' type='text/javascript'></script>
-    <script src='js/downloadify/downloadify.min.js' type='text/javascript'></script>
-    <script src='js/downloadify/swfobject.js' type='text/javascript'></script>
     <script type="text/javascript">
     <!-- / Hack part 1- to make Hypher.js work in the browser. -->
     window.module= {exports:[]}
@@ -50,6 +66,8 @@
     <script src='js/from_doremi_script_base/doremi_script_line_parser.js' type='text/javascript'></script>
     <script src='js/from_doremi_script_base/dom_fixer.js' type='text/javascript'></script>
     <script src='js/from_doremi_script_base/html_renderer.js' type='text/javascript'></script>
+    <script src='js/test/jquery.color.js' type='text/javascript'></script>
     <script src='js/test/test.js' type='text/javascript'></script>
+    <script src='http://ajax.googleapis.com/ajax/libs/jqueryui/1.8/jquery-ui.min.js'></script>
   </body>
 </html>
