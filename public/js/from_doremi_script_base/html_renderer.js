@@ -46,10 +46,14 @@
     x = "<div title='Lyrics Section' class='stave lyrics_section unhyphenated'>" + lyrics_section.unhyphenated_source + "</div>";
     return x + ("<div title='Lyrics Section' class='stave lyrics_section hyphenated'>" + lyrics_section.hyphenated_source + "</div>");
   };
-  draw_line = function(line) {
+  draw_line = function(line, model) {
     var item, x;
     if (line.my_type === 'lyrics_section') {
-      return draw_lyrics_section(line);
+      return draw_lyrics_section(line, {
+        show_hyphenated_lyrics: __bind(function() {
+          return model.show_hyphenated_lyrics;
+        }, this)
+      });
     }
     x = ((function() {
       var _i, _len, _ref, _results;
@@ -349,7 +353,7 @@
       js = "";
     }
     rendered_composition = to_html(composition);
-    return "<!DOCTYPE html>\n<html>\n  <head>\n  <style type=\"text/css\">\n    " + css + "\n  </style>\n    <title>" + composition.title + "</title>\n    <!--\n    <link media=\"all\" type=\"text/css\" href=\"" + full_url + "/css/application.css\" rel=\"stylesheet\">\n     -->\n    <meta content=\"text/html;charset=utf-8\" http-equiv=\"Content-Type\">\n  </head>\n<body>\n\n<div class=\"composition_headers\">\n        <h1 class=\"composition_title\">" + composition.title + "</h1>\n        <h2 class=\"composition_author\">" + composition.author + "</h2>\n        <!--  Each line consists of a textarea, some controls, and the rendered html. The textarea and controls are hidden unless the user is editting the line. When the user is editting the line, the rendered html is hidden -->\n                  </div>\n  <div id=\"rendered_sargam\">\n    " + rendered_composition + "\n  </div>\n  <span class=\"note testing_utf_support\" id=\"utf_left_repeat\" style=\"display: none; \">&#x1d106;</span>\n  <span id=\"utf_single_barline\" class=\"note testing_utf_support\" style=\"display: none; \">&#x1d100;</span>\n<script type=\"text/javascript\">\n" + js + "\n$(document).ready(function() {\n    dom_fixes()\n})\n</script>\n<script id=\"source\" type=\"text/html\">\n" + composition.source + "\n</script>\n</body>\n</html>";
+    return "<!DOCTYPE html>\n<html>\n  <head>\n  <style type=\"text/css\">\n    " + css + "\n  </style>\n    <title>" + composition.title + "</title>\n    <!--\n    <link media=\"all\" type=\"text/css\" href=\"" + full_url + "/css/doremi.css\" rel=\"stylesheet\">\n     -->\n    <meta content=\"text/html;charset=utf-8\" http-equiv=\"Content-Type\">\n  </head>\n<body>\n\n<div class=\"composition_headers\">\n        <h1 class=\"composition_title\">" + composition.title + "</h1>\n        <h2 class=\"composition_author\">" + composition.author + "</h2>\n        <!--  Each line consists of a textarea, some controls, and the rendered html. The textarea and controls are hidden unless the user is editting the line. When the user is editting the line, the rendered html is hidden -->\n                  </div>\n  <div id=\"rendered_sargam\">\n    " + rendered_composition + "\n  </div>\n  <span class=\"note testing_utf_support\" id=\"utf_left_repeat\" style=\"display: none; \">&#x1d106;</span>\n  <span id=\"utf_single_barline\" class=\"note testing_utf_support\" style=\"display: none; \">&#x1d100;</span>\n<script type=\"text/javascript\">\n" + js + "\n$(document).ready(function() {\n    dom_fixes()\n})\n</script>\n<script id=\"source\" type=\"text/html\">\n" + composition.source + "\n</script>\n</body>\n</html>";
   };
   draw_attributes = function(attributes) {
     var attribute, attrs;
@@ -368,8 +372,11 @@
     })()).join('\n');
     return "<div class='attribute_section'>" + attrs + "</div>";
   };
-  line_to_html = function(line) {
-    return draw_line(line);
+  line_to_html = function(line, model) {
+    if (model == null) {
+      model = {};
+    }
+    return draw_line(line, model);
   };
   to_html = function(composition) {
     var attrs, item, lines;
@@ -383,7 +390,7 @@
       _results = [];
       for (_i = 0, _len = _ref.length; _i < _len; _i++) {
         item = _ref[_i];
-        _results.push(draw_line(item));
+        _results.push(draw_line(item, composition));
       }
       return _results;
     })()).join('\n');

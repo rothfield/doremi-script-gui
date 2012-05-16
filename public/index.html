@@ -107,6 +107,12 @@
           </p>
           <p>
             <label>
+              Show Hyphenated Lyrics:
+            </label>
+            <select data-bind='options: true_false_options, value: show_hyphenated_lyrics'></select>
+          </p>
+          <p>
+            <label>
               Staff Notation URL:
             </label>
             <span data-bind='text: staff_notation_url'></span>
@@ -191,9 +197,6 @@
           </button>
           <button data-bind='css: {button_on:show_title},click: toggle_title_visible'>
             Show Title
-          </button>
-          <button data-bind='css: {button_on:show_hyphenated_lyrics},click: toggle_hyphenated_lyrics_visible'>
-            Show Hyphenated Lyrics
           </button>
         </div>
         <div>

@@ -6,13 +6,17 @@
     <link href='css/application.css' rel='stylesheet' type='text/css' />
     <link href='css/styles.css' rel='stylesheet' type='text/css' />
     <link href='css/doremi.css' rel='stylesheet' type='text/css' />
+    <link href='css/test/test.css' rel='stylesheet' type='text/css' />
     <link href='css/jquery.contextMenu.css' rel='stylesheet' type='text/css' />
     <link href='http://ajax.googleapis.com/ajax/libs/jqueryui/1.8/themes/base/jquery-ui.css' rel='stylesheet' type='text/css' />
   </head>
-  <body>
+  <body class='visual_test_suite'>
     <h1>
       Doremi-Script Visual Test Suite
     </h1>
+    <a href='/'>
+      Online editor
+    </a>
     <p>
       This test suite displays the following
       <ul>
@@ -26,14 +30,22 @@
           Generated staff notation (via lilypond)
         </li>
       </ul>
-      <p></p>
-      Clicking the regenerate button will regenerate all the staff notation images(takes a long time). You can also regenerate individual test cases.
     </p>
-    <button id='regenerate_images'>
-      Regenerate ALL images
-    </button>
     <content></content>
     <hr />
+    <br />
+    <br />
+    <br />
+    <br />
+    <br />
+    <br />
+    <hr />
+    <h4>
+      (ADVANCED) Clicking the following button will regenerate all the staff notation images(takes a long time). It is preferable to regenerate individual test cases using the buttons attached to the individual test cases. This is currently implemented via sync ajax calls, so this will block browser and may cause the browser to complain.
+      <button id='regenerate_images'>
+        Regenerate ALL images
+      </button>
+    </h4>
     <span class="note testing_utf_support" id="utf_left_repeat" style="display: none; ">&#x1d106;</span>
     <span id="utf_single_barline" class="note testing_utf_support" style="display: none; ">&#x1d100;</span>
     <script src='js/knockout-2.0.0.debug.js' type='text/javascript'></script>

@@ -151,12 +151,13 @@ window.CompositionViewModel = (my_doremi_source) ->
   self.id=ko.observable("")
   self.raga=ko.observable("")
   self.author=ko.observable("")
-  self.staff_notation_visible=ko.observable(false)
+  self.staff_notation_visible=ko.observable(true)
   self.source=ko.observable("") # IE AAK
   self.filename=ko.observable("")
   self.time_signature=ko.observable("")
   self.title=ko.observable("")
   self.notes_used=ko.observable("SP")
+  self.show_hyphenated_lyrics=ko.observable(false)
   self.force_notes_used=ko.observable(false)
   self.generating_staff_notation=ko.observable(false)
   self.staff_notation_url=ko.observable(NONE_URL)
@@ -276,6 +277,7 @@ window.CompositionViewModel = (my_doremi_source) ->
       "time_signature"
       "notes_used"
       "force_notes_used"
+      "show_hyphenated_lyrics"
       "title"
       "key"
       "mode"
@@ -313,7 +315,7 @@ window.CompositionViewModel = (my_doremi_source) ->
     # TODO: dry with other list of attributes
     keys=["id","title","filename","raga","key",
           "mode","author",
-          "source","time_signature","apply_hyphenated_lyrics",
+          "source","time_signature","apply_hyphenated_lyrics","show_hyphenated_lyrics",
           "staff_notation_url","notes_used","force_notes_used"]
     atts= for att in keys
       value=self[att]()
@@ -375,6 +377,7 @@ window.CompositionViewModel = (my_doremi_source) ->
     # Initialize composition with doremi_script_source
     self.staff_notation_url(NONE_URL)
     self.calculate_staff_notation_url_with_time_stamp()
+    #self.staff_notation_url(app.app.full_url_helper(some_data.fname))
     console.log("composition.my_init",doremi_source_param) if debug
     parsed=DoremiScriptParser.parse(doremi_source_param)
     self.composition_parsed_doremi_script(parsed)

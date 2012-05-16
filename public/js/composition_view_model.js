@@ -177,12 +177,13 @@ window.CompositionViewModel = function(my_doremi_source) {
   self.id = ko.observable("");
   self.raga = ko.observable("");
   self.author = ko.observable("");
-  self.staff_notation_visible = ko.observable(false);
+  self.staff_notation_visible = ko.observable(true);
   self.source = ko.observable("");
   self.filename = ko.observable("");
   self.time_signature = ko.observable("");
   self.title = ko.observable("");
   self.notes_used = ko.observable("SP");
+  self.show_hyphenated_lyrics = ko.observable(false);
   self.force_notes_used = ko.observable(false);
   self.generating_staff_notation = ko.observable(false);
   self.staff_notation_url = ko.observable(NONE_URL);
@@ -302,7 +303,7 @@ window.CompositionViewModel = function(my_doremi_source) {
     $.ajax(obj);
     return true;
   };
-  self.attribute_keys = ["id", "filename", "raga", "author", "source", "time_signature", "notes_used", "force_notes_used", "title", "key", "mode", "staff_notation_url", "apply_hyphenated_lyrics"];
+  self.attribute_keys = ["id", "filename", "raga", "author", "source", "time_signature", "notes_used", "force_notes_used", "show_hyphenated_lyrics", "title", "key", "mode", "staff_notation_url", "apply_hyphenated_lyrics"];
   self.capitalize_first_letter = function(string) {
     return string.charAt(0).toUpperCase() + string.slice(1);
   };
@@ -326,7 +327,7 @@ window.CompositionViewModel = function(my_doremi_source) {
       console.log("compute_doremi_source");
     }
     keys_to_use = self.attribute_keys;
-    keys = ["id", "title", "filename", "raga", "key", "mode", "author", "source", "time_signature", "apply_hyphenated_lyrics", "staff_notation_url", "notes_used", "force_notes_used"];
+    keys = ["id", "title", "filename", "raga", "key", "mode", "author", "source", "time_signature", "apply_hyphenated_lyrics", "show_hyphenated_lyrics", "staff_notation_url", "notes_used", "force_notes_used"];
     atts = (function() {
       var _i, _len, _results;
       _results = [];

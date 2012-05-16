@@ -1,8 +1,11 @@
 (function() {
-  var barline_template_str, barline_type_to_musicxml_barline_style_hash, composition_template_str, debug, directive_for_chord_template_str, directive_template_str, display_mode, draw_barline, draw_grace_note, draw_measure, draw_note, draw_ornaments, fraction_to_musicxml_type_and_dots, fs, grace_note_after_template_str, grace_note_template_str, load_composition_mustache_from_file_system, mode_directive, mode_directive_template_str, music_xml_chord, musicxml_alter, musicxml_barline, musicxml_beats, musicxml_fifths, musicxml_lyric, musicxml_octave, musicxml_step, musicxml_transpose, musicxml_type_and_dots, note_template_str, root, shared, templates, to_musicxml, transpose_template_str;
+  var Handlebars, barline_template_str, barline_type_to_musicxml_barline_style_hash, composition_template_str, debug, directive_for_chord_template_str, directive_template_str, display_mode, draw_barline, draw_grace_note, draw_measure, draw_note, draw_ornaments, fraction_to_musicxml_type_and_dots, fs, grace_note_after_template_str, grace_note_template_str, load_composition_mustache_from_file_system, mode_directive, mode_directive_template_str, music_xml_chord, musicxml_alter, musicxml_barline, musicxml_beats, musicxml_fifths, musicxml_lyric, musicxml_octave, musicxml_step, musicxml_transpose, musicxml_type_and_dots, note_template_str, root, shared, templates, to_musicxml, transpose_template_str;
   root = typeof exports !== "undefined" && exports !== null ? exports : this;
   if (typeof require !== "undefined" && require !== null) {
     fs = require('fs');
+  }
+  if (typeof require !== "undefined" && require !== null) {
+    Handlebars = require('handlebars');
   }
   if (typeof require !== "undefined" && require !== null) {
     shared = require('./shared.js');

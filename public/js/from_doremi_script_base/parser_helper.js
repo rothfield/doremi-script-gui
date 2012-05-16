@@ -281,6 +281,7 @@
       this.composition_data = {
         my_type: "composition",
         apply_hyphenated_lyrics: true,
+        show_hyphenated_lyrics: false,
         title: "",
         notes_used: "",
         force_notes_used: false,
@@ -314,8 +315,12 @@
         }
       }
       this.composition_data.force_notes_used_hash = hash;
+      x = get_composition_attribute(this.composition_data, "StaffNotationUrl");
+      this.composition_data.staff_notation_url = x || "";
       x = get_composition_attribute(this.composition_data, "TimeSignature");
       this.composition_data.time_signature = x || "4/4";
+      x = get_composition_attribute(this.composition_data, "ShowHyphenatedLyrics");
+      this.composition_data.show_hyphenated_lyrics = x || false;
       x = get_composition_attribute(this.composition_data, "ForceNotesUsed");
       this.composition_data.force_notes_used = x || false;
       x = get_composition_attribute(this.composition_data, "id");

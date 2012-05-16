@@ -470,7 +470,7 @@
     return (ornament != null ? ornament.placement : void 0) === "after";
   };
   line_to_lilypond_array = function(line, options) {
-    var all, ary, at_beginning_of_first_measure_of_line, beat, dash, dashes_at_beginning_of_line_array, in_slur, in_times, item, last_pitch, measure, tied_array, x, _i, _j, _len, _len2, _ref, _ref2;
+    var all, ary, at_beginning_of_first_measure_of_line, beat, dash, dashes_at_beginning_of_line_array, disable_tuplet_numbers, in_slur, in_times, item, last_pitch, measure, tied_array, x, _i, _j, _len, _len2, _ref, _ref2;
     if (options == null) {
       options = {};
     }
@@ -533,7 +533,8 @@
           if (beat.subdivisions === 5) {
             x = 4;
           }
-          ary.push("\\times " + x + "/" + beat.subdivisions + " { ");
+          disable_tuplet_numbers = "\\override TupletNumber #'stencil = ##f";
+          ary.push("" + disable_tuplet_numbers + " \\times " + x + "/" + beat.subdivisions + " { ");
           in_times = true;
         }
       }
