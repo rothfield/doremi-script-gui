@@ -366,6 +366,7 @@ span.upper_octave_1, span.upper_octave_2, span.mordent{
 }
 span.upper_octave_1{
     left: 0.2em;
+    top: -1em;
 }
 span.note.whitespace {
 }
@@ -454,12 +455,12 @@ span.note.double_barline
 span.tala,
 span.slur,
 span.mordent,
-div.sargam_line span.syllable, 
+div.sargam_line span.syl, 
 div.sargam_line span.lower_octave_1 {
   line-height:normal;
 }
 
-span.syllable {
+span.syl {
     position: absolute;
     bottom: 1.0em;
     margin-left: 0.03em;

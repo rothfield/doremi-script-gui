@@ -1,3 +1,6 @@
+    SEE http://github.com/rothfield/doremi-script for the current code base
+
+
 DoremiScript
 ============
 

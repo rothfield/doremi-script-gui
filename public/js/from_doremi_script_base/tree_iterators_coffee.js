@@ -5,7 +5,7 @@
   root = typeof exports !== "undefined" && exports !== null ? exports : this;
 
   if (typeof require !== 'undefined') {
-    global.all_items = require('./all_items.js').all_items;
+    global.all_items = require('./all_items_coffee.js').all_items;
     _ = require("underscore")._;
   }
 

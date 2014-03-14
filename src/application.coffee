@@ -61,9 +61,6 @@ $(document).ready ->
         "#{app.the_composition.filename()}.ly"
       data: () ->
         app.the_composition.composition_lilypond_source()
-  	  onComplete: () ->
-        console.log 'Your File Has Been Saved!' if debug
-
       swf: './js/downloadify/downloadify.swf'
       downloadImage: './images/save.png'
       height:19

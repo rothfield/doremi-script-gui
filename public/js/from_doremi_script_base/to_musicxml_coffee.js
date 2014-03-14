@@ -13,7 +13,7 @@
   }
 
   if (typeof require !== "undefined" && require !== null) {
-    shared = require('./shared.js');
+    shared = require('./shared_coffee.js');
     root._ = require("underscore")._;
     root._.extend(root, shared);
   }

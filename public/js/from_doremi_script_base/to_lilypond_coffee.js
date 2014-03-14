@@ -7,10 +7,10 @@
   root = typeof exports !== "undefined" && exports !== null ? exports : this;
 
   if (typeof require !== "undefined" && require !== null) {
-    shared = require('./shared.js');
+    shared = require('./shared_coffee.js');
     root._ = require("underscore")._;
     root._.extend(root, shared);
-    to_western_rhythm = require('./to_western_rhythm.js').to_western_rhythm;
+    to_western_rhythm = require('./to_western_rhythm_coffee.js').to_western_rhythm;
   }
 
   extract_lyrics = function(composition_data) {
@@ -260,8 +260,7 @@
       first_fraction = new Fraction(pitch.numerator, pitch.denominator);
     }
     duration = calculate_lilypond_duration(first_fraction.numerator.toString(), first_fraction.denominator.toString());
-    console.log("227");
-    rhythms = this.to_western_rhythm(first_fraction.numerator, first_fraction.denominator);
+    rhythms = to_western_rhythm(first_fraction.numerator, first_fraction.denominator);
     this.log("normalized_pitch_to_lilypond, pitch is", pitch);
     if (pitch.my_type === "dash") {
       if (pitch.dash_to_tie === true) {
